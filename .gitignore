@@ -1,0 +1,8 @@
+build/
+DerivedData/
+*.xcarchive
+xcuserdata/
+*.xcuserstate
+.DS_Store
+*.p8
+ExportOptions.plist
