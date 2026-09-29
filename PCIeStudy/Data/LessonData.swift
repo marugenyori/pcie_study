@@ -87,7 +87,7 @@ enum LessonData {
                              |      |
                         [Endpoint] [Endpoint]
                           (NVMe)     (NIC)
-                """),
+               """),
                 .text("CPU に近い方向を **アップストリーム**、遠い方向を **ダウンストリーム** と呼びます。PCIe はポイントツーポイント接続なので、1本のリンクには必ず2つのポートしかつながりません。"),
                 .heading("BDF（Bus / Device / Function）"),
                 .text("各デバイスの機能（Function）は、16ビットの **BDF** で一意に識別されます。この値はパケットの送信元（Requester ID）や応答元（Completer ID）としても使われます。"),
