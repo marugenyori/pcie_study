@@ -92,7 +92,7 @@ struct AckNakSimulator {
                 nextRcvSeq = (nextRcvSeq + 1) % Self.seqModulo
                 add(.rx, "RX: TLP #\(p.seq) を受理" + (p.isReplay ? "（再送分）" : ""))
                 sendAck = true
-            } else if isBefore(p.seq, nextRcvSeq) {
+            } else if Self.isBefore(p.seq, nextRcvSeq) {
                 add(.rx, "RX: TLP #\(p.seq) は受信済み（重複）→ 破棄してACK")
                 sendAck = true
             } else {
@@ -120,7 +120,7 @@ struct AckNakSimulator {
         }
         // 送信側：seq までをリプレイバッファから解放
         let before = replayBuffer.count
-        replayBuffer.removeAll { !isAfter($0, seq) }
+        replayBuffer.removeAll { !Self.isAfter($0, seq) }
         let freed = before - replayBuffer.count
         if freed > 0 {
             ackdSeq = seq
@@ -140,12 +140,12 @@ struct AckNakSimulator {
     // MARK: ユーティリティ
 
     /// a が b より「前」の番号か（シーケンス番号の循環を考慮）
-    private func isBefore(_ a: Int, _ b: Int) -> Bool {
-        let d = (b - a + Self.seqModulo) % Self.seqModulo
-        return d != 0 && d < Self.seqModulo / 2
+    private static func isBefore(_ a: Int, _ b: Int) -> Bool {
+        let d = (b - a + seqModulo) % seqModulo
+        return d != 0 && d < seqModulo / 2
     }
 
-    private func isAfter(_ a: Int, _ b: Int) -> Bool {
+    private static func isAfter(_ a: Int, _ b: Int) -> Bool {
         isBefore(b, a)
     }
 
