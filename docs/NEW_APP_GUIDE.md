@@ -63,7 +63,7 @@ Claude（Code）で新しいリポジトリを開き、次のように頼みま�
 - [ ] `アプリ名.xcodeproj/project.pbxproj`：`claud_code` と同じ**フォルダ同期方式**（`PBXFileSystemSynchronizedRootGroup`）で作る。iOS 17、`GENERATE_INFOPLIST_FILE = YES`、`INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO`
 - [ ] Bundle ID はビルド設定 `APP_BUNDLE_ID` から作る（`PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID)"`）
 - [ ] `アプリ名.xcodeproj/xcshareddata/xcschemes/アプリ名.xcscheme`（共有スキーム。これがないと CI でスキームが見つからない）
-- [ ] `.github/workflows/ios-build.yml`：`claud_code` のものをコピーし、`PCIeStudy` をアプリ名に置き換える（`paths`、`-project`、`-scheme`、`-archivePath`）
+- [ ] `.github/workflows/ios-build.yml` と `.github/scripts/cleanup_dev_certs.py`：`claud_code` のものをコピーし、`PCIeStudy` をアプリ名に置き換える（`paths`、`-project`、`-scheme`、`-archivePath`）
 - [ ] `.gitignore`（`build/`、`*.p8` など）
 - [ ] `CLAUDE.md`：そのアプリ用の作業メモ（このファイルを参考に）
 
