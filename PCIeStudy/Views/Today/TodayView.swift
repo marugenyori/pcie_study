@@ -306,17 +306,13 @@ private struct DailyQuestionCard: View {
             }
 
             if let answered {
-                VStack(alignment: .leading, spacing: 6) {
-                    Label(answered == q.answer ? "正解！" : "不正解",
-                          systemImage: answered == q.answer ? "checkmark.seal.fill" : "xmark.octagon.fill")
-                        .font(.headline)
-                        .foregroundStyle(answered == q.answer ? .green : .red)
-                    Text(q.explanation)
-                        .font(.callout)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text("明日また新しい問題が出ます")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                AnswerDetailView(question: q, selected: answered)
+                Text("明日また新しい問題が出ます")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                UnknownAnswerButton {
+                    withAnimation { progress.answerDaily(q, choice: QuizQuestion.unknownChoice) }
                 }
             }
         }

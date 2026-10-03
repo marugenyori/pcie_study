@@ -1,5 +1,17 @@
 import Foundation
 
+/// 仕様書（PCIe Base Specification 7.1）の参照先
+struct SpecRef: Hashable {
+    let section: String
+    let title: String
+    let page: Int
+
+    /// 「§4.2.7 Polling」のような表示用の名前（章番号がないときは § を付けない）
+    var label: String {
+        section.first?.isNumber == true ? "§\(section) \(title)" : "\(section)：\(title)"
+    }
+}
+
 struct QuizQuestion: Identifiable, Hashable {
     let id: String
     let chapterID: String
@@ -7,14 +19,29 @@ struct QuizQuestion: Identifiable, Hashable {
     let choices: [String]
     let answer: Int          // choices の正解インデックス
     let explanation: String
+    /// 選択肢ごとの解説（choices と同じ順番。空文字は解説なし）
+    var choiceNotes: [String] = []
+    var spec: SpecRef? = nil
 
-    /// 選択肢の順番をシャッフルしたコピーを返す（正解インデックスも追従）
+    /// 「わからない」を選んだときの回答番号
+    static let unknownChoice = -1
+
+    func note(for index: Int) -> String? {
+        guard choiceNotes.indices.contains(index), !choiceNotes[index].isEmpty else { return nil }
+        return choiceNotes[index]
+    }
+
+    /// 選択肢の順番をシャッフルしたコピーを返す（正解インデックスと選択肢ごとの解説も追従）
     func shuffled() -> QuizQuestion {
         let order = Array(choices.indices).shuffled()
-        let newChoices = order.map { choices[$0] }
-        let newAnswer = order.firstIndex(of: answer) ?? answer
-        return QuizQuestion(id: id, chapterID: chapterID, question: question,
-                            choices: newChoices, answer: newAnswer, explanation: explanation)
+        var copy = QuizQuestion(id: id, chapterID: chapterID, question: question,
+                                choices: order.map { choices[$0] },
+                                answer: order.firstIndex(of: answer) ?? answer,
+                                explanation: explanation, spec: spec)
+        if choiceNotes.count == choices.count {
+            copy.choiceNotes = order.map { choiceNotes[$0] }
+        }
+        return copy
     }
 }
 
@@ -42,7 +69,14 @@ enum QuizData {
                      choices: choices, answer: answer, explanation: explanation)
     }
 
-    static let all: [QuizQuestion] = core + extra
+    /// 選択肢ごとの解説と仕様書の参照先を付けた全問題
+    static let all: [QuizQuestion] = (core + extra).map { q in
+        guard let n = QuizNotes.byID[q.id] else { return q }
+        var copy = q
+        if n.choices.count == q.choices.count { copy.choiceNotes = n.choices }
+        copy.spec = n.spec
+        return copy
+    }
 
     private static let core: [QuizQuestion] = [
         // 1. PCIeとは

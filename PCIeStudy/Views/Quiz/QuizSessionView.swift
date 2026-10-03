@@ -121,31 +121,32 @@ struct QuizSessionView: View {
                 }
 
                 if let selected {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Label(selected == q.answer ? "正解！" : "不正解",
-                              systemImage: selected == q.answer ? "checkmark.seal.fill" : "xmark.octagon.fill")
-                            .font(.headline)
-                            .foregroundStyle(selected == q.answer ? .green : .red)
-                        Text(q.explanation)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .choiceTile(selected == q.answer ? .correct : .wrong)
-
-                    Button {
-                        goNext()
-                    } label: {
-                        Text(index + 1 < questions.count ? "次の問題へ" : "結果を見る")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(AppButtonStyle(.primary))
-                    .controlSize(.large)
+                    AnswerDetailView(question: q, selected: selected)
+                        .id(q.id)
+                } else {
+                    UnknownAnswerButton { answer(QuizQuestion.unknownChoice, for: q) }
                 }
             }
             .padding()
             .frame(maxWidth: 720)
             .frame(maxWidth: .infinity)
+        }
+        .safeAreaInset(edge: .bottom) {
+            if selected != nil {
+                Button {
+                    goNext()
+                } label: {
+                    Text(index + 1 < questions.count ? "次の問題へ" : "結果を見る")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(AppButtonStyle(.primary))
+                .padding(.horizontal)
+                .padding(.top, 10)
+                .padding(.bottom, 4)
+                .frame(maxWidth: 720)
+                .frame(maxWidth: .infinity)
+                .background(.bar)
+            }
         }
         .animation(.easeInOut(duration: 0.2), value: selected)
     }
@@ -354,9 +355,15 @@ struct QuizSessionView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             if !record.isCorrect {
-                Text("あなたの回答：\(q.choices[record.selected])")
+                Text("あなたの回答：\(record.selected == QuizQuestion.unknownChoice ? "わからない" : q.choices[record.selected])")
                     .font(.subheadline)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(record.selected == QuizQuestion.unknownChoice ? Color.orange : Color.red)
+                if let note = q.note(for: record.selected) {
+                    Text(note)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             Text("正解：\(q.choices[q.answer])")
                 .font(.subheadline)
@@ -365,6 +372,12 @@ struct QuizSessionView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+            if let spec = q.spec {
+                Label("仕様書 \(spec.label)（p.\(spec.page)）", systemImage: "book.closed")
+                    .font(.caption2)
+                    .foregroundStyle(.tint)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
