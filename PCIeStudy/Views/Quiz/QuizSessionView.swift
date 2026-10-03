@@ -400,6 +400,15 @@ struct QuizSessionView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+            if let detail = q.detail {
+                DisclosureGroup("くわしい解説") {
+                    Text(markdown: detail)
+                        .font(.caption)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 4)
+                }
+                .font(.caption.bold())
+            }
             if let spec = q.spec {
                 Label("仕様書 \(spec.label)（p.\(spec.page)）", systemImage: "book.closed")
                     .font(.caption2)

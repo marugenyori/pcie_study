@@ -27,6 +27,20 @@ struct AnswerDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .choiceTile(isCorrect ? .correct : (isUnknown ? .normal : .wrong))
 
+            if let detail = question.detail {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("くわしい解説", systemImage: "text.book.closed")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.tint)
+                    Text(markdown: detail)
+                        .lineSpacing(4)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .cardStyle(cornerRadius: 14)
+            }
+
             if !question.choiceNotes.isEmpty {
                 DisclosureGroup(isExpanded: $showsChoiceNotes) {
                     VStack(alignment: .leading, spacing: 12) {

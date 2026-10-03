@@ -22,6 +22,8 @@ struct QuizQuestion: Identifiable, Hashable {
     /// 選択肢ごとの解説（choices と同じ順番。空文字は解説なし）
     var choiceNotes: [String] = []
     var spec: SpecRef? = nil
+    /// くわしい解説（しくみ・理由・つながり）
+    var detail: String? = nil
 
     /// 「わからない」を選んだときの回答番号
     static let unknownChoice = -1
@@ -37,7 +39,7 @@ struct QuizQuestion: Identifiable, Hashable {
         var copy = QuizQuestion(id: id, chapterID: chapterID, question: question,
                                 choices: order.map { choices[$0] },
                                 answer: order.firstIndex(of: answer) ?? answer,
-                                explanation: explanation, spec: spec)
+                                explanation: explanation, spec: spec, detail: detail)
         if choiceNotes.count == choices.count {
             copy.choiceNotes = order.map { choiceNotes[$0] }
         }
@@ -71,10 +73,12 @@ enum QuizData {
 
     /// 選択肢ごとの解説と仕様書の参照先を付けた全問題
     static let all: [QuizQuestion] = (core + extra).map { q in
-        guard let n = QuizNotes.byID[q.id] else { return q }
         var copy = q
-        if n.choices.count == q.choices.count { copy.choiceNotes = n.choices }
-        copy.spec = n.spec
+        copy.detail = QuizDetails.byID[q.id]
+        if let n = QuizNotes.byID[q.id] {
+            if n.choices.count == q.choices.count { copy.choiceNotes = n.choices }
+            copy.spec = n.spec
+        }
         return copy
     }
 
@@ -379,7 +383,7 @@ enum QuizData {
           1, "EP（Error Poisoned）が1のTLPはPoisoned TLPで、データが壊れていることを示します。"),
         q("tlp-12", "tlp", "4GB未満のアドレスにアクセスするメモリリクエストのヘッダ形式は？",
           ["3DW（32ビット形式）を使わなければならない", "4DW（64ビット形式）を使わなければならない", "どちらでもよい", "MPSによって決まる"],
-          0, "4GB未満のアドレスには32ビット形式（3DWヘッダ）を使わなければなりません。"),
+          0, "4GB未満のアドレスには32ビット形式（3DWヘッダ）を使わなければなりません（UIOのリクエストなど一部の例外を除く）。"),
         q("dll-5", "datalink", "TLPに付けるLCRCは何ビット？",
           ["8ビット", "16ビット", "32ビット", "64ビット"],
           2, "TLPには32ビットのLCRCが付きます（Non-Flit Mode）。"),
