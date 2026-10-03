@@ -23,6 +23,9 @@ struct TodayView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle(todayTitle)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) { DisplaySettingsButton() }
+            }
         }
     }
 
@@ -166,7 +169,7 @@ private struct StreakCard: View {
                         Image(systemName: "flame.fill")
                             .foregroundStyle(streak > 0 ? .orange : .secondary)
                         Text("\(streak)")
-                            .font(.system(size: 44, weight: .bold, design: .rounded))
+                            .font(.system(.largeTitle, design: .rounded, weight: .bold))
                             .contentTransition(.numericText())
                         Text("日連続").font(.headline)
                     }
@@ -358,7 +361,7 @@ private struct AchievementsCard: View {
                             .font(.caption2.bold())
                             .multilineTextAlignment(.center)
                         Text(a.detail)
-                            .font(.system(size: 9))
+                            .font(.caption2)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                     }

@@ -80,7 +80,7 @@ struct ChapterDetailView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
-            .tint(progress.isCompleted(chapter.id) ? .green : .accentColor)
+            .tint(progress.isCompleted(chapter.id) ? Color.green : nil)
 
             if let next = LessonData.next(after: chapter) {
                 NavigationLink(value: next) {
@@ -102,6 +102,7 @@ struct ChapterDetailView: View {
 
 struct ContentBlockView: View {
     let block: ContentBlock
+    @Environment(AppSettings.self) private var settings
 
     var body: some View {
         switch block {
@@ -113,7 +114,7 @@ struct ContentBlockView: View {
         case .text(let s):
             Text(markdown: s)
                 .fixedSize(horizontal: false, vertical: true)
-                .lineSpacing(4)
+                .lineSpacing(settings.lineSpacing)
 
         case .bullets(let items):
             VStack(alignment: .leading, spacing: 8) {
@@ -122,6 +123,7 @@ struct ContentBlockView: View {
                         Text("•").foregroundStyle(.secondary)
                         Text(markdown: item)
                             .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(settings.lineSpacing)
                     }
                 }
             }
@@ -144,7 +146,7 @@ struct ContentBlockView: View {
         case .figure(let s):
             ScrollView(.horizontal, showsIndicators: false) {
                 Text(verbatim: s)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(.system(.caption, design: .monospaced))
                     .fixedSize()
                     .padding(12)
             }
@@ -167,7 +169,7 @@ struct TableBlockView: View {
                             .font(.caption.bold())
                             .padding(8)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.accentColor.opacity(0.15))
+                            .background(.tint.opacity(0.15))
                     }
                 }
                 ForEach(Array(rows.enumerated()), id: \.offset) { index, row in

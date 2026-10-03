@@ -21,4 +21,5 @@ struct ContentView: View {
     ContentView()
         .environment(ProgressStore())
         .environment(ReminderManager())
+        .environment(AppSettings())
 }

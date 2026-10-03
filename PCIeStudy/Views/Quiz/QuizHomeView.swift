@@ -80,6 +80,9 @@ struct QuizHomeView: View {
                 }
             }
             .navigationTitle("クイズ")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) { DisplaySettingsButton() }
+            }
             .alert("学習記録をリセットしますか？", isPresented: $showResetAlert) {
                 Button("リセット", role: .destructive) { progress.resetAll() }
                 Button("キャンセル", role: .cancel) {}

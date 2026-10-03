@@ -11,7 +11,7 @@ struct DiagramsHomeView: View {
                         HStack(spacing: 14) {
                             Image(systemName: kind.symbol)
                                 .font(.title2)
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(.tint)
                                 .frame(width: 36)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(kind.title).font(.body.weight(.medium))
@@ -23,6 +23,9 @@ struct DiagramsHomeView: View {
                 }
             }
             .navigationTitle("図解")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) { DisplaySettingsButton() }
+            }
         }
     }
 }

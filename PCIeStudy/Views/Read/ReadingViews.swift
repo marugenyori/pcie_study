@@ -102,7 +102,7 @@ struct NewsRow: View {
                     .font(.caption2.bold())
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(Color.accentColor.opacity(0.15), in: Capsule())
+                    .background(.tint.opacity(0.15), in: Capsule())
                     .foregroundStyle(.tint)
                 Text(item.dateLabel)
                     .font(.caption)

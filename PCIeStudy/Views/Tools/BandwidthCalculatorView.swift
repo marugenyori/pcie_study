@@ -55,7 +55,7 @@ struct BandwidthCalculatorView: View {
                         Text(g.name).font(.caption.monospaced()).frame(width: 40, alignment: .leading)
                         GeometryReader { geo in
                             RoundedRectangle(cornerRadius: 3)
-                                .fill(g == gen ? Color.accentColor : Color.secondary.opacity(0.3))
+                                .fill(g == gen ? AnyShapeStyle(.tint) : AnyShapeStyle(Color.secondary.opacity(0.3)))
                                 .frame(width: max(2, geo.size.width * v / maxV))
                         }
                         .frame(height: 14)

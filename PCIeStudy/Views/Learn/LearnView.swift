@@ -68,6 +68,9 @@ struct LearnView: View {
                 }
             }
             .navigationTitle("PCIeを学ぶ")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) { DisplaySettingsButton() }
+            }
             .navigationDestination(for: Chapter.self) { chapter in
                 ChapterDetailView(chapter: chapter)
             }

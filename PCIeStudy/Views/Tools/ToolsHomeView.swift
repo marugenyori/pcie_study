@@ -26,6 +26,9 @@ struct ToolsHomeView: View {
                 }
             }
             .navigationTitle("ツール")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) { DisplaySettingsButton() }
+            }
         }
     }
 }
@@ -39,7 +42,7 @@ struct ToolRow: View {
         HStack(spacing: 14) {
             Image(systemName: symbol)
                 .font(.title2)
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(.tint)
                 .frame(width: 36)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.body.weight(.medium))

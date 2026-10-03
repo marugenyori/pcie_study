@@ -69,7 +69,7 @@ struct GlossaryView: View {
                 .font(.caption.bold())
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(isOn ? Color.accentColor : Color(.secondarySystemBackground), in: Capsule())
+                .background(isOn ? AnyShapeStyle(.tint) : AnyShapeStyle(Color(.secondarySystemBackground)), in: Capsule())
                 .foregroundStyle(isOn ? .white : .primary)
         }
         .buttonStyle(.plain)
