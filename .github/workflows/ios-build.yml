@@ -122,6 +122,13 @@ jobs:
           printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
           echo "ASC_KEY_PATH=$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" >> "$GITHUB_ENV"
 
+      - name: CI が作った古い開発用証明書を整理
+        # 毎回まっさらなマシンで自動署名すると証明書が増え続け、上限に達すると失敗するため
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet "pyjwt[crypto]"
+          "$RUNNER_TEMP/venv/bin/python" .github/scripts/cleanup_dev_certs.py
+
       - name: アーカイブ（自動署名）
         run: |
           set -o pipefail
