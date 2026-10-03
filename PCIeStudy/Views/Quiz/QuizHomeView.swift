@@ -79,6 +79,7 @@ struct QuizHomeView: View {
                     Button("学習記録をリセット", role: .destructive) { showResetAlert = true }
                 }
             }
+            .screenBackground()
             .navigationTitle("クイズ")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { DisplaySettingsButton() }

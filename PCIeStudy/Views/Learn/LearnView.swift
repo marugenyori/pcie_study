@@ -67,6 +67,7 @@ struct LearnView: View {
                     }
                 }
             }
+            .screenBackground()
             .navigationTitle("PCIeを学ぶ")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { DisplaySettingsButton() }

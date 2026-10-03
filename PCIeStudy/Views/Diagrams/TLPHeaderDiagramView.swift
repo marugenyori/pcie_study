@@ -31,6 +31,7 @@ struct TLPHeaderDiagramView: View {
             .padding()
             .animation(.easeInOut(duration: 0.2), value: selected)
         }
+        .screenBackground()
         .navigationTitle("TLPヘッダ構造")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -177,13 +178,13 @@ struct TLPHeaderDiagramView: View {
                     .multilineTextAlignment(.trailing)
             }
             .padding()
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+            .cardStyle(cornerRadius: 12)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
                     ForEach(presets.indices, id: \.self) { i in
                         Button(presets[i].0) { byte0 = presets[i].1 }
-                            .buttonStyle(.bordered)
+                            .buttonStyle(AppButtonStyle(.secondary))
                             .controlSize(.small)
                     }
                 }

@@ -107,6 +107,7 @@ struct LayerEncapsulationView: View {
             .animation(.spring(duration: 0.35), value: step)
             .animation(.easeInOut, value: mode)
         }
+        .screenBackground()
         .navigationTitle("レイヤとカプセル化")
         .navigationBarTitleDisplayMode(.inline)
     }

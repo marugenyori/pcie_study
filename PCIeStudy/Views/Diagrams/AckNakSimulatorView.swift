@@ -22,6 +22,7 @@ struct AckNakSimulatorView: View {
             .padding()
             .animation(.easeInOut(duration: 0.2), value: sim.log.count)
         }
+        .screenBackground()
         .navigationTitle("ACK/NAK シミュレータ")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -79,7 +80,7 @@ struct AckNakSimulatorView: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+        .cardStyle(cornerRadius: 12)
     }
 
     private var controls: some View {
@@ -90,14 +91,14 @@ struct AckNakSimulatorView: View {
                 } label: {
                     Label("TLP送信", systemImage: "paperplane").frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(AppButtonStyle(.primary))
 
                 Button {
                     sim.sendTLP(corrupt: true)
                 } label: {
                     Label("エラー付き送信", systemImage: "bolt").frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(AppButtonStyle(.secondary))
                 .tint(.red)
             }
             HStack(spacing: 10) {
@@ -106,7 +107,7 @@ struct AckNakSimulatorView: View {
                 } label: {
                     Label("RXが処理", systemImage: "tray.and.arrow.down").frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(AppButtonStyle(.primary))
                 .tint(.green)
 
                 Button {
@@ -114,7 +115,7 @@ struct AckNakSimulatorView: View {
                 } label: {
                     Label("タイマ満了", systemImage: "timer").frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(AppButtonStyle(.secondary))
                 .tint(.orange)
             }
             Toggle(isOn: $sim.dropNextDLLP) {

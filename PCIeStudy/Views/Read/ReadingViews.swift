@@ -11,6 +11,7 @@ struct ColumnListView: View {
                 ColumnRow(column: column)
             }
         }
+        .screenBackground()
         .navigationTitle("コラム")
     }
 }
@@ -62,13 +63,14 @@ struct ColumnDetailView: View {
                         Label("関連する章：\(chapter.number). \(chapter.title)", systemImage: chapter.symbol)
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(AppButtonStyle(.secondary))
                 }
             }
             .padding()
             .frame(maxWidth: 720, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
+        .screenBackground()
         .navigationTitle("コラム")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -87,6 +89,7 @@ struct NewsListView: View {
                 Text("最終更新：\(NewsData.updated)。ニュースはアプリのアップデートで更新されます。")
             }
         }
+        .screenBackground()
         .navigationTitle("PCIe ニュース")
     }
 }

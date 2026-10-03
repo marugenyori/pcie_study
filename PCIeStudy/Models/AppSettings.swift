@@ -35,13 +35,41 @@ final class AppSettings {
         }
     }
 
-    enum Theme: String, CaseIterable, Identifiable {
-        case blue, indigo, teal, green, orange, pink, purple
+    enum Style: String, CaseIterable, Identifiable {
+        case pop, simple
 
         var id: String { rawValue }
 
         var label: String {
             switch self {
+            case .pop: return "ポップ"
+            case .simple: return "シンプル"
+            }
+        }
+    }
+
+    enum BackgroundTone: String, CaseIterable, Identifiable {
+        case white, cream, tinted
+
+        var id: String { rawValue }
+
+        var label: String {
+            switch self {
+            case .white: return "ホワイト"
+            case .cream: return "クリーム"
+            case .tinted: return "テーマ色"
+            }
+        }
+    }
+
+    enum Theme: String, CaseIterable, Identifiable {
+        case lime, blue, indigo, teal, green, orange, pink, purple
+
+        var id: String { rawValue }
+
+        var label: String {
+            switch self {
+            case .lime: return "ライム"
             case .blue: return "ブルー"
             case .indigo: return "インディゴ"
             case .teal: return "ティール"
@@ -54,6 +82,7 @@ final class AppSettings {
 
         var color: Color {
             switch self {
+            case .lime: return Color(red: 0.345, green: 0.800, blue: 0.008)
             case .blue: return .blue
             case .indigo: return .indigo
             case .teal: return .teal
@@ -87,11 +116,21 @@ final class AppSettings {
         }
     }
 
+    private var storedStyle: Style
+    private var storedBackgroundTone: BackgroundTone
     private var storedTextSize: TextSize
     private var storedTheme: Theme
     private var storedAppearance: Appearance
     private var storedWideLineSpacing: Bool
 
+    var style: Style {
+        get { storedStyle }
+        set { storedStyle = newValue; save() }
+    }
+    var backgroundTone: BackgroundTone {
+        get { storedBackgroundTone }
+        set { storedBackgroundTone = newValue; save() }
+    }
     var textSize: TextSize {
         get { storedTextSize }
         set { storedTextSize = newValue; save() }
@@ -113,6 +152,8 @@ final class AppSettings {
     @ObservationIgnored private let defaults: UserDefaults
 
     private enum Keys {
+        static let style = "settingsStyle"
+        static let backgroundTone = "settingsBackgroundTone"
         static let textSize = "settingsTextSize"
         static let theme = "settingsTheme"
         static let appearance = "settingsAppearance"
@@ -121,8 +162,10 @@ final class AppSettings {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        storedStyle = Style(rawValue: defaults.string(forKey: Keys.style) ?? "") ?? .pop
+        storedBackgroundTone = BackgroundTone(rawValue: defaults.string(forKey: Keys.backgroundTone) ?? "") ?? .white
         storedTextSize = TextSize(rawValue: defaults.string(forKey: Keys.textSize) ?? "") ?? .system
-        storedTheme = Theme(rawValue: defaults.string(forKey: Keys.theme) ?? "") ?? .blue
+        storedTheme = Theme(rawValue: defaults.string(forKey: Keys.theme) ?? "") ?? .lime
         storedAppearance = Appearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         storedWideLineSpacing = defaults.bool(forKey: Keys.wideLineSpacing)
     }
@@ -131,6 +174,8 @@ final class AppSettings {
     var lineSpacing: CGFloat { wideLineSpacing ? 9 : 4 }
 
     private func save() {
+        defaults.set(style.rawValue, forKey: Keys.style)
+        defaults.set(backgroundTone.rawValue, forKey: Keys.backgroundTone)
         defaults.set(textSize.rawValue, forKey: Keys.textSize)
         defaults.set(theme.rawValue, forKey: Keys.theme)
         defaults.set(appearance.rawValue, forKey: Keys.appearance)
@@ -145,5 +190,6 @@ extension View {
             .dynamicTypeSize(settings.textSize.dynamicType.map { $0...$0 } ?? (.xSmall ... .accessibility5))
             .tint(settings.theme.color)
             .preferredColorScheme(settings.appearance.colorScheme)
+            .fontDesign(settings.style == .pop ? .rounded : .default)
     }
 }

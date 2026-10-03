@@ -100,6 +100,7 @@ struct TopologyDiagramView: View {
                 .background(.regularMaterial)
             }
         }
+        .screenBackground()
         .navigationTitle("トポロジとBDF")
         .navigationBarTitleDisplayMode(.inline)
     }

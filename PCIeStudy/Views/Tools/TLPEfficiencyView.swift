@@ -59,6 +59,7 @@ struct TLPEfficiencyView: View {
                     .font(.callout)
             }
         }
+        .screenBackground()
         .navigationTitle("TLP転送効率")
         .navigationBarTitleDisplayMode(.inline)
     }

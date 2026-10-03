@@ -77,6 +77,7 @@ struct ECAMCalculatorView: View {
                     .font(.callout)
             }
         }
+        .screenBackground()
         .navigationTitle("ECAMアドレス計算")
         .navigationBarTitleDisplayMode(.inline)
     }

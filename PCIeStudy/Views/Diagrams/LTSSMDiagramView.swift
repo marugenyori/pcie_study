@@ -29,6 +29,7 @@ struct LTSSMDiagramView: View {
             .padding()
             .animation(.easeInOut(duration: 0.25), value: current)
         }
+        .screenBackground()
         .navigationTitle("LTSSM")
         .navigationBarTitleDisplayMode(.inline)
         .onDisappear { playTask?.cancel() }
@@ -97,20 +98,20 @@ struct LTSSMDiagramView: View {
                 } label: {
                     Label(isPlaying ? "停止" : "自動再生", systemImage: isPlaying ? "pause.fill" : "play.fill")
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(AppButtonStyle(.primary))
 
                 Button {
                     stepScenario()
                 } label: {
                     Label("1ステップ", systemImage: "forward.frame")
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(AppButtonStyle(.secondary))
                 .disabled(isPlaying)
 
                 Spacer()
 
                 Button("リセット") { reset() }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(AppButtonStyle(.secondary))
             }
             if let step = scenarioStep {
                 ProgressView(value: Double(step), total: Double(LTSSMModel.linkUpScenario.count - 1))
@@ -189,7 +190,7 @@ struct LTSSMDiagramView: View {
                         Spacer()
                     }
                     .padding(10)
-                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+                    .cardStyle(cornerRadius: 10)
                 }
                 .buttonStyle(.plain)
             }

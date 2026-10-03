@@ -68,6 +68,7 @@ struct BandwidthCalculatorView: View {
                 }
             }
         }
+        .screenBackground()
         .navigationTitle("帯域幅計算")
         .navigationBarTitleDisplayMode(.inline)
     }

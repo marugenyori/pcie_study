@@ -25,6 +25,7 @@ struct ToolsHomeView: View {
                     ToolRow(symbol: "memorychip", title: "BARサイズ判定", detail: "全1書き込み後の読み戻し値から計算")
                 }
             }
+            .screenBackground()
             .navigationTitle("ツール")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { DisplaySettingsButton() }

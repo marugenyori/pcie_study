@@ -62,6 +62,7 @@ struct BARSizeView: View {
                     .font(.callout)
             }
         }
+        .screenBackground()
         .navigationTitle("BARサイズ判定")
         .navigationBarTitleDisplayMode(.inline)
     }

@@ -17,6 +17,25 @@ struct DisplaySettingsView: View {
                 }
 
                 Section {
+                    Picker("スタイル", selection: $settings.style) {
+                        ForEach(AppSettings.Style.allCases) { Text($0.label).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    if settings.style == .pop {
+                        Picker("背景の色", selection: $settings.backgroundTone) {
+                            ForEach(AppSettings.BackgroundTone.allCases) { Text($0.label).tag($0) }
+                        }
+                    }
+                } header: {
+                    Text("スタイル")
+                } footer: {
+                    Text(settings.style == .pop
+                         ? "明るい背景に、縁取りのカードと立体的なボタン。ダークモードでは濃い紺色の背景になります。"
+                         : "iOS 標準に近い、落ち着いた見た目です。")
+                }
+
+                Section {
                     Picker("文字の大きさ", selection: $settings.textSize) {
                         ForEach(AppSettings.TextSize.allCases) { Text($0.label).tag($0) }
                     }
@@ -73,6 +92,7 @@ struct DisplaySettingsView: View {
                     Text("章の解説とコラムの文章が読みやすくなります。")
                 }
             }
+            .screenBackground()
             .navigationTitle("表示設定")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -98,7 +118,7 @@ struct DisplaySettingsView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 Button("クイズを始める") {}
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(AppButtonStyle(.primary))
                     .controlSize(.small)
             }
         }

@@ -55,6 +55,7 @@ struct GlossaryView: View {
             }
         }
         .searchable(text: $query, prompt: "用語を検索（例：TLP、クレジット）")
+        .screenBackground()
         .navigationTitle("用語集")
         .overlay {
             if filtered.isEmpty {

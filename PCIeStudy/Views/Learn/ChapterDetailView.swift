@@ -24,6 +24,7 @@ struct ChapterDetailView: View {
             .frame(maxWidth: 720, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
+        .screenBackground()
         .navigationTitle(chapter.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -59,7 +60,7 @@ struct ChapterDetailView: View {
                     Label("図解で確認：\(diagram.title)", systemImage: diagram.symbol)
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(AppButtonStyle(.secondary))
             }
 
             if !chapterQuestions.isEmpty {
@@ -69,7 +70,7 @@ struct ChapterDetailView: View {
                     Label("この章のクイズ（\(chapterQuestions.count)問）", systemImage: "checkmark.circle")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(AppButtonStyle(.secondary))
             }
 
             Button {
@@ -79,7 +80,7 @@ struct ChapterDetailView: View {
                       systemImage: progress.isCompleted(chapter.id) ? "checkmark.circle.fill" : "checkmark.circle")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(AppButtonStyle(.primary))
             .tint(progress.isCompleted(chapter.id) ? Color.green : nil)
 
             if let next = LessonData.next(after: chapter) {
@@ -91,7 +92,7 @@ struct ChapterDetailView: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(AppButtonStyle(.secondary))
                 .simultaneousGesture(TapGesture().onEnded {
                     progress.markCompleted(chapter.id)
                 })
@@ -151,7 +152,7 @@ struct ContentBlockView: View {
                     .padding(12)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 10))
+            .cardStyle(cornerRadius: 10)
         }
     }
 }

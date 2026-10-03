@@ -21,7 +21,7 @@ struct TodayView: View {
                 .frame(maxWidth: 720)
                 .frame(maxWidth: .infinity)
             }
-            .background(Color(.systemGroupedBackground))
+            .screenBackground()
             .navigationTitle(todayTitle)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { DisplaySettingsButton() }
@@ -78,7 +78,7 @@ struct TodayView: View {
                 ColumnRow(column: column)
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
+                    .cardStyle(cornerRadius: 16)
             }
             .buttonStyle(.plain)
         }
@@ -108,7 +108,7 @@ struct TodayView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
+            .cardStyle(cornerRadius: 16)
         }
     }
 }
@@ -146,7 +146,7 @@ private struct ActionTile: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16))
+        .cardStyle(cornerRadius: 16)
     }
 }
 
@@ -208,7 +208,7 @@ private struct StreakCard: View {
             }
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20))
+        .cardStyle(cornerRadius: 20)
         .animation(.spring, value: todayCount)
     }
 
@@ -298,8 +298,7 @@ private struct DailyQuestionCard: View {
                         .font(.subheadline)
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(background(i, answered: answered, q: q), in: RoundedRectangle(cornerRadius: 10))
-                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(.separator)))
+                        .choiceTile(choiceState(i, answered: answered, q: q), cornerRadius: 12)
                     }
                     .buttonStyle(.plain)
                     .disabled(answered != nil)
@@ -322,14 +321,14 @@ private struct DailyQuestionCard: View {
             }
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20))
+        .cardStyle(cornerRadius: 20)
     }
 
-    private func background(_ i: Int, answered: Int?, q: QuizQuestion) -> Color {
-        guard let answered else { return Color(.systemBackground) }
-        if i == q.answer { return .green.opacity(0.15) }
-        if i == answered { return .red.opacity(0.15) }
-        return Color(.systemBackground)
+    private func choiceState(_ i: Int, answered: Int?, q: QuizQuestion) -> ChoiceState {
+        guard let answered else { return .normal }
+        if i == q.answer { return .correct }
+        if i == answered { return .wrong }
+        return .dimmed
     }
 }
 
@@ -367,14 +366,14 @@ private struct AchievementsCard: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .cardStyle(cornerRadius: 12)
                     .opacity(a.unlocked ? 1 : 0.6)
                     .accessibilityElement(children: .combine)
                 }
             }
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20))
+        .cardStyle(cornerRadius: 20)
     }
 }
 
@@ -415,7 +414,7 @@ private struct ReminderCard: View {
             }
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20))
+        .cardStyle(cornerRadius: 20)
         .task { await reminder.refreshAuthorization() }
     }
 }

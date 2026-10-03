@@ -63,6 +63,7 @@ struct QuizSessionView: View {
                 questionView(questions[index])
             }
         }
+        .screenBackground()
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -112,8 +113,7 @@ struct QuizSessionView: View {
                             }
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(choiceBackground(i, q), in: RoundedRectangle(cornerRadius: 12))
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.separator)))
+                            .choiceTile(choiceState(i, q))
                         }
                         .buttonStyle(.plain)
                         .disabled(selected != nil)
@@ -131,7 +131,7 @@ struct QuizSessionView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .choiceTile(selected == q.answer ? .correct : .wrong)
 
                     Button {
                         goNext()
@@ -139,7 +139,7 @@ struct QuizSessionView: View {
                         Text(index + 1 < questions.count ? "次の問題へ" : "結果を見る")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(AppButtonStyle(.primary))
                     .controlSize(.large)
                 }
             }
@@ -150,11 +150,11 @@ struct QuizSessionView: View {
         .animation(.easeInOut(duration: 0.2), value: selected)
     }
 
-    private func choiceBackground(_ i: Int, _ q: QuizQuestion) -> Color {
-        guard let selected else { return Color(.systemBackground) }
-        if i == q.answer { return .green.opacity(0.15) }
-        if i == selected { return .red.opacity(0.15) }
-        return Color(.systemBackground)
+    private func choiceState(_ i: Int, _ q: QuizQuestion) -> ChoiceState {
+        guard let selected else { return .normal }
+        if i == q.answer { return .correct }
+        if i == selected { return .wrong }
+        return .dimmed
     }
 
     // MARK: - 結果画面
@@ -223,7 +223,7 @@ struct QuizSessionView: View {
                     Label("間違えた \(wrongQuestions.count) 問を解き直す", systemImage: "arrow.uturn.backward")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(AppButtonStyle(.primary))
                 .controlSize(.large)
             }
 
@@ -235,7 +235,7 @@ struct QuizSessionView: View {
                           systemImage: "shuffle")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(AppButtonStyle(.secondary))
                 .controlSize(.large)
             }
 
@@ -245,7 +245,7 @@ struct QuizSessionView: View {
                 Label("最初の問題をもう一度（順番を入れ替え）", systemImage: "arrow.clockwise")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(AppButtonStyle(.secondary))
             .controlSize(.large)
 
             if let chapter {
@@ -255,7 +255,7 @@ struct QuizSessionView: View {
                     Label("「\(chapter.title)」の解説を読み直す", systemImage: "book")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(AppButtonStyle(.secondary))
                 .controlSize(.large)
 
                 if let next = LessonData.next(after: chapter) {
@@ -266,7 +266,7 @@ struct QuizSessionView: View {
                         Label("次の章「\(next.title)」のクイズへ", systemImage: "arrow.right")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(AppButtonStyle(.secondary))
                     .controlSize(.large)
                 }
             }
@@ -279,7 +279,7 @@ struct QuizSessionView: View {
                     Label("苦手な問題に挑戦（全\(weak.count)問）", systemImage: "target")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(AppButtonStyle(.secondary))
                 .tint(.orange)
                 .controlSize(.large)
             }
@@ -313,7 +313,7 @@ struct QuizSessionView: View {
                             .tint(scoreColor(stat.ratio))
                     }
                     .padding(12)
-                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .cardStyle(cornerRadius: 12)
                 }
                 .buttonStyle(.plain)
             }
@@ -368,7 +368,7 @@ struct QuizSessionView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+        .cardStyle(cornerRadius: 12)
     }
 
     private func scoreColor(_ ratio: Double) -> Color {

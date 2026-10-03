@@ -22,6 +22,7 @@ struct DiagramsHomeView: View {
                     }
                 }
             }
+            .screenBackground()
             .navigationTitle("図解")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { DisplaySettingsButton() }
