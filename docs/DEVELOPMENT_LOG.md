@@ -82,3 +82,7 @@
 - 症状：`Choose a certificate to revoke. Your account has reached the maximum number of certificates.`（TestFlight を10回ほど実行したところで発生）
 - 原因：GitHub Actions のマシンは毎回まっさらなので、自動署名のたびに開発用証明書「Created via API」が新しく作られていた
 - 解決：アーカイブの前に、App Store Connect API で「Created via API」の開発用証明書だけを削除するステップを追加（初回は10件を削除）
+
+## 2026-10-03 くわしい解説
+
+- 全234問に「くわしい解説」（しくみ・理由・ほかの知識とのつながり、平均110文字）を追加。回答後とふり返りで表示

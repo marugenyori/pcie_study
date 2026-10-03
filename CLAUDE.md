@@ -56,6 +56,6 @@ PCIe を学ぶ iOS アプリ「PCIe学習」（SwiftUI）と、それを Mac な
 
 ## クイズを追加・変更するとき
 
-- 問題は `Shared/QuizData.swift`（と `QuizData+Extra.swift`）、選択肢ごとの解説と仕様書の参照先は `Shared/QuizNotes*.swift` に書く
+- 問題は `Shared/QuizData.swift`（と `QuizData+Extra.swift`）、選択肢ごとの解説と仕様書の参照先は `Shared/QuizNotes*.swift`、くわしい解説は `Shared/QuizDetails*.swift` に書く（3つとも全問そろえる）
 - `QuizNotes` の `choices` は問題の選択肢と同じ順番・同じ数にし、**正解の位置だけ空文字**にする（アプリ側で「正解です」と表示する）
 - 仕様書の参照先は Base 7.1 の章番号・タイトル・ページ。iPhone からは確認できないので、追加したときは「PC で照合が必要」と伝える
