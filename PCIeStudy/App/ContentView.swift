@@ -3,6 +3,8 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         TabView {
+            TodayView()
+                .tabItem { Label("今日", systemImage: "flame") }
             LearnView()
                 .tabItem { Label("学ぶ", systemImage: "book") }
             QuizHomeView()
@@ -11,8 +13,6 @@ struct ContentView: View {
                 .tabItem { Label("図解", systemImage: "square.grid.2x2") }
             ToolsHomeView()
                 .tabItem { Label("ツール", systemImage: "function") }
-            GlossaryView()
-                .tabItem { Label("用語集", systemImage: "character.book.closed") }
         }
     }
 }
@@ -20,4 +20,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environment(ProgressStore())
+        .environment(ReminderManager())
 }

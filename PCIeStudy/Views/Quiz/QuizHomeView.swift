@@ -84,7 +84,7 @@ struct QuizHomeView: View {
                 Button("リセット", role: .destructive) { progress.resetAll() }
                 Button("キャンセル", role: .cancel) {}
             } message: {
-                Text("読了した章とクイズの成績がすべて消去されます。")
+                Text("読了した章、クイズの成績、苦手リスト、連続記録がすべて消去されます（1日の目標の設定は残ります）。")
             }
         }
     }

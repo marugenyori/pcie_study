@@ -7,6 +7,9 @@ on:
     paths:
       - "PCIeStudy/**"
       - "PCIeStudy.xcodeproj/**"
+      - "PCIeStudyWidget/**"
+      - "Shared/**"
+      - "Config/**"
       - ".github/workflows/ios-build.yml"
   workflow_dispatch:
     inputs:
@@ -29,7 +32,7 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Xcode のバージョン
         run: |
@@ -74,7 +77,7 @@ jobs:
 
       - name: ビルドログを保存
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: build-log
           path: build.log
@@ -96,7 +99,7 @@ jobs:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Secrets の確認
         env:
@@ -133,7 +136,7 @@ jobs:
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
-            PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
+            APP_BUNDLE_ID="$BUNDLE_ID" \
             CODE_SIGN_STYLE=Automatic \
             CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
             archive 2>&1 | tee archive.log
@@ -167,7 +170,7 @@ jobs:
 
       - name: ログを保存
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: testflight-logs
           path: |

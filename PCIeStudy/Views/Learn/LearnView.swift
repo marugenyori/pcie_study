@@ -34,6 +34,24 @@ struct LearnView: View {
                     .padding(.vertical, 4)
                 }
 
+                Section("読みもの") {
+                    NavigationLink {
+                        ColumnListView()
+                    } label: {
+                        Label("コラム（\(ColumnData.all.count)本）", systemImage: "newspaper")
+                    }
+                    NavigationLink {
+                        NewsListView()
+                    } label: {
+                        Label("PCIe ニュース", systemImage: "antenna.radiowaves.left.and.right")
+                    }
+                    NavigationLink {
+                        GlossaryView()
+                    } label: {
+                        Label("用語集（\(GlossaryData.all.count)語）", systemImage: "character.book.closed")
+                    }
+                }
+
                 ForEach(Level.allCases) { level in
                     Section {
                         ForEach(LessonData.all.filter { $0.level == level }) { chapter in

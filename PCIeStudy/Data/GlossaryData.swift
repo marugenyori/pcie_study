@@ -64,7 +64,7 @@ enum GlossaryData {
         // データリンク層
         t("DLLP", "Data Link Layer Packet", .dataLink, "隣接ポート間でやり取りする短いパケット。ACK/NAK、フロー制御、電源管理など。"),
         t("LCRC", "Link CRC", .dataLink, "データリンク層がTLPに付ける32ビットCRC。リンクごとに付け直される。"),
-        t("ACK / NAK", "Acknowledge / Negative Acknowledge", .dataLink, "TLPの受信成功／失敗を通知するDLLP。NAKで再送が起きる。"),
+        t("ACK / NAK", "Acknowledge / Negative Acknowledge", .dataLink, "TLPの受信成功／失敗の通知。NAKで再送が起きる。Non-Flit ModeではDLLPで送り、Flit ModeではFlit内のDLPの専用シンボルで送る。"),
         t("リプレイバッファ", "Replay Buffer", .dataLink, "ACKされるまで送信済みTLPを保持するバッファ。"),
         t("REPLAY_TIMER", "Replay Timer", .dataLink, "ACK/NAKが来ないときに再送を起動するタイマ。"),
         t("REPLAY_NUM", "Replay Number", .dataLink, "再送回数のカウンタ（Non-Flit Modeでは3ビットで、再送ごとに2ずつ増える）。4回目の再送でロールオーバーし、リンクの再トレーニングを要求する。Flit ModeではFLIT_REPLAY_NUMを使う。"),
