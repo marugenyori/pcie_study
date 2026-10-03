@@ -27,10 +27,20 @@ struct QuizHomeView: View {
 
                 Section("おまかせ") {
                     NavigationLink {
-                        QuizSessionView(title: "ランダム10問", key: "random10", questions: QuizData.random(10))
+                        QuizSessionView(title: "ランダム10問", key: "random10", questions: QuizData.random(10),
+                                        regenerate: { QuizData.random(10) })
                     } label: {
                         QuizMenuRow(symbol: "shuffle", title: "ランダム10問", detail: "全範囲からランダム", best: progress.bestScore(for: "random10"))
                     }
+                    let weak = QuizData.questions(ids: progress.weakQuestionIDs)
+                    NavigationLink {
+                        QuizSessionView.weakQuestions(progress: progress)
+                    } label: {
+                        QuizMenuRow(symbol: "target", title: "苦手な問題",
+                                    detail: weak.isEmpty ? "間違えた問題がここに集まります" : "\(weak.count)問（正解するとリストから外れます）",
+                                    best: nil, tint: .orange)
+                    }
+                    .disabled(weak.isEmpty)
                     NavigationLink {
                         QuizSessionView(title: "全問チャレンジ", key: "all", questions: QuizData.all.shuffled())
                     } label: {

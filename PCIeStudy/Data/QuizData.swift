@@ -32,13 +32,19 @@ enum QuizData {
         Array(all.shuffled().prefix(count))
     }
 
-    private static func q(_ id: String, _ chapter: String, _ question: String,
+    static func questions(ids: Set<String>) -> [QuizQuestion] {
+        all.filter { ids.contains($0.id) }
+    }
+
+    static func q(_ id: String, _ chapter: String, _ question: String,
                           _ choices: [String], _ answer: Int, _ explanation: String) -> QuizQuestion {
         QuizQuestion(id: id, chapterID: chapter, question: question,
                      choices: choices, answer: answer, explanation: explanation)
     }
 
-    static let all: [QuizQuestion] = [
+    static let all: [QuizQuestion] = core + extra
+
+    private static let core: [QuizQuestion] = [
         // 1. PCIeとは
         q("intro-1", "intro", "PCIeの1レーンを構成する信号線はどれ？",
           ["送信用差動ペア1組のみ", "送信用と受信用の差動ペア各1組", "送受信兼用のシングルエンド線2本", "32本のパラレル線"],

@@ -9,6 +9,8 @@ final class ProgressStore {
     private(set) var quizBest: [String: Int]
     private(set) var answeredTotal: Int
     private(set) var correctTotal: Int
+    /// 間違えたあと、まだ正解していない問題のID（苦手リスト）
+    private(set) var weakQuestionIDs: Set<String>
 
     @ObservationIgnored private let defaults: UserDefaults
 
@@ -17,6 +19,7 @@ final class ProgressStore {
         static let quizBest = "quizBest"
         static let answered = "answeredTotal"
         static let correct = "correctTotal"
+        static let weak = "weakQuestionIDs"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -25,6 +28,7 @@ final class ProgressStore {
         quizBest = (defaults.dictionary(forKey: Keys.quizBest) as? [String: Int]) ?? [:]
         answeredTotal = defaults.integer(forKey: Keys.answered)
         correctTotal = defaults.integer(forKey: Keys.correct)
+        weakQuestionIDs = Set(defaults.stringArray(forKey: Keys.weak) ?? [])
     }
 
     func isCompleted(_ chapterID: String) -> Bool {
@@ -46,12 +50,18 @@ final class ProgressStore {
         defaults.set(Array(completedChapters), forKey: Keys.completed)
     }
 
-    /// 1問回答ごとに呼ぶ
-    func recordAnswer(correct: Bool) {
+    /// 1問回答ごとに呼ぶ。間違えた問題は苦手リストに入り、正解すると外れる
+    func recordAnswer(questionID: String, correct: Bool) {
         answeredTotal += 1
-        if correct { correctTotal += 1 }
+        if correct {
+            correctTotal += 1
+            weakQuestionIDs.remove(questionID)
+        } else {
+            weakQuestionIDs.insert(questionID)
+        }
         defaults.set(answeredTotal, forKey: Keys.answered)
         defaults.set(correctTotal, forKey: Keys.correct)
+        defaults.set(Array(weakQuestionIDs), forKey: Keys.weak)
     }
 
     /// クイズ終了時に呼ぶ
@@ -77,7 +87,8 @@ final class ProgressStore {
         quizBest = [:]
         answeredTotal = 0
         correctTotal = 0
-        [Keys.completed, Keys.quizBest, Keys.answered, Keys.correct].forEach {
+        weakQuestionIDs = []
+        [Keys.completed, Keys.quizBest, Keys.answered, Keys.correct, Keys.weak].forEach {
             defaults.removeObject(forKey: $0)
         }
     }
