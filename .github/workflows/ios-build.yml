@@ -141,6 +141,19 @@ jobs:
             CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
             archive 2>&1 | tee archive.log
 
+      - name: 署名プロファイルの確認（失敗したときだけ）
+        if: failure()
+        run: |
+          echo "アプリが求める App Group: group.$BUNDLE_ID"
+          for f in "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision \
+                   "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision; do
+            [ -f "$f" ] || continue
+            security cms -D -i "$f" > "$RUNNER_TEMP/p.plist" 2>/dev/null || continue
+            name=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$RUNNER_TEMP/p.plist")
+            groups=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.security.application-groups' "$RUNNER_TEMP/p.plist" 2>/dev/null | tr -d '\n' | tr -s ' ')
+            echo "$name => ${groups:-App Group なし}"
+          done
+
       - name: TestFlight にアップロード
         run: |
           set -o pipefail
