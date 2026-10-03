@@ -38,6 +38,7 @@ PCIe を学ぶ iOS アプリ「PCIe学習」（SwiftUI）と、それを Mac な
 - **複数行文字列（`"""`）**：中の行が、閉じる `"""` より左に出るとコンパイルエラーになる。図（ASCII アート）を書くときは特に注意
 - **排他アクセスエラー**：`array.removeAll { self.method($0) }` のように、書き換え中の配列のクロージャから `self` を読むとエラーになる。`self` を使わない関数は `static` にする
 - **新しい機能（Capability）を足すとき**：App Group、Push 通知、iCloud などを entitlements に追加したら、Apple Developer の Identifiers で、アプリ本体とウィジェットの**両方の App ID** に同じ設定をしてもらう必要がある。自動署名だけでは割り当てまではされない。署名で失敗すると、ワークフローの「署名プロファイルの確認」ステップにプロファイルの中身が表示される
+- **証明書の上限**：CI は毎回まっさらなマシンで自動署名するため、開発用証明書（Created via API）が毎回増える。上限に達すると `Your account has reached the maximum number of certificates` で失敗する。ワークフローの「CI が作った古い開発用証明書を整理」ステップ（`.github/scripts/cleanup_dev_certs.py`）で、アーカイブ前に自動で消している
 - 新しいターゲット（拡張）を足すときは `project.pbxproj` を手で編集する。既存のウィジェットターゲット（ID の末尾 `016`）の書き方をまねる
 
 ## 内容の正確さ
