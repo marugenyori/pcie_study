@@ -24,7 +24,6 @@ struct Achievement: Identifiable {
             Achievement(id: "chapters", title: "全章読破", detail: "\(LessonData.all.count)章すべて読了", symbol: "books.vertical.fill", unlocked: chapters == LessonData.all.count),
             Achievement(id: "level5", title: "リンクトレーナー", detail: "レベル5になる", symbol: "arrow.up.circle.fill", unlocked: progress.level >= 5),
             Achievement(id: "level10", title: "パケットマスター", detail: "レベル10になる", symbol: "star.square.fill", unlocked: progress.level >= 10),
-            Achievement(id: "timeattack20", title: "スピードスター", detail: "タイムアタックで20問正解", symbol: "stopwatch.fill", unlocked: (progress.gameBest[GameMode.timeAttack.rawValue] ?? 0) >= 20),
             Achievement(id: "survival15", title: "不死身", detail: "サバイバルで15問正解", symbol: "heart.circle.fill", unlocked: (progress.gameBest[GameMode.survival.rawValue] ?? 0) >= 15),
         ]
     }

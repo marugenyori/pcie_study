@@ -43,7 +43,7 @@ struct QuizHomeView: View {
                             GameModeView(mode: mode)
                         } label: {
                             QuizMenuRow(symbol: mode.symbol, title: mode.title,
-                                        detail: mode == .timeAttack ? "60秒で何問正解できる？" : "ライフ3つで何問続く？",
+                                        detail: "ライフ3つで何問続く？",
                                         best: nil, tint: mode.tint)
                                 .overlay(alignment: .trailing) {
                                     if let best = progress.gameBest[mode.rawValue] {

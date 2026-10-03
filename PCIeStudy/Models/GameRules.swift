@@ -4,8 +4,6 @@ import Foundation
 enum GameRules {
     /// 1問正解の基本XP
     static let correctXP = 10
-    /// タイムアタックの1問正解のXP（たくさん解けるので少なめ）
-    static let timeAttackXP = 5
     /// 「今日の1問」に正解したときのXP
     static let dailyQuestionXP = 20
     /// クイズを全問正解したときのボーナス（5問以上）

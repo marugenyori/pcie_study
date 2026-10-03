@@ -17,7 +17,7 @@ final class ProgressStore {
     private(set) var dailyAnswers: [String: Int]
     /// 累計XP
     private(set) var xp: Int
-    /// ゲームモードの自己ベスト（"timeAttack" / "survival" → 正解数）
+    /// ゲームモードの自己ベスト（"survival" → 正解数）
     private(set) var gameBest: [String: Int]
     /// デイリークエストの進み具合（questDay の日のもの）
     private var questDay: String

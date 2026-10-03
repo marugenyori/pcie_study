@@ -2,40 +2,36 @@ import SwiftUI
 
 /// ゲームモードの種類
 enum GameMode: String, CaseIterable, Identifiable {
-    case timeAttack, survival
+    case survival
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .timeAttack: return "タイムアタック"
         case .survival: return "サバイバル"
         }
     }
 
     var symbol: String {
         switch self {
-        case .timeAttack: return "stopwatch.fill"
         case .survival: return "heart.fill"
         }
     }
 
     var tint: Color {
         switch self {
-        case .timeAttack: return .blue
         case .survival: return .pink
         }
     }
 
     var rule: String {
         switch self {
-        case .timeAttack: return "60秒でできるだけ多く正解しよう。答えるとすぐ次の問題に進みます。"
         case .survival: return "ライフは3つ。間違えるか「わからない」でライフが減ります。何問続けられるかな？"
         }
     }
 }
 
-/// タイムアタックとサバイバル
+/// サバイバル（ライフ3つで何問続けられるか）
 struct GameModeView: View {
     let mode: GameMode
 
@@ -53,12 +49,10 @@ struct GameModeView: View {
     @State private var lives = 3
     @State private var xpGained = 0
     @State private var missed: [QuizQuestion] = []
-    @State private var endTime = Date.now
     @State private var isNewBest = false
     @State private var correctTick = 0
     @State private var wrongTick = 0
 
-    private static let timeLimit: Double = 60
     private static let maxLives = 3
 
     var body: some View {
@@ -75,11 +69,6 @@ struct GameModeView: View {
         .gameEffects(fx)
         .sensoryFeedback(.success, trigger: correctTick)
         .sensoryFeedback(.error, trigger: wrongTick)
-        .task(id: phase == .playing) {
-            guard phase == .playing, mode == .timeAttack else { return }
-            try? await Task.sleep(for: .seconds(Self.timeLimit))
-            if phase == .playing { finish() }
-        }
     }
 
     // MARK: - 開始前
@@ -148,19 +137,17 @@ struct GameModeView: View {
                     }
                 }
 
-                if mode == .survival {
-                    if let selected, selected != q.answer {
-                        AnswerDetailView(question: q, selected: selected)
-                        Button {
-                            next()
-                        } label: {
-                            Text(lives > 0 ? "次の問題へ" : "結果を見る")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(AppButtonStyle(.primary))
-                    } else if selected == nil {
-                        UnknownAnswerButton { answer(QuizQuestion.unknownChoice) }
+                if let selected, selected != q.answer {
+                    AnswerDetailView(question: q, selected: selected)
+                    Button {
+                        next()
+                    } label: {
+                        Text(lives > 0 ? "次の問題へ" : "結果を見る")
+                            .frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(AppButtonStyle(.primary))
+                } else if selected == nil {
+                    UnknownAnswerButton { answer(QuizQuestion.unknownChoice) }
                 }
             }
             .padding()
@@ -172,31 +159,14 @@ struct GameModeView: View {
 
     private var statusBar: some View {
         HStack(spacing: 14) {
-            switch mode {
-            case .timeAttack:
-                TimelineView(.periodic(from: .now, by: 0.2)) { context in
-                    let remaining = max(0, endTime.timeIntervalSince(context.date))
-                    HStack(spacing: 8) {
-                        Image(systemName: "stopwatch.fill")
-                            .foregroundStyle(remaining < 10 ? Color.red : mode.tint)
-                        ProgressView(value: remaining, total: Self.timeLimit)
-                            .tint(remaining < 10 ? .red : mode.tint)
-                            .frame(maxWidth: 140)
-                        Text("\(Int(remaining.rounded(.up)))秒")
-                            .font(.headline.monospacedDigit())
-                            .foregroundStyle(remaining < 10 ? Color.red : Color.primary)
-                    }
+            HStack(spacing: 4) {
+                ForEach(0..<Self.maxLives, id: \.self) { i in
+                    Image(systemName: i < lives ? "heart.fill" : "heart")
+                        .foregroundStyle(i < lives ? Color.pink : Color.secondary)
+                        .symbolEffect(.bounce, value: lives)
                 }
-            case .survival:
-                HStack(spacing: 4) {
-                    ForEach(0..<Self.maxLives, id: \.self) { i in
-                        Image(systemName: i < lives ? "heart.fill" : "heart")
-                            .foregroundStyle(i < lives ? Color.pink : Color.secondary)
-                            .symbolEffect(.bounce, value: lives)
-                    }
-                }
-                .font(.title3)
             }
+            .font(.title3)
             Spacer()
             if combo >= 2 {
                 Label("\(combo)", systemImage: "flame.fill")
@@ -227,7 +197,7 @@ struct GameModeView: View {
     private var resultView: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Text(mode == .survival ? "ゲームオーバー" : "タイムアップ！")
+                Text("ゲームオーバー")
                     .font(.title.weight(.heavy))
                     .padding(.top, 16)
                 VStack(spacing: 4) {
@@ -310,7 +280,6 @@ struct GameModeView: View {
         xpGained = 0
         missed = []
         isNewBest = false
-        endTime = Date.now.addingTimeInterval(Self.timeLimit)
         phase = .playing
     }
 
@@ -321,8 +290,7 @@ struct GameModeView: View {
         let ok = i == q.answer
         combo = ok ? combo + 1 : 0
         bestCombo = max(bestCombo, combo)
-        let gain = progress.recordAnswer(questionID: q.id, correct: ok, combo: combo,
-                                         xpPerCorrect: mode == .timeAttack ? GameRules.timeAttackXP : GameRules.correctXP)
+        let gain = progress.recordAnswer(questionID: q.id, correct: ok, combo: combo)
         xpGained += gain.total
         fx.show(gain, combo: combo)
         if ok {
@@ -331,20 +299,20 @@ struct GameModeView: View {
         } else {
             wrongTick += 1
             missed.append(q)
-            if mode == .survival { lives -= 1 }
+            lives -= 1
         }
 
-        // 正解（とタイムアタックの不正解）は少し見せてから自動で次へ
-        if ok || mode == .timeAttack {
+        // 正解は少し見せてから自動で次へ（不正解は解説を読んでから進む）
+        if ok {
             Task {
-                try? await Task.sleep(for: .seconds(ok ? 0.45 : 0.9))
+                try? await Task.sleep(for: .seconds(0.45))
                 if phase == .playing, selected != nil { next() }
             }
         }
     }
 
     private func next() {
-        if mode == .survival && lives <= 0 {
+        if lives <= 0 {
             finish()
             return
         }
