@@ -45,3 +45,10 @@ PCIe を学ぶ iOS アプリ「PCIe学習」（SwiftUI）と、それを Mac な
 - 技術的な内容は PCIe Base Specification 7.1 と照らし合わせて確認済み（2026年10月）。仕様書の PDF は持ち主の Windows PC にだけあり、リポジトリには入れない（PCI-SIG の著作物のため）
 - iPhone からの作業では仕様書を見られない。数値やビット位置を追加・変更したときは「仕様書で未確認」と伝え、PC で照合するよう案内する
 - ニュース（`PCIeStudy/Data/NewsData.swift`）はアプリに同梱している。更新するときは Web で調べ直し、出典 URL を付けて `updated` の日付も変える
+
+## 見た目の決まり（`PCIeStudy/Views/Common/AppStyle.swift`）
+
+- 画面の一番外側の List / Form / ScrollView には `.screenBackground()` を付ける（`.navigationTitle` の直前）
+- カードは `.cardStyle(cornerRadius:)`、ボタンは `.buttonStyle(AppButtonStyle(.primary / .secondary))`、クイズの選択肢は `.choiceTile(状態)` を使う
+- 色は `Color.accentColor` ではなく `.tint` を使う（テーマ色の設定に追従させるため）
+- 文字サイズは固定値（`.system(size:)`）を避け、`.body` や `.caption` などを使う
