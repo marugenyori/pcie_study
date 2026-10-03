@@ -6,6 +6,7 @@ struct PCIeStudyApp: App {
     @State private var progress = ProgressStore()
     @State private var reminder = ReminderManager()
     @State private var settings = AppSettings()
+    @State private var specRAG = SpecRAGClient()
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
@@ -15,6 +16,7 @@ struct PCIeStudyApp: App {
                 .environment(progress)
                 .environment(reminder)
                 .environment(settings)
+                .environment(specRAG)
                 .onChange(of: progress.stats) {
                     // 学習記録が変わったら、ウィジェットと通知の内容を更新する
                     WidgetCenter.shared.reloadAllTimelines()

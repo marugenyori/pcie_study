@@ -39,6 +39,7 @@
 		A1B2C3D4E5F6000000000010 /* PCIeStudyWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PCIeStudyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1B2C3D4E5F600000000001F /* PCIeStudy.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PCIeStudy.entitlements; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000020 /* PCIeStudyWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PCIeStudyWidget.entitlements; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000022 /* PCIeStudy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PCIeStudy-Info.plist"; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000021 /* PCIeStudyWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PCIeStudyWidget-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -102,6 +103,7 @@
 			isa = PBXGroup;
 			children = (
 				A1B2C3D4E5F600000000001F /* PCIeStudy.entitlements */,
+				A1B2C3D4E5F6000000000022 /* PCIeStudy-Info.plist */,
 				A1B2C3D4E5F6000000000020 /* PCIeStudyWidget.entitlements */,
 				A1B2C3D4E5F6000000000021 /* PCIeStudyWidget-Info.plist */,
 			);
@@ -311,7 +313,9 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PCIeStudy-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "PCIe学習";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "同じWi-FiにあるPCの仕様書QAサーバに接続するために使います。";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -343,7 +347,9 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/PCIeStudy-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "PCIe学習";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "同じWi-FiにあるPCの仕様書QAサーバに接続するために使います。";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

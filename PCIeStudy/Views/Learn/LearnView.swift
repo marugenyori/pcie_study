@@ -36,6 +36,11 @@ struct LearnView: View {
 
                 Section("読みもの") {
                     NavigationLink {
+                        AskSpecView()
+                    } label: {
+                        Label("仕様書に質問（PCのRAG）", systemImage: "bubble.left.and.text.bubble.right")
+                    }
+                    NavigationLink {
                         ColumnListView()
                     } label: {
                         Label("コラム（\(ColumnData.all.count)本）", systemImage: "newspaper")

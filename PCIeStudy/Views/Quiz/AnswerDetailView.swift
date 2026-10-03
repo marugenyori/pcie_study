@@ -6,6 +6,7 @@ struct AnswerDetailView: View {
     /// 選んだ選択肢。「わからない」は QuizQuestion.unknownChoice
     let selected: Int
     @State private var showsChoiceNotes = true
+    @State private var showsAskSpec = false
 
     private var isCorrect: Bool { selected == question.answer }
     private var isUnknown: Bool { selected == QuizQuestion.unknownChoice }
@@ -60,7 +61,33 @@ struct AnswerDetailView: View {
             if let spec = question.spec {
                 SpecRefView(spec: spec)
             }
+
+            Button {
+                showsAskSpec = true
+            } label: {
+                Label("この問題について仕様書に質問する", systemImage: "bubble.left.and.text.bubble.right")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(AppButtonStyle(.secondary))
         }
+        .sheet(isPresented: $showsAskSpec) {
+            NavigationStack {
+                AskSpecView(initialQuestion: askPrompt)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("閉じる") { showsAskSpec = false }
+                        }
+                    }
+            }
+        }
+    }
+
+    private var askPrompt: String {
+        """
+        次のクイズの答えについて、仕様書ではどう書かれていますか？根拠を教えてください。
+        問題：\(question.question)
+        正解：\(question.choices[question.answer])
+        """
     }
 
     private var resultTitle: String {

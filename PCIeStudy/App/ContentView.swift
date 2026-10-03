@@ -22,4 +22,5 @@ struct ContentView: View {
         .environment(ProgressStore())
         .environment(ReminderManager())
         .environment(AppSettings())
+        .environment(SpecRAGClient())
 }
