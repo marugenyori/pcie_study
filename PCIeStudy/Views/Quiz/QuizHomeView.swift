@@ -25,6 +25,39 @@ struct QuizHomeView: View {
                     .padding(.vertical, 4)
                 }
 
+                Section {
+                    let info = GameRules.levelProgress(xp: progress.xp)
+                    HStack(spacing: 12) {
+                        XPLevelBadge(level: info.level, size: 44)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(GameRules.title(forLevel: info.level)).font(.subheadline.bold())
+                            ProgressView(value: info.ratio).tint(.orange)
+                            Text("次のレベルまで \(info.needed - info.current) XP")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                    ForEach(GameMode.allCases) { mode in
+                        NavigationLink {
+                            GameModeView(mode: mode)
+                        } label: {
+                            QuizMenuRow(symbol: mode.symbol, title: mode.title,
+                                        detail: mode == .timeAttack ? "60秒で何問正解できる？" : "ライフ3つで何問続く？",
+                                        best: nil, tint: mode.tint)
+                                .overlay(alignment: .trailing) {
+                                    if let best = progress.gameBest[mode.rawValue] {
+                                        Text("ベスト \(best)問")
+                                            .font(.caption.bold())
+                                            .foregroundStyle(.orange)
+                                    }
+                                }
+                        }
+                    }
+                } header: {
+                    Text("ゲーム")
+                }
+
                 Section("おまかせ") {
                     NavigationLink {
                         QuizSessionView(title: "ランダム10問", key: "random10", questions: QuizData.random(10),

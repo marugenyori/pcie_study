@@ -17,6 +17,11 @@ struct QuizSessionView: View {
     @State private var isRetryOfWrong = false
     @State private var previousBest: Int? = nil
     @State private var reviewFilter: ReviewFilter = .wrong
+    @State private var fx = GameFX()
+    @State private var combo = 0
+    @State private var sessionXP = 0
+    @State private var correctTick = 0
+    @State private var wrongTick = 0
 
     /// 苦手リストから出題するときのキー（最高記録は残さない）
     static let weakKey = "weak"
@@ -64,6 +69,9 @@ struct QuizSessionView: View {
             }
         }
         .screenBackground()
+        .gameEffects(fx)
+        .sensoryFeedback(.success, trigger: correctTick)
+        .sensoryFeedback(.error, trigger: wrongTick)
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -76,7 +84,22 @@ struct QuizSessionView: View {
     private func questionView(_ q: QuizQuestion) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                ProgressView(value: Double(index), total: Double(questions.count))
+                HStack(spacing: 12) {
+                    ProgressView(value: Double(index), total: Double(questions.count))
+                        .tint(.green)
+                    if combo >= 2 {
+                        Label("\(combo)", systemImage: "flame.fill")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.orange)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                    Label("\(sessionXP) XP", systemImage: "star.fill")
+                        .font(.subheadline.bold().monospacedDigit())
+                        .foregroundStyle(.orange)
+                        .contentTransition(.numericText())
+                }
+                .animation(.spring, value: combo)
+                .animation(.spring, value: sessionXP)
                 HStack {
                     Text("問題 \(index + 1) / \(questions.count)")
                         .font(.caption.bold())
@@ -195,6 +218,11 @@ struct QuizSessionView: View {
                     .padding(.top)
 
                     Text(message(for: ratio)).font(.headline)
+                    if sessionXP > 0 {
+                        Label("このクイズで +\(sessionXP) XP", systemImage: "star.fill")
+                            .font(.headline)
+                            .foregroundStyle(.orange)
+                    }
                     if let note = bestNote(percent: Int((ratio * 100).rounded())) {
                         Text(note).font(.subheadline).foregroundStyle(.secondary)
                     }
@@ -415,13 +443,20 @@ struct QuizSessionView: View {
         records = []
         finished = false
         reviewFilter = .wrong
+        combo = 0
+        sessionXP = 0
     }
 
     private func answer(_ i: Int, for q: QuizQuestion) {
         guard selected == nil else { return }
         selected = i
         records.append(AnswerRecord(question: q, selected: i))
-        progress.recordAnswer(questionID: q.id, correct: i == q.answer)
+        let ok = i == q.answer
+        combo = ok ? combo + 1 : 0
+        let gain = progress.recordAnswer(questionID: q.id, correct: ok, combo: combo)
+        sessionXP += gain.total
+        fx.show(gain, combo: combo)
+        if ok { correctTick += 1 } else { wrongTick += 1 }
     }
 
     private func goNext() {
@@ -433,6 +468,13 @@ struct QuizSessionView: View {
             finished = true
             if !isRetryOfWrong && key != Self.weakKey {
                 progress.recordQuizResult(key: key, correct: correctCount, total: questions.count)
+            }
+            // 5問以上を全問正解したらボーナスと紙吹雪
+            if questions.count >= 5 && correctCount == questions.count {
+                let gain = progress.awardBonus(GameRules.perfectBonusXP)
+                sessionXP += gain.total
+                fx.show(gain)
+                fx.celebrate()
             }
         }
     }

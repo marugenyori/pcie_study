@@ -10,6 +10,8 @@ struct TodayView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     StreakCard()
+                    LevelCard()
+                    QuestsCard()
                     DailyQuestionCard()
                     quickActions
                     columnCard
@@ -258,6 +260,7 @@ private struct RecentDaysView: View {
 
 private struct DailyQuestionCard: View {
     @Environment(ProgressStore.self) private var progress
+    @State private var fx = GameFX()
 
     var body: some View {
         let q = DailyPick.question()
@@ -280,7 +283,7 @@ private struct DailyQuestionCard: View {
             VStack(spacing: 8) {
                 ForEach(Array(q.choices.enumerated()), id: \.offset) { i, choice in
                     Button {
-                        withAnimation { progress.answerDaily(q, choice: i) }
+                        withAnimation { fx.show(progress.answerDaily(q, choice: i)) }
                     } label: {
                         HStack(alignment: .top) {
                             Text(choice)
@@ -312,12 +315,14 @@ private struct DailyQuestionCard: View {
                     .foregroundStyle(.secondary)
             } else {
                 UnknownAnswerButton {
-                    withAnimation { progress.answerDaily(q, choice: QuizQuestion.unknownChoice) }
+                    withAnimation { fx.show(progress.answerDaily(q, choice: QuizQuestion.unknownChoice)) }
                 }
             }
         }
         .padding()
         .cardStyle(cornerRadius: 20)
+        .gameEffects(fx)
+        .sensoryFeedback(.success, trigger: progress.dailyAnswer() == q.answer ? 1 : 0)
     }
 
     private func choiceState(_ i: Int, answered: Int?, q: QuizQuestion) -> ChoiceState {
