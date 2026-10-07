@@ -93,3 +93,9 @@
 - 通信先は同じWi-FiのPC（start_lan.bat、ポート8765）。/api/health で状態確認、/api/ask はNDJSONのストリーム
 - iPhone 側は NSAllowsLocalNetworking とローカルネットワークの利用目的（Config/PCIeStudy-Info.plist、ビルド設定）を追加
 - 外出先からは使えない（PCが起動していて、同じネットワークにいるときだけ）
+
+## 2026-10-07 ニュースのウィジェット
+
+- ウィジェット「PCIe ニュース」を追加。ロック画面（長方形・1行）とホーム画面（小・中）に置ける
+- 新しい順の5件を、3時間ごとに切り替えて表示する
+- ウィジェットからも読めるよう、`NewsData.swift` を `PCIeStudy/Data/` から `Shared/` に移した
