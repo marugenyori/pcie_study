@@ -6,6 +6,7 @@ struct PCIeStudyWidgetBundle: WidgetBundle {
     var body: some Widget {
         StreakWidget()
         DailyQuestionWidget()
+        NewsWidget()
     }
 }
 
@@ -193,6 +194,137 @@ struct DailyQuestionWidgetView: View {
             Text("タップしてアプリで答える")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+        }
+    }
+}
+
+// MARK: - PCIe ニュースウィジェット
+
+struct NewsEntry: TimelineEntry {
+    let date: Date
+    let item: NewsItem
+    /// 新しい順で何件目か（1始まり）と、ローテーションする件数
+    let position: Int
+    let total: Int
+}
+
+struct NewsProvider: TimelineProvider {
+    /// 新しい順にこの件数を、時間ごとに順番に表示する
+    static let rotationCount = 5
+    /// 表示を切り替える間隔
+    static let interval: TimeInterval = 3 * 3600
+
+    static var items: [NewsItem] { Array(NewsData.all.prefix(rotationCount)) }
+
+    /// 時刻から決まるニュース（同じ時間帯なら、どのウィジェットでも同じものになる）
+    static func entry(for date: Date) -> NewsEntry? {
+        let items = Self.items
+        guard !items.isEmpty else { return nil }
+        let slot = Int(date.timeIntervalSince1970 / interval)
+        let i = (slot % items.count + items.count) % items.count
+        return NewsEntry(date: date, item: items[i], position: i + 1, total: items.count)
+    }
+
+    func placeholder(in context: Context) -> NewsEntry {
+        Self.entry(for: .now) ?? NewsEntry(date: .now, item: NewsData.all[0], position: 1, total: 1)
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (NewsEntry) -> Void) {
+        completion(placeholder(in: context))
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<NewsEntry>) -> Void) {
+        let now = Date.now
+        // 今の時間帯と、この先24時間ぶんの切り替え時刻を並べる
+        let slotStart = Date(timeIntervalSince1970: floor(now.timeIntervalSince1970 / Self.interval) * Self.interval)
+        let steps = Int(86_400 / Self.interval)
+        var entries: [NewsEntry] = []
+        if let first = Self.entry(for: now) { entries.append(first) }
+        for n in 1...steps {
+            if let e = Self.entry(for: slotStart.addingTimeInterval(Double(n) * Self.interval)) {
+                entries.append(e)
+            }
+        }
+        completion(Timeline(entries: entries, policy: .atEnd))
+    }
+}
+
+struct NewsWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "NewsWidget", provider: NewsProvider()) { entry in
+            NewsWidgetView(entry: entry)
+                .containerBackground(.fill.tertiary, for: .widget)
+        }
+        .configurationDisplayName("PCIe ニュース")
+        .description("PCIe の新しいニュースを、3時間ごとに切り替えて表示します。ロック画面にも置けます。")
+        .supportedFamilies([.accessoryRectangular, .accessoryInline, .systemSmall, .systemMedium])
+    }
+}
+
+struct NewsWidgetView: View {
+    @Environment(\.widgetFamily) private var family
+    let entry: NewsEntry
+
+    private var item: NewsItem { entry.item }
+
+    var body: some View {
+        switch family {
+        case .accessoryRectangular:
+            VStack(alignment: .leading, spacing: 1) {
+                Label("\(item.tag.rawValue)・\(item.dateLabel)", systemImage: "antenna.radiowaves.left.and.right")
+                    .font(.caption2.bold())
+                    .widgetAccentable()
+                    .lineLimit(1)
+                Text(item.title)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+        case .accessoryInline:
+            Label(item.title, systemImage: "antenna.radiowaves.left.and.right")
+
+        case .systemMedium:
+            VStack(alignment: .leading, spacing: 6) {
+                header
+                Text(item.title)
+                    .font(.subheadline.bold())
+                    .lineLimit(2)
+                Text(item.summary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(3)
+                Spacer(minLength: 0)
+            }
+
+        default:
+            VStack(alignment: .leading, spacing: 6) {
+                header
+                Text(item.title)
+                    .font(.subheadline.bold())
+                    .lineLimit(5)
+                    .minimumScaleFactor(0.85)
+                Spacer(minLength: 0)
+                Text("\(entry.position)/\(entry.total)")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var header: some View {
+        HStack(spacing: 6) {
+            Text(item.tag.rawValue)
+                .font(.caption2.bold())
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(.tint.opacity(0.15), in: Capsule())
+                .foregroundStyle(.tint)
+            Text(item.dateLabel)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
         }
     }
 }
