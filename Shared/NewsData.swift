@@ -9,6 +9,7 @@ struct NewsItem: Identifiable, Hashable {
         case event = "イベント"
         case ecn = "ECN"
         case industry = "業界"
+        case product = "製品"
     }
 
     let id: String
@@ -24,13 +25,55 @@ struct NewsItem: Identifiable, Hashable {
 
 enum NewsData {
     /// このリストを最後に更新した日
-    static let updated = "2026年10月3日"
+    static let updated = "2026年10月8日"
 
     static var all: [NewsItem] {
         items.sorted { $0.date > $1.date }
     }
 
     private static let items: [NewsItem] = [
+        NewsItem(
+            id: "nova-lake-il", date: "2026-09", tag: .compliance,
+            title: "Intel の次世代デスクトップ向け部品が PCI-SIG の互換性リストに",
+            summary: "Intel 900 シリーズチップセットのルートポートと、PCIe 5.0 x16 のルートコンプレックスを持つ名前未公表の CPU が、インテグレーターズリスト（適合試験に合格した製品の一覧）に載りました。CPU は次世代の Nova Lake とみられていますが、Intel は認めていません。",
+            source: "Club386",
+            url: "https://www.club386.com/?p=158122"),
+        NewsItem(
+            id: "cadence-gen6", date: "2026-09-02", tag: .compliance,
+            title: "Cadence の PCIe 6.0 IP が初回で適合試験に合格",
+            summary: "TSMC N3 で作った PHY とコントローラの x8 構成が、64 GT/s での PCIe 6.0 適合試験に一度で合格し、インテグレーターズリストに載りました。試験は7月末のワークショップで行われました。",
+            source: "EE Journal（Cadence の発表）",
+            url: "https://www.eejournal.com/industry_news/cadence-subsystem-for-pcie-6-0-architecture-achieves-first-pass-pci-express-specification-compliance/"),
+        NewsItem(
+            id: "credo-gen6", date: "2026-08-31", tag: .compliance,
+            title: "Credo の PCIe 6 リタイマがインテグレーターズリストに",
+            summary: "Credo のリタイマ Toucan（Gen6 x16）が、64.0 GT/s での PCI-SIG 6.x リタイマ適合試験に合格しました。電気特性、相互接続性、6.0 で増えたリタイマのプロトコル要件が対象です。",
+            source: "Business Wire（Credo）",
+            url: "https://finviz.com/news/386943/credos-toucan-pcie-retimer-achieves-pci-express-compliance-and-joins-pci-express-6x-integrators-list"),
+        NewsItem(
+            id: "astera-gen6", date: "2026-08-04", tag: .compliance,
+            title: "初の PCIe 6.x 適合試験ワークショップで、スイッチとリタイマが合格",
+            summary: "PCI-SIG による初めての PCIe 6.x 適合試験ワークショップ（7月末まで）で、Astera Labs のスイッチ Scorpio とリタイマ Aries が合格しました。PAM4 の電気特性、コンフィグレーション、リンク層・トランザクション層の試験と、20以上の会員企業の機器との相互接続試験が行われました。",
+            source: "Astera Labs（ブログ）",
+            url: "https://asteralabs.com/resources/blog/industry-leading-high-volume-scorpio-smart-fabric-switches-and-aries-smart-retimers-achieve-compliance-at-first-pci-sig-6-x-workshop/"),
+        NewsItem(
+            id: "samsung-pm1763", date: "2026-07-09", tag: .product,
+            title: "Samsung が PCIe 6.0 SSD「PM1763」を量産開始",
+            summary: "AI サーバ向けの SSD で、16TB モデルは順次読み出し最大 28.4 GB/s、書き込み最大 21.9 GB/s。前の世代（PCIe 5.0 の PM1753）の2倍以上の性能です。耐量子暗号（PQC）や TDISP にも対応しています。",
+            source: "StorageNewsletter",
+            url: "https://www.storagenewsletter.com/2026/07/09/samsung-begins-mass-production-of-pm1763-ssd-optimized-for-next-generation-ai-infrastructure/"),
+        NewsItem(
+            id: "micron-9650", date: "2026-02", tag: .product,
+            title: "Micron の 9650、PCIe 6.0 SSD として初の量産",
+            summary: "PCIe 6.0 x4 で接続するデータセンター向け SSD です。順次読み出し 28 GB/s、書き込み 14 GB/s。形は E1.S と E3.S で、AI の推論用途を想定しています。",
+            source: "heise online",
+            url: "https://heise.de/-11176906"),
+        NewsItem(
+            id: "cxl-4", date: "2025-11-18", tag: .spec,
+            title: "CXL 4.0 仕様を公開：PCIe 7.0 の上で 128 GT/s",
+            summary: "PCIe の物理層を使うメモリ・アクセラレータ接続の規格 CXL が 4.0 になり、PCIe 7.0 に合わせて速度が 64 GT/s から 128 GT/s に倍増しました。x2 を通常の幅として使えるようになり、リタイマも最大4個まで使えます。",
+            source: "Business Wire（CXL Consortium）",
+            url: "https://www.businesswire.com/news/home/20251118275848/en/CXL-Consortium-Releases-the-Compute-Express-Link-4.0-Specification-Increasing-Speed-and-Bandwidth"),
         NewsItem(
             id: "base-7-1", date: "2026-09-03", tag: .spec,
             title: "PCIe Base Specification 7.1",
@@ -89,11 +132,17 @@ enum NewsData {
             source: "Business Wire（PCI-SIG）",
             url: "https://www.businesswire.com/news/home/20250611887972/en/PCI-SIG-Announces-PCIe-Optical-Interconnect-Solution"),
         NewsItem(
-            id: "pcie6-il", date: "2025", tag: .compliance,
-            title: "PCIe 6.0 製品のインテグレーターズリスト試験が始まる",
-            summary: "PCI-SIG が PCIe 6.0 製品のコンプライアンス試験（インテグレーターズリスト登録のための試験）を正式に始めました。当初の見込みより1年ほど遅れての開始です。",
-            source: "Tom's Hardware",
-            url: "https://www.tomshardware.com/tech-industry/pcie-60-and-70-standards-hit-a-roadblock-compliance-slowdown-could-lead-to-broader-delays"),
+            id: "pcie6-delay", date: "2024-06", tag: .compliance,
+            title: "PCIe 6.0・7.0 のコンプライアンス試験が予定より遅れる",
+            summary: "PCI-SIG の開発者会議で、PCIe 6.0 と 7.0 の作業が当初の計画より遅れていることが示されました。PCIe 6.0 の適合試験は先送りされ、7.0 の適合試験も2027年から2028年に延期されました。",
+            source: "heise online",
+            url: "https://heise.de/en/news/It-gets-faster-later-Delays-with-PCIe-6-0-and-7-0-9765200.html"),
+        NewsItem(
+            id: "copprlink", date: "2024-05-01", tag: .spec,
+            title: "PCIe 5.0・6.0 用のケーブル規格 CopprLink",
+            summary: "PCI-SIG が、銅線ケーブルで PCIe 5.0（32.0 GT/s）と 6.0（64.0 GT/s）をつなぐための CopprLink ケーブル規格（筐体の中で使う内部用と、外へ出す外部用）を発表しました。",
+            source: "Business Wire（PCI-SIG）",
+            url: "https://www.businesswire.com/news/home/20240501529875/en/PCI-SIG%C2%AE-Announces-CopprLink%E2%84%A2-Cable-Specifications-for-PCIe%C2%AE-5.0-and-6.0-Technology"),
         NewsItem(
             id: "sig-1000", date: "2024-12-05", tag: .industry,
             title: "PCI-SIG の会員企業が1,000社に",
