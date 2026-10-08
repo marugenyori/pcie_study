@@ -210,7 +210,7 @@ struct NewsEntry: TimelineEntry {
 
 struct NewsProvider: TimelineProvider {
     /// 新しい順にこの件数を、時間ごとに順番に表示する
-    static let rotationCount = 5
+    static let rotationCount = 10
     /// 表示を切り替える間隔
     static let interval: TimeInterval = 3 * 3600
 
