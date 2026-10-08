@@ -94,6 +94,33 @@ struct NewsListView: View {
     }
 }
 
+/// ウィジェットから開いたときの、1件のニュース
+struct NewsDetailSheet: View {
+    let item: NewsItem
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    NewsRow(item: item, showsSummary: true)
+                }
+                Section {
+                    NavigationLink("ほかのニュースも見る") { NewsListView() }
+                }
+            }
+            .screenBackground()
+            .navigationTitle("PCIe ニュース")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("閉じる") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
 struct NewsRow: View {
     let item: NewsItem
     var showsSummary = false

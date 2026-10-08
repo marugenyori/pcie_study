@@ -114,3 +114,19 @@ extension NewsItem {
         }
     }
 }
+
+/// ウィジェットからニュースを開くためのリンク（pciestudy://news/<id>）
+enum NewsLink {
+    static let scheme = "pciestudy"
+
+    static func url(for item: NewsItem) -> URL? {
+        URL(string: "\(scheme)://news/\(item.id)")
+    }
+
+    /// リンクが指すニュース（ニュース以外のリンクや、見つからないときは nil）
+    static func item(from url: URL) -> NewsItem? {
+        guard url.scheme == scheme, url.host == "news" else { return nil }
+        let id = url.lastPathComponent
+        return NewsData.all.first { $0.id == id }
+    }
+}

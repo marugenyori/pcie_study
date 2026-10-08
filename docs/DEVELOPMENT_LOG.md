@@ -99,3 +99,4 @@
 - ウィジェット「PCIe ニュース」を追加。ロック画面（長方形・1行）とホーム画面（小・中）に置ける
 - 新しい順の5件を、3時間ごとに切り替えて表示する
 - ウィジェットからも読めるよう、`NewsData.swift` を `PCIeStudy/Data/` から `Shared/` に移した
+- ニュースのウィジェットをタップすると、そのニュースがアプリのシートで開くようにした（URL スキーム `pciestudy://news/<id>`、`Config/PCIeStudy-Info.plist` の `CFBundleURLTypes`）
