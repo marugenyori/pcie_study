@@ -254,9 +254,10 @@ struct NewsWidget: Widget {
         StaticConfiguration(kind: "NewsWidget", provider: NewsProvider()) { entry in
             NewsWidgetView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
+                .widgetURL(NewsLink.url(for: entry.item))
         }
         .configurationDisplayName("PCIe ニュース")
-        .description("PCIe の新しいニュースを、3時間ごとに切り替えて表示します。ロック画面にも置けます。")
+        .description("PCIe の新しいニュースを、3時間ごとに切り替えて表示します。タップするとそのニュースを開きます。")
         .supportedFamilies([.accessoryRectangular, .accessoryInline, .systemSmall, .systemMedium])
     }
 }

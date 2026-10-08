@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct ContentView: View {
+    /// ウィジェットから開いたニュース
+    @State private var openedNews: NewsItem?
+
     var body: some View {
         TabView {
             TodayView()
@@ -13,6 +16,14 @@ struct ContentView: View {
                 .tabItem { Label("図解", systemImage: "square.grid.2x2") }
             ToolsHomeView()
                 .tabItem { Label("ツール", systemImage: "function") }
+        }
+        .onOpenURL { url in
+            if let item = NewsLink.item(from: url) {
+                openedNews = item
+            }
+        }
+        .sheet(item: $openedNews) { item in
+            NewsDetailSheet(item: item)
         }
     }
 }
