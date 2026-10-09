@@ -15,6 +15,7 @@ struct AskSpecView: View {
     struct ChatMessage: Identifiable {
         let id = UUID()
         let question: String
+        var model: String?
         var answer = ""
         var sources: [SpecRAGClient.Source] = []
         var statusText: String? = "送信しています…"
@@ -72,7 +73,10 @@ struct AskSpecView: View {
             if input.isEmpty && messages.isEmpty { input = initialQuestion }
             await checkHealth()
         }
-        .onDisappear { streamTask?.cancel() }
+        .onDisappear {
+            streamTask?.cancel()
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
     }
 
     // MARK: - 接続状態
@@ -176,6 +180,11 @@ struct AskSpecView: View {
                             .font(.caption.bold())
                     }
                 }
+                if let model = message.model, !message.answer.isEmpty {
+                    Label("回答AI：\(model)", systemImage: "cpu")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
                 if message.finished && message.error == nil {
                     Text("ローカルのAIは誤ることがあります。数値やビット位置は、根拠の原文やPDFで確認してください。")
                         .font(.caption2)
@@ -211,6 +220,38 @@ struct AskSpecView: View {
     // MARK: - 入力欄
 
     private var inputBar: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if !client.models.isEmpty {
+                modelPicker
+            }
+            inputRow
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .frame(maxWidth: 720)
+        .frame(maxWidth: .infinity)
+        .background(.bar)
+    }
+
+    /// 回答に使うモデルを選ぶ（PC の Ollama に入っているもの）
+    private var modelPicker: some View {
+        Menu {
+            Picker("回答AI", selection: Binding(
+                get: { client.effectiveModel ?? "" },
+                set: { client.selectModel($0) }
+            )) {
+                ForEach(client.models, id: \.self) { name in
+                    Text(name).tag(name)
+                }
+            }
+        } label: {
+            Label("回答AI：\(client.effectiveModel ?? "サーバの既定")", systemImage: "cpu")
+                .font(.caption.bold())
+        }
+        .disabled(isStreaming)
+    }
+
+    private var inputRow: some View {
         HStack(alignment: .bottom, spacing: 10) {
             TextField("質問を入力（日本語でOK）", text: $input, axis: .vertical)
                 .lineLimit(1...5)
@@ -234,11 +275,6 @@ struct AskSpecView: View {
                 .accessibilityLabel("送信")
             }
         }
-        .padding(.horizontal)
-        .padding(.vertical, 8)
-        .frame(maxWidth: 720)
-        .frame(maxWidth: .infinity)
-        .background(.bar)
     }
 
     // MARK: - ロジック
@@ -259,6 +295,7 @@ struct AskSpecView: View {
                 status = .failed("回答用のモデル（\(health.chat_model)）がまだダウンロードされていません。")
             } else {
                 status = .ready("接続OK：仕様書 \(health.chunks) 件の抜粋から検索します（\(health.dense ? "意味検索あり" : "キーワード検索のみ")）")
+                await client.loadModels()
             }
         } catch {
             status = .failed("同じWi‑Fiにつながっているか、PCで start_lan.bat が動いているか確認してください。（\(error.localizedDescription)）")
@@ -271,12 +308,15 @@ struct AskSpecView: View {
         input = ""
         inputFocused = false
         let history = messages.filter { $0.finished && $0.error == nil }.map { (q: $0.question, a: $0.answer) }
-        messages.append(ChatMessage(question: question))
+        let model = client.effectiveModel
+        messages.append(ChatMessage(question: question, model: model))
         let index = messages.count - 1
+        // 回答を待っている間に画面が消えると通信が切れるので、自動ロックを止めておく
+        UIApplication.shared.isIdleTimerDisabled = true
 
         streamTask = Task {
             do {
-                for try await event in client.ask(question, history: history) {
+                for try await event in client.ask(question, history: history, model: model) {
                     switch event {
                     case .status(let text): messages[index].statusText = text
                     case .sources(let sources): messages[index].sources = sources
@@ -300,6 +340,7 @@ struct AskSpecView: View {
             }
             messages[index].finished = true
             streamTask = nil
+            UIApplication.shared.isIdleTimerDisabled = false
         }
     }
 }
