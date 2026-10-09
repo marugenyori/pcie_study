@@ -108,3 +108,12 @@
 - 「仕様書に質問」の入力欄の上に「回答AI」を追加。PC の `GET /api/models`（`{"models": [...], "default": "..."}` または文字列の配列）から一覧を読み、`/api/ask` に `model` を付けて送る。一覧が取れないサーバでは表示しない
 - 選んだモデルは保存し、各回答の下に「回答AI：モデル名」を表示
 - 7B など大きいモデル向けに、待ち時間を 300 秒から 1200 秒に延長。回答を待つ間は iPhone の自動ロックを止める（画面が消えると通信が切れるため）
+
+## 2026-10-09 PC側サーバ（PCIe_RAG）の更新
+
+PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリには入っていない）
+
+- server.py に GET /api/models を追加（{"models": [...], "default": "..."}、埋め込み用モデルは除外）
+- /api/ask と /api/search が "model" を受け付ける（一覧にないときは既定のモデル）
+- 既定の回答AIを qwen2.5:3b に変更（top_k 8→5、num_ctx 8192→4096）。元の設定は config_7b_backup.json
+- 途中で止まった埋め込み計算を続きから再開する ingest_resume.bat と、qwen2.5:3b をダウンロードする pull_3b.bat を追加
