@@ -7,13 +7,33 @@ final class SpecRAGClient {
     /// 例：http://192.168.1.10:8765
     private(set) var serverAddress: String
 
+    /// PC の Ollama に入っている回答用モデル（サーバが一覧を返さないときは空）
+    private(set) var models: [String] = []
+    /// サーバが既定にしているモデル
+    private(set) var defaultModel: String?
+    /// 選んだモデル（空ならサーバの既定）
+    private(set) var selectedModel: String
+
     @ObservationIgnored private let defaults: UserDefaults
     private static let key = "specRAGServerAddress"
+    private static let modelKey = "specRAGModel"
     static let defaultPort = 8765
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         serverAddress = defaults.string(forKey: Self.key) ?? ""
+        selectedModel = defaults.string(forKey: Self.modelKey) ?? ""
+    }
+
+    func selectModel(_ name: String) {
+        selectedModel = name
+        defaults.set(name, forKey: Self.modelKey)
+    }
+
+    /// 実際に使うモデル（選んだものが PC になければサーバの既定）
+    var effectiveModel: String? {
+        if models.contains(selectedModel) { return selectedModel }
+        return defaultModel ?? models.first
     }
 
     func setServerAddress(_ text: String) {
@@ -89,20 +109,51 @@ final class SpecRAGClient {
         return try JSONDecoder().decode(Health.self, from: data)
     }
 
+    /// 回答用モデルの一覧を読む（GET /api/models）。
+    /// ["a", "b"] と {"models": ["a"] または [{"name": "a"}], "default": "a"} のどちらの形でも受け付ける
+    func loadModels() async {
+        guard let base = baseURL else { return }
+        var request = URLRequest(url: base.appending(path: "api/models"))
+        request.timeoutInterval = 5
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw ClientError.server("") }
+            let json = try JSONSerialization.jsonObject(with: data)
+            var list: [Any] = []
+            var fallback: String?
+            if let array = json as? [Any] {
+                list = array
+            } else if let obj = json as? [String: Any] {
+                list = (obj["models"] as? [Any]) ?? []
+                fallback = (obj["default"] as? String) ?? (obj["chat_model"] as? String)
+            }
+            models = list.compactMap { item in
+                if let name = item as? String { return name }
+                return (item as? [String: Any])?["name"] as? String
+            }
+            defaultModel = fallback
+        } catch {
+            models = []
+            defaultModel = nil
+        }
+    }
+
     /// 質問を送り、検索結果と回答を少しずつ受け取る（NDJSON のストリーム）
-    func ask(_ question: String, history: [(q: String, a: String)]) -> AsyncThrowingStream<Event, Error> {
+    func ask(_ question: String, history: [(q: String, a: String)], model: String?) -> AsyncThrowingStream<Event, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
                     guard let base = baseURL else { throw ClientError.notConfigured }
                     var request = URLRequest(url: base.appending(path: "api/ask"))
                     request.httpMethod = "POST"
-                    request.timeoutInterval = 300
+                    // 大きいモデルは最初の文字が出るまで時間がかかるので、待ち時間を長めにする
+                    request.timeoutInterval = 1200
                     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                    let body: [String: Any] = [
+                    var body: [String: Any] = [
                         "q": question,
                         "history": history.suffix(2).map { ["q": $0.q, "a": $0.a] },
                     ]
+                    if let model { body["model"] = model }
                     request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
                     let (bytes, response) = try await URLSession.shared.bytes(for: request)
