@@ -121,3 +121,9 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 ## 2026-10-12 ウィジェットから今日の1問を開く
 
 - 「今日の1問」ウィジェットと、「連続学習」ウィジェット（中サイズ、問題を表示）をタップすると、アプリで今日の1問がシートで開き、そのまま答えられるようにした（`pciestudy://daily`）
+
+## 2026-10-12 クイズから Claude Code に頼む
+
+- 回答後の解説の下に「この問題を Claude Code に質問する」と「問題が微妙なら作り直してもらう」を追加（`PCIeStudy/Views/Quiz/ClaudeCodeRequestView.swift`）
+- 問題の内容と依頼を書いた文を作り、`https://claude.ai/code/new?q=…&repo=marugenyori/pcie_study&branch=main` で Claude Code の新しいセッションを開く（送信は自分で押す）。依頼文のコピーもできる
+- 作り直しの依頼文には、CLAUDE.md のクイズのルールに従うこと、ビルド確認・マージ・TestFlight まで進めることを入れている

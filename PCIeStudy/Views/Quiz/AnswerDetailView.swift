@@ -7,6 +7,12 @@ struct AnswerDetailView: View {
     let selected: Int
     @State private var showsChoiceNotes = true
     @State private var showsAskSpec = false
+    @State private var claudeRequest: ClaudeRequestKind?
+
+    private enum ClaudeRequestKind: String, Identifiable {
+        case ask, rewrite
+        var id: String { rawValue }
+    }
 
     private var isCorrect: Bool { selected == question.answer }
     private var isUnknown: Bool { selected == QuizQuestion.unknownChoice }
@@ -69,6 +75,25 @@ struct AnswerDetailView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(AppButtonStyle(.secondary))
+
+            Button {
+                claudeRequest = .ask
+            } label: {
+                Label("この問題を Claude Code に質問する", systemImage: "sparkles")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(AppButtonStyle(.secondary))
+
+            Button {
+                claudeRequest = .rewrite
+            } label: {
+                Label("問題が微妙なら作り直してもらう", systemImage: "wand.and.stars")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(AppButtonStyle(.secondary))
+        }
+        .sheet(item: $claudeRequest) { kind in
+            ClaudeCodeRequestView(kind: kind == .ask ? .ask : .rewrite, question: question, selected: selected)
         }
         .sheet(isPresented: $showsAskSpec) {
             NavigationStack {
