@@ -258,7 +258,7 @@ private struct RecentDaysView: View {
 
 // MARK: - 今日の1問
 
-private struct DailyQuestionCard: View {
+struct DailyQuestionCard: View {
     @Environment(ProgressStore.self) private var progress
     @State private var fx = GameFX()
 
@@ -330,6 +330,30 @@ private struct DailyQuestionCard: View {
         if i == q.answer { return .correct }
         if i == answered { return .wrong }
         return .dimmed
+    }
+}
+
+/// ウィジェットから開いたときの「今日の1問」
+struct DailyQuestionSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                DailyQuestionCard()
+                    .padding()
+                    .frame(maxWidth: 720)
+                    .frame(maxWidth: .infinity)
+            }
+            .screenBackground()
+            .navigationTitle("今日の1問")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("閉じる") { dismiss() }
+                }
+            }
+        }
     }
 }
 

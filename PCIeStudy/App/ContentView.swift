@@ -3,6 +3,8 @@ import SwiftUI
 struct ContentView: View {
     /// ウィジェットから開いたニュース
     @State private var openedNews: NewsItem?
+    /// ウィジェットから開いた「今日の1問」
+    @State private var showsDailyQuestion = false
 
     var body: some View {
         TabView {
@@ -19,11 +21,18 @@ struct ContentView: View {
         }
         .onOpenURL { url in
             if let item = NewsLink.item(from: url) {
+                showsDailyQuestion = false
                 openedNews = item
+            } else if DailyPick.isLink(url) {
+                openedNews = nil
+                showsDailyQuestion = true
             }
         }
         .sheet(item: $openedNews) { item in
             NewsDetailSheet(item: item)
+        }
+        .sheet(isPresented: $showsDailyQuestion) {
+            DailyQuestionSheet()
         }
     }
 }

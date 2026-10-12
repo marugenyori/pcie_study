@@ -113,6 +113,7 @@ struct StreakWidgetView: View {
                     Spacer(minLength: 0)
                 }
             }
+            .widgetURL(DailyPick.url)
 
         default:
             streakBlock
@@ -146,6 +147,7 @@ struct DailyQuestionWidget: Widget {
         StaticConfiguration(kind: "DailyQuestionWidget", provider: StudyProvider()) { entry in
             DailyQuestionWidgetView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
+                .widgetURL(DailyPick.url)
         }
         .configurationDisplayName("今日の1問")
         .description("毎日1問、PCIe のクイズを表示します。タップするとアプリで答えられます。")

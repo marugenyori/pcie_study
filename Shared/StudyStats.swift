@@ -124,6 +124,13 @@ struct StudyStats: Equatable {
 
 /// 日付から決まる「今日の1問」（アプリ・ウィジェット・通知で同じ問題になる）
 enum DailyPick {
+    /// ウィジェットから「今日の1問」を開くリンク
+    static let url = URL(string: "pciestudy://daily")!
+
+    static func isLink(_ url: URL) -> Bool {
+        url.scheme == "pciestudy" && url.host == "daily"
+    }
+
     static func question(for date: Date = .now) -> QuizQuestion {
         let all = QuizData.all
         return all[index(for: date, count: all.count, salt: 7919)]
