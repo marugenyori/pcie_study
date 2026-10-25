@@ -133,3 +133,4 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - ニュースを Swift のコードから `Shared/news.json` に移した。アプリは起動時（3時間に1回まで）とニュース一覧を開いたとき・下に引っぱったときに、GitHub の main にある最新の news.json を読み込んで App Group に保存する。ウィジェットも表示を更新するときに読み込む
 - これで、news.json を main に入れればアプリを出し直さなくても反映される（リポジトリが公開なので raw.githubusercontent.com から読める）
 - ニュースを4件追加（Microchip の小規模向け PCIe 6.0 スイッチ、Astera Labs の Aries 7、FMS 2026 の PCIe 6.0 ストレージ、Marvell の 260 レーン PCIe 6.0 スイッチ）
+- news.json だけを変えた push ではビルドが走らないようにした（ワークフローの paths に `!Shared/news.json`）
