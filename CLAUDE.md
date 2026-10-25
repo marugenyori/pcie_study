@@ -14,7 +14,7 @@ PCIe を学ぶ iOS アプリ「PCIe学習」（SwiftUI）と、それを Mac な
 | パス | 内容 |
 |---|---|
 | `PCIeStudy/` | アプリ本体（App / Views / Models / Data） |
-| `Shared/` | アプリとウィジェットの両方で使うコード（章・クイズのデータ、連続日数 `StudyStats`、今日の1問 `DailyPick`、ニュース `NewsData`） |
+| `Shared/` | アプリとウィジェットの両方で使うコード（章・クイズのデータ、連続日数 `StudyStats`、今日の1問 `DailyPick`、ニュース `NewsData` と `news.json`） |
 | `PCIeStudyWidget/` | ウィジェット拡張（連続学習・今日の1問・PCIe ニュース） |
 | `Config/` | entitlements（App Group）とウィジェットの Info.plist |
 | `PCIeStudy.xcodeproj/` | Xcode プロジェクト（フォルダ同期方式。上の3フォルダにファイルを置くだけでビルド対象になる） |
@@ -45,7 +45,7 @@ PCIe を学ぶ iOS アプリ「PCIe学習」（SwiftUI）と、それを Mac な
 
 - 技術的な内容は PCIe Base Specification 7.1 と照らし合わせて確認済み（2026年10月）。仕様書の PDF は持ち主の Windows PC にだけあり、リポジトリには入れない（PCI-SIG の著作物のため）
 - iPhone からの作業では仕様書を見られない。数値やビット位置を追加・変更したときは「仕様書で未確認」と伝え、PC で照合するよう案内する
-- ニュース（`Shared/NewsData.swift`）はアプリに同梱している（ウィジェットも同じデータを使う）。更新するときは Web で調べ直し、出典 URL を付けて `updated` の日付も変える
+- ニュースの中身は `Shared/news.json`（読み書きは `Shared/NewsData.swift`）。アプリとウィジェットは GitHub の main にある最新の news.json を自動で読み込むので、**news.json を main に入れるだけで反映され、TestFlight に出し直す必要はない**（同梱版は読み込めないときの予備）。更新するときは Web で調べ直し、出典 URL を付けて `updated`（yyyy-MM-dd）も変える。`tag` は spec / roadmap / compliance / event / ecn / industry / product
 
 ## 見た目の決まり（`PCIeStudy/Views/Common/AppStyle.swift`）
 

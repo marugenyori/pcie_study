@@ -218,6 +218,10 @@ struct NewsProvider: TimelineProvider {
 
     static var items: [NewsItem] { Array(NewsData.all.prefix(rotationCount)) }
 
+    /// ニュースが1件も読めないときの表示
+    static let emptyItem = NewsItem(id: "empty", date: "", tag: .industry, title: "アプリを開くとニュースを読み込みます",
+                                    summary: "", source: "", url: nil)
+
     /// 時刻から決まるニュース（同じ時間帯なら、どのウィジェットでも同じものになる）
     static func entry(for date: Date) -> NewsEntry? {
         let items = Self.items
@@ -228,7 +232,7 @@ struct NewsProvider: TimelineProvider {
     }
 
     func placeholder(in context: Context) -> NewsEntry {
-        Self.entry(for: .now) ?? NewsEntry(date: .now, item: NewsData.all[0], position: 1, total: 1)
+        Self.entry(for: .now) ?? NewsEntry(date: .now, item: Self.emptyItem, position: 1, total: 1)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (NewsEntry) -> Void) {
@@ -236,6 +240,14 @@ struct NewsProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<NewsEntry>) -> Void) {
+        Task {
+            // 新しいニュースがあれば先に読み込む
+            await NewsData.refresh()
+            completion(makeTimeline())
+        }
+    }
+
+    private func makeTimeline() -> Timeline<NewsEntry> {
         let now = Date.now
         // 今の時間帯と、この先24時間ぶんの切り替え時刻を並べる
         let slotStart = Date(timeIntervalSince1970: floor(now.timeIntervalSince1970 / Self.interval) * Self.interval)
@@ -247,7 +259,7 @@ struct NewsProvider: TimelineProvider {
                 entries.append(e)
             }
         }
-        completion(Timeline(entries: entries, policy: .atEnd))
+        return Timeline(entries: entries, policy: .atEnd)
     }
 }
 
@@ -274,7 +286,7 @@ struct NewsWidgetView: View {
         switch family {
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 1) {
-                Label("\(item.tag.rawValue)・\(item.dateLabel)", systemImage: "antenna.radiowaves.left.and.right")
+                Label("\(item.tag.label)・\(item.dateLabel)", systemImage: "antenna.radiowaves.left.and.right")
                     .font(.caption2.bold())
                     .widgetAccentable()
                     .lineLimit(1)
@@ -318,7 +330,7 @@ struct NewsWidgetView: View {
 
     private var header: some View {
         HStack(spacing: 6) {
-            Text(item.tag.rawValue)
+            Text(item.tag.label)
                 .font(.caption2.bold())
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
