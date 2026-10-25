@@ -127,3 +127,9 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - 回答後の解説の下に「この問題を Claude Code に質問する」と「問題が微妙なら作り直してもらう」を追加（`PCIeStudy/Views/Quiz/ClaudeCodeRequestView.swift`）
 - 問題の内容と依頼を書いた文を作り、`https://claude.ai/code/new?q=…&repo=marugenyori/pcie_study&branch=main` で Claude Code の新しいセッションを開く（送信は自分で押す）。依頼文のコピーもできる
 - 作り直しの依頼文には、CLAUDE.md のクイズのルールに従うこと、ビルド確認・マージ・TestFlight まで進めることを入れている
+
+## 2026-10-25 ニュースを自動で更新する
+
+- ニュースを Swift のコードから `Shared/news.json` に移した。アプリは起動時（3時間に1回まで）とニュース一覧を開いたとき・下に引っぱったときに、GitHub の main にある最新の news.json を読み込んで App Group に保存する。ウィジェットも表示を更新するときに読み込む
+- これで、news.json を main に入れればアプリを出し直さなくても反映される（リポジトリが公開なので raw.githubusercontent.com から読める）
+- ニュースを4件追加（Microchip の小規模向け PCIe 6.0 スイッチ、Astera Labs の Aries 7、FMS 2026 の PCIe 6.0 ストレージ、Marvell の 260 レーン PCIe 6.0 スイッチ）
