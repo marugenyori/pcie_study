@@ -2,6 +2,15 @@
   "updated": "2026-10-25",
   "items": [
     {
+      "id": "amd-am5-pcie6",
+      "date": "2026-10-20",
+      "tag": "industry",
+      "title": "AMD「PCIe 6.0 のために新しいソケットが必要とは限らない」",
+      "summary": "AMD のクライアント製品の責任者が日本のメディアのインタビューで、デスクトップ向けの AM5 ソケットのサポートは2029年で終わるとは限らず、PCIe 6.0 の採用にソケットの変更が必ずしも必要ではないと話しました。ただし、今の AM5 マザーボードが BIOS 更新で PCIe 6.0 に対応できるという意味ではありません（電気的な条件を満たす必要があるため）。",
+      "source": "HardwareCooking（マイナビ TECH+ のインタビューより）",
+      "url": "https://hardwarecooking.fr/amd-am5-apres-2029-pcie-6-zen-7"
+    },
+    {
       "id": "microchip-gen6-llc",
       "date": "2026-10-13",
       "tag": "product",
@@ -11,6 +20,24 @@
       "url": "https://www.eedesignit.com/microchip-adds-pcie-6-switching-and-updates-nvme-storage-products/"
     },
     {
+      "id": "ocp-pcie-optics",
+      "date": "2026-10-13",
+      "tag": "event",
+      "title": "OCP Global Summit で、光ファイバーを使った PCIe 接続のデモ",
+      "summary": "Lumentum、Astera Labs、Corning が、ラックの中の PCIe 接続を光ファイバーでのばす試作を展示しました。Astera Labs のスイッチと 1060nm の VCSEL（面発光レーザー）を使い、複数の 32Gb/s の光の信号で PCIe 5 のリンクを誤りなく動かしました。",
+      "source": "Semiconductor Today",
+      "url": "https://www.semiconductor-today.com/news_items/2026/oct/lumentum-131026.shtml"
+    },
+    {
+      "id": "keysight-pcie7-protocol",
+      "date": "2026-10-12",
+      "tag": "product",
+      "title": "Keysight が PCIe 7.0 のプロトコル試験装置を発表",
+      "summary": "128 GT/s の PCIe 7.0 に対応したプロトコルアナライザ（通信の中身を記録・解析する装置）とエクササイザ（試験用の通信を作る装置）です。LTSSM（リンクを確立する手順）の状態遷移や Flit のやりとりまで見られます。Synopsys は自社の PCIe 7.0 IP とこの装置で 128 GT/s のリンクを確認したとしています。",
+      "source": "Electropages",
+      "url": "https://www.electropages.com/2026/10/pcie-70-protocol-test-solution-accelerate-ai-infrastructure-validation"
+    },
+    {
       "id": "astera-aries7",
       "date": "2026-10-08",
       "tag": "product",
@@ -18,6 +45,33 @@
       "summary": "128 GT/s の PCIe 7 向けに、リタイマ、リドライバ、ケーブルモジュールに加えて光接続用のチップもそろえ、基板の配線から50m 以上の光ケーブルまでをカバーします。一部の顧客へのサンプル出荷は2026年10〜12月の予定です。",
       "source": "Futurum",
       "url": "https://futurumgroup.com/insights/astera-labs-aries-7-goes-optical-can-pcie-7-outgrow-the-retimer-plateau/"
+    },
+    {
+      "id": "nova-lake-il",
+      "date": "2026-09-30",
+      "tag": "compliance",
+      "title": "Intel の次世代デスクトップ向け部品が PCI-SIG の互換性リストに",
+      "summary": "Intel 900 シリーズチップセットのルートポートと、PCIe 5.0 x16 のルートコンプレックスを持つ名前未公表の CPU が、インテグレーターズリスト（適合試験に合格した製品の一覧）に載りました。CPU は次世代の Nova Lake とみられていますが、Intel は認めていません。",
+      "source": "Club386",
+      "url": "https://www.club386.com/?p=158122"
+    },
+    {
+      "id": "amd-venice-pcie6",
+      "date": "2026-09-25",
+      "tag": "product",
+      "title": "AMD の次世代サーバ CPU「EPYC 9006（Venice）」は PCIe 6.0 対応",
+      "summary": "AMD が Zen 6 世代のサーバ CPU の製品構成を明らかにしました。PCIe 6.0 に対応し、1ソケットで最大128レーンの PCIe/CXL を使えます。前の世代（Turin、PCIe 5.0）から入出力の帯域が2倍になり、CXL は 3.1 に対応します。",
+      "source": "ServeTheHome",
+      "url": "https://www.servethehome.com/amd-takes-the-lid-off-of-next-gen-epyc-9006-venice-as-zen-6-comes-to-servers/"
+    },
+    {
+      "id": "marvell-cxl-vera",
+      "date": "2026-09-09",
+      "tag": "industry",
+      "title": "Marvell の CXL メモリ拡張チップが NVIDIA Vera で動作を確認",
+      "summary": "CXL（PCIe の物理層を使ってメモリなどをつなぐ規格）のメモリ拡張用チップ Structera X が、NVIDIA の Arm 系 CPU「Vera」の環境で、CXL 2.0 の機能（デバイスの認識、リセット、ファームウェア更新など）を問題なく使えることを確かめました。",
+      "source": "Marvell（ブログ）",
+      "url": "https://www.marvell.com/blogs/marvell-structura-x-extends-cxl-nvidia-vera.html"
     },
     {
       "id": "base-7-1",
@@ -37,15 +91,6 @@
       "url": "https://www.eejournal.com/industry_news/cadence-subsystem-for-pcie-6-0-architecture-achieves-first-pass-pci-express-specification-compliance/"
     },
     {
-      "id": "nova-lake-il",
-      "date": "2026-09",
-      "tag": "compliance",
-      "title": "Intel の次世代デスクトップ向け部品が PCI-SIG の互換性リストに",
-      "summary": "Intel 900 シリーズチップセットのルートポートと、PCIe 5.0 x16 のルートコンプレックスを持つ名前未公表の CPU が、インテグレーターズリスト（適合試験に合格した製品の一覧）に載りました。CPU は次世代の Nova Lake とみられていますが、Intel は認めていません。",
-      "source": "Club386",
-      "url": "https://www.club386.com/?p=158122"
-    },
-    {
       "id": "credo-gen6",
       "date": "2026-08-31",
       "tag": "compliance",
@@ -53,6 +98,24 @@
       "summary": "Credo のリタイマ Toucan（Gen6 x16）が、64.0 GT/s での PCI-SIG 6.x リタイマ適合試験に合格しました。電気特性、相互接続性、6.0 で増えたリタイマのプロトコル要件が対象です。",
       "source": "Business Wire（Credo）",
       "url": "https://finviz.com/news/386943/credos-toucan-pcie-retimer-achieves-pci-express-compliance-and-joins-pci-express-6x-integrators-list"
+    },
+    {
+      "id": "montage-gen6-il",
+      "date": "2026-08-24",
+      "tag": "compliance",
+      "title": "Montage の PCIe 6 リタイマがインテグレーターズリストに",
+      "summary": "中国の Montage Technology の16レーンの PCIe 6.x/CXL 3.x リタイマ（M88RT61632）が、PCI-SIG のインテグレーターズリスト（適合試験に合格した製品の一覧）に載りました。",
+      "source": "Dr. Web（ドイツ語）",
+      "url": "https://www.drweb.de/montage-pcie-6-retimer-pci-sig/"
+    },
+    {
+      "id": "hot-chips-2026-intel",
+      "date": "2026-08-24",
+      "tag": "event",
+      "title": "Hot Chips 2026：Intel の次世代 Xeon は PCIe 6.0 を128レーン",
+      "summary": "半導体の学会 Hot Chips 2026 で Intel が次世代サーバ CPU「Diamond Rapids」を紹介しました。最大256コアで、PCIe Gen6 と CXL 3.0 を128レーン持ち、GPU などのアクセラレータやメモリ拡張をつなぐことを想定しています。発売時期は示されていません。",
+      "source": "StorageReview",
+      "url": "https://www.storagereview.com/news/intel-hot-chips-2026-256-core-diamond-rapids-crescent-island-with-480gb-for-inference-and-wildcat-lake-at-the-edge"
     },
     {
       "id": "fms-gen6-storage",
@@ -73,6 +136,33 @@
       "url": "https://asteralabs.com/resources/blog/industry-leading-high-volume-scorpio-smart-fabric-switches-and-aries-smart-retimers-achieve-compliance-at-first-pci-sig-6-x-workshop/"
     },
     {
+      "id": "kioxia-cm10",
+      "date": "2026-07-30",
+      "tag": "product",
+      "title": "Kioxia が初の PCIe 6.0 SSD「CM10」を発表",
+      "summary": "AI の推論や KV キャッシュ（生成 AI が途中の計算結果を置いておく場所）向けのデータセンター用 SSD です。前の世代（CM9）より順次読み出しが約92％速くなっています。E3.S と E1.S の形で、液体冷却にも対応します。",
+      "source": "StorageReview",
+      "url": "https://www.storagereview.com/news/kioxia-cm10-is-its-first-pcie-6-0-enterprise-ssd-aimed-at-nvidia-cmx-kv-cache"
+    },
+    {
+      "id": "scaleflux-gen6",
+      "date": "2026-07-28",
+      "tag": "product",
+      "title": "ScaleFlux が PCIe Gen6 の SSD コントローラと CXL メモリコントローラを発表",
+      "summary": "SSD の頭脳にあたるコントローラ「FC6116」は PCIe Gen6 x4 で、順次読み出し最大 28 GB/s、消費電力 9W 未満。あわせて、PCIe Gen6 の上で動く CXL 3.2 のメモリコントローラ「MC600」も発表しました。どちらも2026年10〜12月にサンプル出荷の予定です。",
+      "source": "PR Newswire（ScaleFlux）",
+      "url": "https://www.prnewswire.com/news-releases/scaleflux-unveils-pcie-gen6-ssd-and-cxl-memory-controllers-302835567.html"
+    },
+    {
+      "id": "amd-venice-launch",
+      "date": "2026-07-23",
+      "tag": "product",
+      "title": "AMD が PCIe 6.0 対応のサーバ CPU「EPYC Venice」を発表",
+      "summary": "AMD のイベント「Advancing AI 2026」で、Zen 6 世代の EPYC（Venice）が発表されました。サーバ向け CPU として初めて PCIe Gen 6（64 GT/s）に対応し、GPU などとの間の帯域が前の世代の2倍になります。対応サーバは2026年10〜12月に出る予定です。",
+      "source": "StorageReview",
+      "url": "https://www.storagereview.com/news/amd-6th-gen-epyc-venice-256-cores-1-6tb-s-and-the-first-pcie-gen-6-server-cpu"
+    },
+    {
       "id": "samsung-pm1763",
       "date": "2026-07-09",
       "tag": "product",
@@ -89,6 +179,15 @@
       "summary": "VIAVI の Xgig が、PCIe 6.0 のリンク層・トランザクション層の試験で PCI-SIG の Gold Suite に採用されました。PCI-SIG のコンプライアンスワークショップで、6.0 製品の相互接続性の確認に使われます。",
       "source": "PR Newswire",
       "url": "https://www.prnewswire.com/news-releases/viavi-pcie-6-0-platform-receives-pci-sig-gold-suite-acceptance-for-link-and-transaction-protocol-compliance-testing-302803904.html"
+    },
+    {
+      "id": "microchip-xpressconnect",
+      "date": "2026-06",
+      "tag": "product",
+      "title": "Microchip が PCIe 6.0 / CXL 3.1 のリタイマ「XpressConnect」を発表",
+      "summary": "64 GT/s に対応したリタイマ（信号を整え直して中継するチップ）で、入力から出力までの遅れは 12ns 未満。x16 を x8×2 や x4×4 に分けて使えます。信号の波形（アイ）を取り込んで診断する機能も持っています。",
+      "source": "Mouser（製品紹介）",
+      "url": "https://www.mouser.co.uk/new/microchip/microchip-pm8691-xpressconnnect-retimers"
     },
     {
       "id": "pcie8-draft05",
