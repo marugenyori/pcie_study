@@ -118,6 +118,15 @@
       "url": "https://www.storagereview.com/news/intel-hot-chips-2026-256-core-diamond-rapids-crescent-island-with-480gb-for-inference-and-wildcat-lake-at-the-edge"
     },
     {
+      "id": "microchip-160-lane",
+      "date": "2026-08-13",
+      "tag": "product",
+      "title": "Microchip が 160 レーンの PCIe Gen6 スイッチを展示",
+      "summary": "FMS 2026 で、Switchtec PFX 160xG6（PCIe Gen6、160レーン）と、PCIe 6 リタイマ XpressConnect の動作が披露されました。",
+      "source": "ServeTheHome",
+      "url": "https://www.servethehome.com/microchip-switchtec-160-lane-pcie-gen6-switch-shown-at-fms-2026-with-xpressconnect-pcie-6-retimer/"
+    },
+    {
       "id": "fms-gen6-storage",
       "date": "2026-08-06",
       "tag": "event",
@@ -190,6 +199,15 @@
       "url": "https://www.mouser.co.uk/new/microchip/microchip-pm8691-xpressconnnect-retimers"
     },
     {
+      "id": "phison-x3-computex",
+      "date": "2026-06",
+      "tag": "product",
+      "title": "Computex 2026 で Phison が PCIe 6.0 SSD コントローラ「X3」を展示",
+      "summary": "データセンター向けで、順次読み書き最大 28 GB/s、約680万 IOPS、消費電力 7W。パートナーへのサンプル出荷は2026年12月、量産は2027年の予定です。",
+      "source": "Hardware.com.br",
+      "url": "https://www.hardware.com.br/noticias/ssd-pcie-6-phison-innogrit-computex-2026/amp/"
+    },
+    {
       "id": "pcie8-draft05",
       "date": "2026-05-06",
       "tag": "roadmap",
@@ -217,6 +235,15 @@
       "url": "https://www.storagenewsletter.com/2026/03/26/ofc-2026-marvell-launches-industrys-first-260-lane-pcie-6-0-switch-for-ai-data-center-scale-up-infrastructure/"
     },
     {
+      "id": "marvell-cxl-switch",
+      "date": "2026-03-17",
+      "tag": "product",
+      "title": "Marvell が 260 レーンの CXL 3.0 スイッチを発表",
+      "summary": "メモリを複数のサーバで分け合う（メモリプーリング）ための CXL スイッチ Structera S 30260 です。CXL は PCIe の物理層を使う規格で、サンプル出荷は2026年7〜9月の予定です。",
+      "source": "Marvell",
+      "url": "https://www.marvell.com/company/newsroom/marvell-next-gen-cxl-switch-memory-pooling-breaks-ai-memory-wall.html"
+    },
+    {
       "id": "micron-9650",
       "date": "2026-02",
       "tag": "product",
@@ -224,6 +251,24 @@
       "summary": "PCIe 6.0 x4 で接続するデータセンター向け SSD です。順次読み出し 28 GB/s、書き込み 14 GB/s。形は E1.S と E3.S で、AI の推論用途を想定しています。",
       "source": "heise online",
       "url": "https://heise.de/-11176906"
+    },
+    {
+      "id": "montage-gen6-aec",
+      "date": "2026-01-26",
+      "tag": "product",
+      "title": "Montage が PCIe 6.x / CXL 3.x のアクティブ電気ケーブルを発表",
+      "summary": "自社のリタイマを組み込んだ銅線ケーブル（AEC）で、ラックをまたぐような長い距離でも PCIe x16 の信号品質を保てます。CPU、スイッチ、NIC などとの相互接続試験も済ませたとしています。",
+      "source": "Montage Technology",
+      "url": "https://www.montage-tech.com/Press_Releases/20260126"
+    },
+    {
+      "id": "broadcom-pex90144-sc25",
+      "date": "2025-11-23",
+      "tag": "event",
+      "title": "SC25 で Broadcom の 144 レーン PCIe Gen6 スイッチを展示",
+      "summary": "スーパーコンピュータの学会 SC25 で、144レーン・72ポートの PCIe Gen6 スイッチ PEX90144 が展示されました。2027年に Gen7、2029年に Gen8 の 144 レーン品を出すロードマップも示されています。",
+      "source": "ServeTheHome",
+      "url": "https://www.servethehome.com/broadcom-shows-the-pex90144-144-lane-pcie-gen6-switch-dell-sc25/"
     },
     {
       "id": "cxl-4",
@@ -287,6 +332,42 @@
       "url": "https://www.businesswire.com/news/home/20250611887972/en/PCI-SIG-Announces-PCIe-Optical-Interconnect-Solution"
     },
     {
+      "id": "credo-gen5-il",
+      "date": "2025-03-03",
+      "tag": "compliance",
+      "title": "Credo の PCIe 5.0 リタイマが PCI-SIG の適合試験に合格",
+      "summary": "台北で開かれた PCI-SIG の適合試験ワークショップ（#133）で、Credo のリタイマ Toucan（PCIe 5.0）が合格し、インテグレーターズリストに載ることになりました。",
+      "source": "Business Wire（Credo）",
+      "url": "https://www.silicon.co.uk/press-release/credos-pcie-retimer-successfully-passes-pci-sig-compliance"
+    },
+    {
+      "id": "pcie7-draft09",
+      "date": "2025-03",
+      "tag": "roadmap",
+      "title": "PCIe 7.0 仕様の最終ドラフト 0.9",
+      "summary": "会員が自社の必須特許を確認するための最終ドラフト（0.9）です。この後は機能の変更はなく、同じ年のうちに正式版を出す予定と発表されました。",
+      "source": "Profesional Review",
+      "url": "https://www.profesionalreview.com/2025/03/20/pcie-7-0-finalizado-lanzara-durante-2025/amp/"
+    },
+    {
+      "id": "broadcom-gen6-portfolio",
+      "date": "2025-02-25",
+      "tag": "product",
+      "title": "Broadcom が PCIe 6 のスイッチとリタイマをそろえて発表",
+      "summary": "PCIe 6 のスイッチと、5nm で作った8レーン・16レーンのリタイマ（CXL にも対応）を発表しました。ほかの機器とつながるかを確かめるための開発用プラットフォームも用意しています。",
+      "source": "SiliconANGLE",
+      "url": "https://siliconangle.com/2025/02/25/broadcom-debuts-new-pcie-6-interconnect-portfolio/"
+    },
+    {
+      "id": "pcie7-draft07",
+      "date": "2025-01-17",
+      "tag": "roadmap",
+      "title": "PCIe 7.0 仕様のドラフト 0.7（内容がそろった版）",
+      "summary": "PCIe 7.0 のすべての機能がそろったドラフト（0.7）が会員に公開されました。",
+      "source": "Wikipedia（PCI Express）",
+      "url": "https://en.wikipedia.org/wiki/PCI_Express"
+    },
+    {
       "id": "sig-1000",
       "date": "2024-12-05",
       "tag": "industry",
@@ -312,6 +393,78 @@
       "summary": "PCI-SIG が、銅線ケーブルで PCIe 5.0（32.0 GT/s）と 6.0（64.0 GT/s）をつなぐための CopprLink ケーブル規格（筐体の中で使う内部用と、外へ出す外部用）を発表しました。",
       "source": "Business Wire（PCI-SIG）",
       "url": "https://www.businesswire.com/news/home/20240501529875/en/PCI-SIG%C2%AE-Announces-CopprLink%E2%84%A2-Cable-Specifications-for-PCIe%C2%AE-5.0-and-6.0-Technology"
+    },
+    {
+      "id": "pcie7-draft05",
+      "date": "2024-04-03",
+      "tag": "roadmap",
+      "title": "PCIe 7.0 仕様のドラフト 0.5",
+      "summary": "PCIe 7.0 の最初のドラフト（0.5）が会員に公開されました。",
+      "source": "Wikipedia（PCI Express）",
+      "url": "https://en.wikipedia.org/wiki/PCI_Express"
+    },
+    {
+      "id": "pcie7-announce",
+      "date": "2022-06-21",
+      "tag": "roadmap",
+      "title": "PCI-SIG が PCIe 7.0 の開発を発表：128 GT/s をめざす",
+      "summary": "開発者会議で、PCIe 7.0 を 128 GT/s にし、2025年に会員向けに出す目標が示されました。PAM4 を使い、後方互換性（古い世代とつながること）を保ちます。",
+      "source": "Design & Reuse（PCI-SIG の発表）",
+      "url": "https://us.design-reuse.com/news/52191/pci-sig-pci-express-7-0-specification.html"
+    },
+    {
+      "id": "pcie6-0",
+      "date": "2022-01-11",
+      "tag": "spec",
+      "title": "PCIe 6.0 仕様を公開：64 GT/s、PAM4 と Flit",
+      "summary": "信号を4段階の電圧で送る PAM4 と、決まった大きさの単位（Flit）でまとめて送る方式を取り入れ、64 GT/s になりました。PAM4 で増える誤りは、軽い FEC（誤り訂正）と CRC で補います。",
+      "source": "Design & Reuse（PCI-SIG の発表）",
+      "url": "https://us.design-reuse.com/news/51221/pci-sig-pcie-6-0-specification.html"
+    },
+    {
+      "id": "pcie5-0",
+      "date": "2019-05-29",
+      "tag": "spec",
+      "title": "PCIe 5.0 仕様を公開：32 GT/s",
+      "summary": "4.0 からわずか18か月ほどで完成し、速度がさらに2倍になりました。x16 で双方向あわせて最大 128 GB/s です。信号品質を上げるための電気的な変更も入っています。",
+      "source": "Design & Reuse（PCI-SIG の発表）",
+      "url": "https://us.design-reuse.com/news/46222/32gt-s-pci-express-5-0-specification.html"
+    },
+    {
+      "id": "pcie4-0",
+      "date": "2017-10-25",
+      "tag": "spec",
+      "title": "PCIe 4.0 仕様 1.0 を公開：16 GT/s",
+      "summary": "3.0 から7年ぶりに速度が2倍になりました。レーンマージニング（信号の余裕を測る機能）や、タグ・クレジットの拡張なども加わっています。",
+      "source": "Design & Reuse（PCI-SIG の発表）",
+      "url": "https://us.design-reuse.com/news/42959/pcie-4-0-version-1-0.html"
+    },
+    {
+      "id": "pcie3-0",
+      "date": "2010-11-18",
+      "tag": "spec",
+      "title": "PCIe 3.0：8 GT/s と 128b/130b 符号化",
+      "summary": "速度は 8 GT/s ですが、符号化を 128b/130b（128ビットに2ビットだけ足す方式）に変えてむだを減らし、実際に運べるデータ量は 2.0 のほぼ2倍になりました。",
+      "source": "Wikipedia（PCI Express）",
+      "url": "https://en.wikipedia.org/wiki/PCI_Express"
+    },
+    {
+      "id": "pcie2-0",
+      "date": "2007-01-15",
+      "tag": "spec",
+      "title": "PCIe 2.0：速度が2倍の 5 GT/s に",
+      "summary": "1レーンあたりの速度が 5 GT/s に上がりました。符号化は 1.x と同じ 8b/10b です。",
+      "source": "Wikipedia（PCI Express）",
+      "url": "https://en.wikipedia.org/wiki/PCI_Express"
+    },
+    {
+      "id": "pcie1-0a",
+      "date": "2003",
+      "tag": "spec",
+      "title": "PCIe 1.0a：PCI Express の始まり（2.5 GT/s）",
+      "summary": "パラレルバスの PCI に代わる、シリアル（1本ずつ信号を送る）方式の拡張バスとして登場しました。1レーンあたり 2.5 GT/s で、8b/10b 符号化（8ビットを10ビットに変換して送る方式）を使います。",
+      "source": "Wikipedia（PCI Express）",
+      "url": "https://en.wikipedia.org/wiki/PCI_Express"
     }
   ]
 }
