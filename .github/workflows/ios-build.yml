@@ -1,6 +1,7 @@
 name: iOS Build
 
 # main に push したとき、または Actions 画面から手動で実行したときに動く
+# ニュース（Shared/news.json）だけの変更ではビルドしない（アプリが GitHub から直接読み込むため）
 on:
   push:
     branches: [main]
@@ -9,6 +10,7 @@ on:
       - "PCIeStudy.xcodeproj/**"
       - "PCIeStudyWidget/**"
       - "Shared/**"
+      - "!Shared/news.json"
       - "Config/**"
       - ".github/workflows/ios-build.yml"
   workflow_dispatch:
