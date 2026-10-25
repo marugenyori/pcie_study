@@ -231,8 +231,26 @@ struct NewsProvider: TimelineProvider {
         return NewsEntry(date: date, item: items[i], position: i + 1, total: items.count)
     }
 
+    /// ロック画面（アクセサリ）では、切り替えずに一番新しいニュースを出す
+    static func showsLatestOnly(_ family: WidgetFamily) -> Bool {
+        switch family {
+        case .accessoryRectangular, .accessoryInline, .accessoryCircular: return true
+        default: return false
+        }
+    }
+
+    /// 一番新しいニュース
+    static func latestEntry(at date: Date) -> NewsEntry {
+        let all = NewsData.all
+        guard let first = all.first else {
+            return NewsEntry(date: date, item: emptyItem, position: 1, total: 1)
+        }
+        return NewsEntry(date: date, item: first, position: 1, total: all.count)
+    }
+
     func placeholder(in context: Context) -> NewsEntry {
-        Self.entry(for: .now) ?? NewsEntry(date: .now, item: Self.emptyItem, position: 1, total: 1)
+        if Self.showsLatestOnly(context.family) { return Self.latestEntry(at: .now) }
+        return Self.entry(for: .now) ?? NewsEntry(date: .now, item: Self.emptyItem, position: 1, total: 1)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (NewsEntry) -> Void) {
@@ -240,10 +258,18 @@ struct NewsProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<NewsEntry>) -> Void) {
+        let latestOnly = Self.showsLatestOnly(context.family)
         Task {
             // 新しいニュースがあれば先に読み込む
             await NewsData.refresh()
-            completion(makeTimeline())
+            if latestOnly {
+                // 3時間ごとに読み込み直し、新しいニュースが入っていればそれに変える
+                let now = Date.now
+                completion(Timeline(entries: [Self.latestEntry(at: now)],
+                                    policy: .after(now.addingTimeInterval(Self.interval))))
+            } else {
+                completion(makeTimeline())
+            }
         }
     }
 
@@ -271,7 +297,7 @@ struct NewsWidget: Widget {
                 .widgetURL(NewsLink.url(for: entry.item))
         }
         .configurationDisplayName("PCIe ニュース")
-        .description("PCIe の新しいニュースを、3時間ごとに切り替えて表示します。タップするとそのニュースを開きます。")
+        .description("ロック画面では一番新しいニュースを、ホーム画面では新しい順の10件を3時間ごとに切り替えて表示します。タップするとそのニュースを開きます。")
         .supportedFamilies([.accessoryRectangular, .accessoryInline, .systemSmall, .systemMedium])
     }
 }
