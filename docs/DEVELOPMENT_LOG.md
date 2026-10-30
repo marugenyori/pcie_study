@@ -127,3 +127,15 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - 回答後の解説の下に「この問題を Claude Code に質問する」と「問題が微妙なら作り直してもらう」を追加（`PCIeStudy/Views/Quiz/ClaudeCodeRequestView.swift`）
 - 問題の内容と依頼を書いた文を作り、`https://claude.ai/code/new?q=…&repo=marugenyori/pcie_study&branch=main` で Claude Code の新しいセッションを開く（送信は自分で押す）。依頼文のコピーもできる
 - 作り直しの依頼文には、CLAUDE.md のクイズのルールに従うこと、ビルド確認・マージ・TestFlight まで進めることを入れている
+
+## 2026-10-30 英語で聞く（リスニングモード）
+
+- 「学ぶ」タブに「英語で聞く」を追加。PCIe の仕組みを英語で聞きながら、技術英語の聞き取りを練習する（`PCIeStudy/Views/English/EnglishViews.swift`、データは `PCIeStudy/Data/EnglishData.swift`）
+- 読み上げは iPhone 内蔵の音声合成（`AVSpeechSynthesizer`、`PCIeStudy/Models/SpeechPlayer.swift`）。通信なし。速さ（ゆっくり・ふつう・はやめ）と発音（アメリカ・イギリス・インド・オーストラリア）を選べる。「拡張」「プレミアム」の声が入っていればそれを使う。消音スイッチがオンでも聞こえる
+- レッスンは10本（層、木構造、TLP、ACK/NAK と再送、クレジット、レーンと符号化、LTSSM、コンフィグ空間、MSI、PAM4 とフリット）。それぞれ次の4ステップ
+  - 聞く：英文をぼかしたまま聞く → 英文・日本語訳を表示。文をタップするとそこから再生。「1文ごとに止める」でリピーティング・シャドーイング
+  - 問題：英語の質問（読み上げあり）に答える。全問答えるとレッスン完了。回答は今日の学習量・連続日数に数える（苦手リストには入れない）
+  - 書き取り：1文ずつ聞いて、空欄の単語を4択で選ぶ
+  - 単語：発音と「どう聞こえるか」のコツ
+- 「PCIe の言葉の英語での読み方」：x16 = by sixteen、GT/s、BAR、ACK/NAK、0x10 など。読み上げ時は `EnglishSpeech.spoken` で表記を読み方に変えている（x16 → by 16 など）
+- 英文はアプリ用に書き下ろしたもの（仕様書の文章ではない）。数値は既存の章の内容に合わせたが、仕様書との照合はまだ

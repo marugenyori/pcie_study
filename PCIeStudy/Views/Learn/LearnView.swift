@@ -57,6 +57,14 @@ struct LearnView: View {
                     }
                 }
 
+                Section("英語") {
+                    NavigationLink {
+                        EnglishHomeView()
+                    } label: {
+                        Label("英語で聞く（\(EnglishData.all.count)レッスン）", systemImage: "ear")
+                    }
+                }
+
                 ForEach(Level.allCases) { level in
                     Section {
                         ForEach(LessonData.all.filter { $0.level == level }) { chapter in
