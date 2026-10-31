@@ -43,4 +43,5 @@ struct ContentView: View {
         .environment(ReminderManager())
         .environment(AppSettings())
         .environment(SpecRAGClient())
+        .environment(EnglishStore())
 }

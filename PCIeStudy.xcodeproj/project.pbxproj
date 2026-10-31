@@ -316,6 +316,7 @@
 				INFOPLIST_FILE = "Config/PCIeStudy-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "PCIe学習";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "同じWi-FiにあるPCの仕様書QAサーバに接続するために使います。";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "取り込んだ動画の英語を文字起こしするために使います。";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -350,6 +351,7 @@
 				INFOPLIST_FILE = "Config/PCIeStudy-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "PCIe学習";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "同じWi-FiにあるPCの仕様書QAサーバに接続するために使います。";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "取り込んだ動画の英語を文字起こしするために使います。";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
