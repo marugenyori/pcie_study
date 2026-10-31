@@ -145,5 +145,6 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - ツールタブに「英語」→「配信で英語」を追加（`PCIeStudy/Views/English/`、保存は `PCIeStudy/Models/EnglishStore.swift`）
 - 写真アプリ（画面収録）や「ファイル」から動画を取り込み、アプリの Application Support/EnglishClips にコピーする。一覧とフレーズ帳は UserDefaults に保存
 - 文字起こしは iPhone の音声認識（Speech フレームワーク、en-US）。1回に約1分までしか扱えないので、50秒ずつ区切って認識する（`ClipTranscriber.swift`）。英語のデータが iPhone にあれば端末内で認識する
+- 再生画面の右上から、スクリプト（時刻付きの全文）の共有・コピーと、文字起こしのやり直しができる
 - 再生画面：文をタップでその位置から再生、1文くり返し、1文ずつ止める（シャドーイング用）、速さ 0.5/0.75/1×、英文を隠す、長押しでフレーズ帳に保存・日本語訳（iOS 17.4 以上の翻訳機能）・コピー
 - Info.plist に音声認識の利用目的（`NSSpeechRecognitionUsageDescription`）を追加。Capability の追加はないので、Apple Developer 側の設定は不要

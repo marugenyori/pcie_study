@@ -47,6 +47,12 @@ struct ClipPlayerView: View {
     private var clip: EnglishClip? { store.clip(id: clipID) }
     private var lines: [TranscriptLine] { clip?.lines ?? [] }
 
+    /// 共有・コピー用のスクリプト（1行に1文、先頭に時刻）
+    private var scriptText: String {
+        let body = lines.map { "[\(TimeText.format($0.start))] \($0.text)" }.joined(separator: "\n")
+        return "\(clip?.title ?? "")\n\n\(body)"
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             VideoPlayer(player: player)
@@ -57,7 +63,7 @@ struct ClipPlayerView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 10)
 
-            if clip?.lines == nil {
+            if clip?.lines == nil || transcribing {
                 transcribePrompt
             } else {
                 transcript
@@ -76,6 +82,28 @@ struct ClipPlayerView: View {
                         Image(systemName: hidesText ? "eye.slash" : "eye")
                     }
                     .accessibilityLabel(hidesText ? "英文を表示する" : "英文を隠す")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        ShareLink(item: scriptText) {
+                            Label("スクリプトを共有", systemImage: "square.and.arrow.up")
+                        }
+                        Button {
+                            UIPasteboard.general.string = scriptText
+                        } label: {
+                            Label("スクリプトをコピー", systemImage: "doc.on.doc")
+                        }
+                        Button(role: .destructive) {
+                            loopLine = nil
+                            Task { await transcribe() }
+                        } label: {
+                            Label("文字起こしをやり直す", systemImage: "arrow.clockwise")
+                        }
+                        .disabled(transcribing)
+                    } label: {
+                        Image(systemName: "doc.plaintext")
+                    }
+                    .accessibilityLabel("スクリプト")
                 }
             }
         }
