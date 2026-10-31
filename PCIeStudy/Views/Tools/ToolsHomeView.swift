@@ -4,25 +4,34 @@ struct ToolsHomeView: View {
     var body: some View {
         NavigationStack {
             List {
-                NavigationLink {
-                    BandwidthCalculatorView()
-                } label: {
-                    ToolRow(symbol: "speedometer", title: "帯域幅計算", detail: "世代とレーン数から実効帯域を計算")
+                Section("PCIe") {
+                    NavigationLink {
+                        BandwidthCalculatorView()
+                    } label: {
+                        ToolRow(symbol: "speedometer", title: "帯域幅計算", detail: "世代とレーン数から実効帯域を計算")
+                    }
+                    NavigationLink {
+                        TLPEfficiencyView()
+                    } label: {
+                        ToolRow(symbol: "chart.bar.xaxis", title: "TLP転送効率", detail: "ペイロードサイズとヘッダのオーバーヘッド")
+                    }
+                    NavigationLink {
+                        ECAMCalculatorView()
+                    } label: {
+                        ToolRow(symbol: "number", title: "ECAMアドレス計算", detail: "BDF ⇄ コンフィグ空間アドレス")
+                    }
+                    NavigationLink {
+                        BARSizeView()
+                    } label: {
+                        ToolRow(symbol: "memorychip", title: "BARサイズ判定", detail: "全1書き込み後の読み戻し値から計算")
+                    }
                 }
-                NavigationLink {
-                    TLPEfficiencyView()
-                } label: {
-                    ToolRow(symbol: "chart.bar.xaxis", title: "TLP転送効率", detail: "ペイロードサイズとヘッダのオーバーヘッド")
-                }
-                NavigationLink {
-                    ECAMCalculatorView()
-                } label: {
-                    ToolRow(symbol: "number", title: "ECAMアドレス計算", detail: "BDF ⇄ コンフィグ空間アドレス")
-                }
-                NavigationLink {
-                    BARSizeView()
-                } label: {
-                    ToolRow(symbol: "memorychip", title: "BARサイズ判定", detail: "全1書き込み後の読み戻し値から計算")
+                Section("英語") {
+                    NavigationLink {
+                        EnglishHomeView()
+                    } label: {
+                        ToolRow(symbol: "captions.bubble", title: "配信で英語", detail: "録画した動画を文字起こしして、1文ずつ聞き取り練習")
+                    }
                 }
             }
             .screenBackground()

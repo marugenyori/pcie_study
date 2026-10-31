@@ -139,3 +139,11 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - 主要な出来事を漏らさないよう17件追加（計52件）：規格の歴史（1.0a〜6.0、7.0 の発表とドラフト 0.5 / 0.7 / 0.9）と、2025〜2026年の大きな発表（Broadcom の Gen6 製品と SC25 の 144 レーンスイッチ、Credo の Gen5 適合、Montage の Gen6 ケーブル、Marvell の CXL スイッチ、Computex の Phison X3、FMS の Microchip 160 レーンスイッチ）
 - 週次の自動更新には、主要な情報源（PCI-SIG の発表、主要メーカーのニュース、主要イベント）を毎回確認し、過去3か月の主要な出来事の抜けも埋めるよう指示した
 - ロック画面のニュースウィジェット（長方形・1行）は、切り替えずに一番新しいニュースを表示するようにした。3時間ごとに GitHub から読み込み直し、新しいニュースが入れば変わる。ホーム画面は今までどおり新しい順の10件を切り替える
+
+## 2026-10-31 配信の録画で英語を学ぶ
+
+- ツールタブに「英語」→「配信で英語」を追加（`PCIeStudy/Views/English/`、保存は `PCIeStudy/Models/EnglishStore.swift`）
+- 写真アプリ（画面収録）や「ファイル」から動画を取り込み、アプリの Application Support/EnglishClips にコピーする。一覧とフレーズ帳は UserDefaults に保存
+- 文字起こしは iPhone の音声認識（Speech フレームワーク、en-US）。1回に約1分までしか扱えないので、50秒ずつ区切って認識する（`ClipTranscriber.swift`）。英語のデータが iPhone にあれば端末内で認識する
+- 再生画面：文をタップでその位置から再生、1文くり返し、1文ずつ止める（シャドーイング用）、速さ 0.5/0.75/1×、英文を隠す、長押しでフレーズ帳に保存・日本語訳（iOS 17.4 以上の翻訳機能）・コピー
+- Info.plist に音声認識の利用目的（`NSSpeechRecognitionUsageDescription`）を追加。Capability の追加はないので、Apple Developer 側の設定は不要
