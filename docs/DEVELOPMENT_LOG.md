@@ -152,3 +152,11 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - 「PCIe の言葉の英語での読み方」：x16 = by sixteen、GT/s、BAR、ACK/NAK、0x10 など。読み上げ時は `EnglishSpeech.spoken` で表記を読み方に変えている（x16 → by 16 など）
 - 英文はアプリ用に書き下ろしたもの（仕様書の文章ではない）。数値は既存の章の内容に合わせたが、仕様書との照合はまだ
 - 文を何回かタップすると読み上げなくなる不具合を修正：止めるたびに `AVSpeechSynthesizer` を作り直す（止めた直後に読ませると固まることがあるため）。声の一覧の取得は重いので、言語ごとに覚えておき、声をダウンロードしたら取り直す
+
+## 2026-10-31 クイズの質問をアプリ内で Claude に
+
+- 解説の下の「この問題を Claude に質問する」は、claude.ai のセッションを開かず、アプリから Claude API（Messages API）に直接質問して、回答をアプリ内に表示するようにした（`PCIeStudy/Views/Quiz/ClaudeAskView.swift`、通信は `PCIeStudy/Models/ClaudeChat.swift`）。続けて質問もできる。やりとりは保存しない（閉じると消える）
+- モデルは `claude-opus-5-5`（effort は medium）。回答はストリーミングで少しずつ表示する。安全上の理由で断られたときは、サーバ側で別のモデルに回す設定（`fallbacks: "default"`）を付けている
+- 1つ目の質問には、問題・選択肢・選択肢ごとの解説・くわしい解説・仕様書の参照先・自分の回答を自動で付ける
+- API キーは初回に画面から入力し、キーチェーン（`PCIeStudy/Models/KeychainStore.swift`）に保存する。料金はサブスクリプションとは別の従量課金
+- 「問題が微妙なら作り直してもらう」は、コードを変える必要があるので、今までどおり Claude Code のセッションを開く

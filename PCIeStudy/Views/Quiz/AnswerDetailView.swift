@@ -79,7 +79,7 @@ struct AnswerDetailView: View {
             Button {
                 claudeRequest = .ask
             } label: {
-                Label("この問題を Claude Code に質問する", systemImage: "sparkles")
+                Label("この問題を Claude に質問する", systemImage: "sparkles")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(AppButtonStyle(.secondary))
@@ -93,7 +93,10 @@ struct AnswerDetailView: View {
             .buttonStyle(AppButtonStyle(.secondary))
         }
         .sheet(item: $claudeRequest) { kind in
-            ClaudeCodeRequestView(kind: kind == .ask ? .ask : .rewrite, question: question, selected: selected)
+            switch kind {
+            case .ask: ClaudeAskView(question: question, selected: selected)
+            case .rewrite: ClaudeCodeRequestView(kind: .rewrite, question: question, selected: selected)
+            }
         }
         .sheet(isPresented: $showsAskSpec) {
             NavigationStack {
