@@ -4,6 +4,8 @@ import SwiftUI
 struct TodayView: View {
     @Environment(ProgressStore.self) private var progress
     @Environment(ReminderManager.self) private var reminder
+    /// 新しいニュースを読み込んだときにニュース欄を描き直すための番号
+    @State private var newsVersion = 0
 
     var body: some View {
         NavigationStack {
@@ -16,6 +18,10 @@ struct TodayView: View {
                     quickActions
                     columnCard
                     newsCard
+                        .id(newsVersion)
+                        .onReceive(NotificationCenter.default.publisher(for: NewsData.didChange)) { _ in
+                            newsVersion += 1
+                        }
                     AchievementsCard()
                     ReminderCard()
                 }

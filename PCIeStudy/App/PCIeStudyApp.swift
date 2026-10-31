@@ -26,6 +26,12 @@ struct PCIeStudyApp: App {
                     guard phase == .active else { return }
                     progress.reloadShared()
                     Task { await reminder.reschedule(stats: progress.stats) }
+                    Task {
+                        // GitHub に新しいニュースがあれば読み込み、ウィジェットにも反映する
+                        if await NewsData.refresh() {
+                            WidgetCenter.shared.reloadTimelines(ofKind: "NewsWidget")
+                        }
+                    }
                 }
         }
     }

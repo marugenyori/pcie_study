@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 // MARK: - コラム
 
@@ -79,6 +80,9 @@ struct ColumnDetailView: View {
 // MARK: - ニュース
 
 struct NewsListView: View {
+    /// 読み込み直したときに画面を描き直すための番号
+    @State private var version = 0
+
     var body: some View {
         List {
             Section {
@@ -86,11 +90,21 @@ struct NewsListView: View {
                     NewsRow(item: item, showsSummary: true)
                 }
             } footer: {
-                Text("最終更新：\(NewsData.updated)。ニュースはアプリのアップデートで更新されます。")
+                Text("最終更新：\(NewsData.updated)。アプリを開くと、新しいニュースを自動で読み込みます。")
             }
         }
+        .id(version)
+        .onReceive(NotificationCenter.default.publisher(for: NewsData.didChange)) { _ in version += 1 }
+        .refreshable { await reload(force: true) }
+        .task { await reload(force: false) }
         .screenBackground()
         .navigationTitle("PCIe ニュース")
+    }
+
+    private func reload(force: Bool) async {
+        if await NewsData.refresh(minInterval: force ? 0 : 3 * 3600) {
+            WidgetCenter.shared.reloadTimelines(ofKind: "NewsWidget")
+        }
     }
 }
 
@@ -128,7 +142,7 @@ struct NewsRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                Text(item.tag.rawValue)
+                Text(item.tag.label)
                     .font(.caption2.bold())
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
