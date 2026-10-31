@@ -49,11 +49,15 @@ final class SpeechPlayer {
     private(set) var source: String?
     private(set) var currentIndex: Int?
 
-    @ObservationIgnored private let synthesizer = AVSpeechSynthesizer()
+    /// 止めるたびに作り直す（止めた直後に読ませると、それ以降読まなくなることがあるため）
+    @ObservationIgnored private var synthesizer = AVSpeechSynthesizer()
     @ObservationIgnored private let delegate = Delegate()
     @ObservationIgnored private var indexByUtterance: [ObjectIdentifier: Int] = [:]
     @ObservationIgnored private var lastUtterance: AVSpeechUtterance?
     @ObservationIgnored private let defaults: UserDefaults
+    /// 言語ごとの声（声の一覧の取得は重いので覚えておく。声をダウンロードしたら作り直す）
+    @ObservationIgnored private var voiceCache: [Accent: AVSpeechSynthesisVoice?] = [:]
+    @ObservationIgnored private var voicesObserver: NSObjectProtocol?
 
     private enum Keys {
         static let speed = "englishSpeed"
@@ -71,6 +75,15 @@ final class SpeechPlayer {
         delegate.onFinish = { [weak self] utterance in
             DispatchQueue.main.async { self?.didFinish(utterance) }
         }
+        voicesObserver = NotificationCenter.default.addObserver(
+            forName: AVSpeechSynthesizer.availableVoicesDidChangeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.voiceCache = [:]
+        }
+    }
+
+    deinit {
+        if let voicesObserver { NotificationCenter.default.removeObserver(voicesObserver) }
     }
 
     func setSpeed(_ speed: Speed) {
@@ -87,7 +100,7 @@ final class SpeechPlayer {
     func play(_ sentences: [String], from start: Int = 0, source: String, pause: Bool = false) {
         stop()
         activateAudioSession()
-        let voice = Self.voice(for: accent)
+        let voice = voice(for: accent)
         self.source = source
         for index in sentences.indices where index >= start {
             let utterance = AVSpeechUtterance(string: EnglishSpeech.spoken(sentences[index]))
@@ -106,7 +119,7 @@ final class SpeechPlayer {
         stop()
         activateAudioSession()
         let utterance = AVSpeechUtterance(string: EnglishSpeech.spoken(text))
-        utterance.voice = Self.voice(for: accent)
+        utterance.voice = voice(for: accent)
         utterance.rate = speed.rate
         self.source = source
         if let index { indexByUtterance[ObjectIdentifier(utterance)] = index }
@@ -116,9 +129,16 @@ final class SpeechPlayer {
     }
 
     func stop() {
+        let hadQueue = lastUtterance != nil
         indexByUtterance = [:]
         lastUtterance = nil
-        synthesizer.stopSpeaking(at: .immediate)
+        if hadQueue || synthesizer.isSpeaking || synthesizer.isPaused {
+            let old = synthesizer
+            old.delegate = nil
+            old.stopSpeaking(at: .immediate)
+            synthesizer = AVSpeechSynthesizer()
+            synthesizer.delegate = delegate
+        }
         isSpeaking = false
         source = nil
         currentIndex = nil
@@ -157,7 +177,20 @@ final class SpeechPlayer {
     }
 
     /// その言語で一番品質の高い声（「拡張」「プレミアム」をダウンロードしてあればそれを使う）
-    static func voice(for accent: Accent) -> AVSpeechSynthesisVoice? {
+    func voice(for accent: Accent) -> AVSpeechSynthesisVoice? {
+        if let cached = voiceCache[accent] { return cached }
+        let voice = Self.bestVoice(for: accent)
+        voiceCache[accent] = voice
+        return voice
+    }
+
+    /// 品質の高い声が入っているか（入っていなければダウンロード方法を案内する）
+    func hasEnhancedVoice(for accent: Accent) -> Bool {
+        guard let voice = voice(for: accent) else { return false }
+        return voice.quality != .default
+    }
+
+    private static func bestVoice(for accent: Accent) -> AVSpeechSynthesisVoice? {
         let candidates = AVSpeechSynthesisVoice.speechVoices().filter {
             $0.language == accent.rawValue && !$0.voiceTraits.contains(.isNoveltyVoice)
         }
@@ -165,13 +198,6 @@ final class SpeechPlayer {
             return best
         }
         return AVSpeechSynthesisVoice(language: accent.rawValue)
-    }
-
-    /// 品質の高い声が入っているか（入っていなければダウンロード方法を案内する）
-    static func hasEnhancedVoice(for accent: Accent) -> Bool {
-        AVSpeechSynthesisVoice.speechVoices().contains {
-            $0.language == accent.rawValue && $0.quality != .default && !$0.voiceTraits.contains(.isNoveltyVoice)
-        }
     }
 
     private final class Delegate: NSObject, AVSpeechSynthesizerDelegate {

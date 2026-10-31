@@ -42,7 +42,7 @@ struct EnglishHomeView: View {
             } header: {
                 Text("音声")
             } footer: {
-                if !SpeechPlayer.hasEnhancedVoice(for: player.accent) {
+                if !player.hasEnhancedVoice(for: player.accent) {
                     Text("声が機械っぽいときは、iPhone の「設定」→「アクセシビリティ」→「読み上げコンテンツ」→「声」→「英語」で、「拡張」や「プレミアム」の声をダウンロードすると自然になります。")
                 }
             }
