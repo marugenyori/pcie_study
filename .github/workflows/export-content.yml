@@ -1,12 +1,17 @@
 name: ブラウザ版のデータを書き出す
 
-# アプリの学習データ（章・クイズ・英語レッスンなど）が変わったら、ブラウザ版用の web/content.json を作り直して main に入れる
+# アプリの学習データ（章・クイズ・英語レッスンなど）が変わったら、ブラウザ版用の web/content.json を作り直して、動かしたブランチに入れる
+# （ブランチで試すときは Actions から Run workflow でそのブランチを選ぶ）
 on:
   push:
     branches: [main]
     paths:
       - "Shared/**"
       - "PCIeStudy/Data/**"
+      - "PCIeStudy/Models/TLPHeaderModel.swift"
+      - "PCIeStudy/Models/LTSSMModel.swift"
+      - "PCIeStudy/Models/PCIeCalc.swift"
+      - "PCIeStudy/Models/GameRules.swift"
       - "scripts/export/**"
       - ".github/workflows/export-content.yml"
   workflow_dispatch:
@@ -33,11 +38,13 @@ jobs:
             Shared/QuizData*.swift Shared/QuizNotes*.swift Shared/QuizDetails*.swift \
             Shared/StudyStats.swift \
             PCIeStudy/Data/*.swift \
+            PCIeStudy/Models/TLPHeaderModel.swift PCIeStudy/Models/LTSSMModel.swift \
+            PCIeStudy/Models/PCIeCalc.swift PCIeStudy/Models/GameRules.swift \
             scripts/export/main.swift \
             -o "$RUNNER_TEMP/export"
           "$RUNNER_TEMP/export" web/content.json
 
-      - name: 変わっていれば main に入れる
+      - name: 変わっていればブランチに入れる
         run: |
           if git diff --quiet -- web/content.json && git ls-files --error-unmatch web/content.json >/dev/null 2>&1; then
             echo "変更なし"
@@ -47,4 +54,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add web/content.json
           git commit -m "Update web/content.json from the app data"
-          git push origin HEAD:main
+          git push origin "HEAD:${GITHUB_REF_NAME}"

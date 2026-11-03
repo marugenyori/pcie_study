@@ -66,7 +66,62 @@ let columns: [[String: Any]] = ColumnData.all.map { c in
     return item
 }
 
+func topo(_ node: TopoNode) -> [String: Any] {
+    var item: [String: Any] = ["id": node.id, "name": node.name, "kind": node.kind.rawValue,
+                               "detail": node.detail, "children": node.children.map(topo)]
+    if let bdf = node.bdf { item["bdf"] = bdf }
+    if let header = node.header { item["header"] = header }
+    return item
+}
+
+let tlpFormats: [[String: Any]] = TLPHeaderFormat.allCases.map { format in
+    [
+        "name": format.rawValue, "dwCount": format.dwCount,
+        "fields": format.fields.map { f -> [String: Any] in
+            ["dw": f.dw, "hi": f.hi, "lo": f.lo, "name": f.name, "fullName": f.fullName, "detail": f.detail]
+        },
+    ]
+}
+
+let ltssmStates: [[String: Any]] = LTSSMModel.states.values.sorted { $0.id < $1.id }.map { state in
+    [
+        "id": state.id, "group": state.group.rawValue, "description": state.description,
+        "transitions": state.transitions.map { ["to": $0.to, "condition": $0.condition] },
+    ]
+}
+
+let diagrams: [String: Any] = [
+    "topology": topo(TopologySample.root),
+    "tlpFormats": tlpFormats,
+    // Fmt/Type の Byte 0（0〜255）ごとの読み方
+    "tlpTypeNames": (0...255).map { TLPTypeDecoder.decode(byte0: UInt8($0)) },
+    "ltssm": [
+        "initial": LTSSMModel.initial,
+        "groups": LTSSMGroup.allCases.map(\.rawValue),
+        "states": ltssmStates,
+        "scenario": LTSSMModel.linkUpScenario,
+        "scenarioNotes": LTSSMModel.linkUpScenario.indices.map { LTSSMModel.scenarioNote(step: $0) ?? "" },
+    ],
+    "generations": PCIeGen.allCases.map { g -> [String: Any] in
+        ["gen": g.rawValue, "name": g.name, "rate": g.rate, "encoding": g.encoding,
+         "efficiency": g.encodingEfficiency, "isFlit": g.isFlit]
+    },
+    "flitTLPRatio": PCIeGen.flitTLPRatio,
+    "tlpFramingOverhead": PCIeCalc.tlpFramingOverhead,
+]
+
+let game: [String: Any] = [
+    "correctXP": GameRules.correctXP,
+    "dailyQuestionXP": GameRules.dailyQuestionXP,
+    "perfectBonusXP": GameRules.perfectBonusXP,
+    "questXP": GameRules.questXP,
+    "levelTitles": (1...40).map { GameRules.title(forLevel: $0) },
+    "quests": DailyQuest.allCases.map { ["id": $0.rawValue, "title": $0.title, "goal": $0.goal] },
+]
+
 let content: [String: Any] = [
+    "diagrams": diagrams,
+    "game": game,
     "chapters": chapters,
     "questions": questions,
     "english": english,
