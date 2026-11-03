@@ -27,6 +27,8 @@ struct ClipPlayerView: View {
     @State private var player: AVPlayer
     @State private var fetchingVideo = false
     @State private var fetchVideoError: String?
+    /// 動画に音声が入っていない（PC での保存で音声が抜けたときなど）
+    @State private var hasNoAudio = false
     @State private var timeObserver: Any?
     @State private var currentTime = 0.0
     @State private var rate: Float = 1.0
@@ -76,6 +78,15 @@ struct ClipPlayerView: View {
             } else {
                 missingVideo
                     .aspectRatio(16 / 9, contentMode: .fit)
+            }
+
+            if hasNoAudio {
+                Label("この動画には音声が入っていません。PC で保存し直すか、別の方法で取り込んでください。",
+                      systemImage: "speaker.slash.fill")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
             }
 
             controls
@@ -480,6 +491,16 @@ struct ClipPlayerView: View {
 
     private func startObserving() {
         guard timeObserver == nil else { return }
+        // 消音モード（サイレントスイッチ）でも音が出るようにする。初期設定のままだと無音で再生される
+        let session = AVAudioSession.sharedInstance()
+        try? session.setCategory(.playback, mode: .moviePlayback)
+        try? session.setActive(true)
+        if let clip, clip.hasVideo {
+            Task {
+                let tracks = try? await AVURLAsset(url: EnglishStore.fileURL(for: clip)).loadTracks(withMediaType: .audio)
+                hasNoAudio = tracks?.isEmpty ?? false
+            }
+        }
         player.defaultRate = rate
         if let startAt { seek(to: startAt, play: false) }
         let interval = CMTime(seconds: 0.1, preferredTimescale: 600)
