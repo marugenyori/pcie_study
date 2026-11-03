@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-25",
+  "updated": "2026-11-03",
   "items": [
     {
       "id": "amd-am5-pcie6",
@@ -9,6 +9,17 @@
       "summary": "AMD のクライアント製品の責任者が日本のメディアのインタビューで、デスクトップ向けの AM5 ソケットのサポートは2029年で終わるとは限らず、PCIe 6.0 の採用にソケットの変更が必ずしも必要ではないと話しました。ただし、今の AM5 マザーボードが BIOS 更新で PCIe 6.0 に対応できるという意味ではありません（電気的な条件を満たす必要があるため）。",
       "source": "HardwareCooking（マイナビ TECH+ のインタビューより）",
       "url": "https://hardwarecooking.fr/amd-am5-apres-2029-pcie-6-zen-7"
+    },
+    {
+      "id": "kioxia-cm9-dlc",
+      "date": "2026-10-15",
+      "tag": "product",
+      "title": "Kioxia、PCIe 5.0 SSD「CM9」に直接液冷モデルを追加",
+      "summary": "Kioxia は OCP Global Summit（10月12〜15日、サンノゼ）で、エンタープライズ向け SSD「CM9」シリーズに、コールドプレートで冷やすサーバ向けの直接液冷（DLC）モデルを加えたと発表しました。PCIe 5.0・NVMe 2.0 対応、E3.S 形状で、空冷のサーバでも使えます。容量は読み出し中心（1 DWPD＝1日に全容量を1回書ける耐久性）で最大 30.72TB、混在用途（3 DWPD）で最大 25.6TB で、一部の顧客にサンプル出荷しています。",
+      "source": "StorageNewsletter",
+      "url": "https://www.storagenewsletter.com/2026/10/15/ocp-global-summit-kioxia-introduces-direct-liquid-cooling-support-for-enterprise-ssds/",
+      "titleEn": "Kioxia adds direct liquid cooling models to its CM9 PCIe 5.0 SSDs",
+      "summaryEn": "At the OCP Global Summit in San Jose, Kioxia added direct liquid cooling models to its CM9 Series of enterprise SSDs, for cold-plate-enabled server designs. The drives use PCIe 5.0 and NVMe 2.0 in the E3.S form factor, and they also work in air-cooled servers. Capacities reach 30.72 terabytes for read-intensive use and 25.6 terabytes for mixed use, and samples are going to select customers."
     },
     {
       "id": "microchip-gen6-llc",
@@ -63,6 +74,28 @@
       "summary": "AMD が Zen 6 世代のサーバ CPU の製品構成を明らかにしました。PCIe 6.0 に対応し、1ソケットで最大128レーンの PCIe/CXL を使えます。前の世代（Turin、PCIe 5.0）から入出力の帯域が2倍になり、CXL は 3.1 に対応します。",
       "source": "ServeTheHome",
       "url": "https://www.servethehome.com/amd-takes-the-lid-off-of-next-gen-epyc-9006-venice-as-zen-6-comes-to-servers/"
+    },
+    {
+      "id": "teledyne-z74",
+      "date": "2026-09-17",
+      "tag": "product",
+      "title": "Teledyne LeCroy、PCIe 7.0 向けプロトコルエクササイザ「Summit Z74」を発表",
+      "summary": "Teledyne LeCroy は、PCIe 7.0 向けのプロトコルエクササイザ（試験用の通信を作って機器の反応を確かめる装置）「Summit Z74」を発表しました。単体で通信を作れるほか、プロトコルアナライザ「Summit M616」と組み合わせると、リンクトレーニングや LTSSM の遷移、プロトコルエラー、相互接続の問題を調べられます。PCIe 7.0 の検証プログラムに備える開発チーム向けに提供しています。",
+      "source": "Teledyne LeCroy（PR Newswire）",
+      "url": "https://www.prnewswire.com/news-releases/teledyne-lecroy-announces-pci-express-7-0-protocol-exerciser-302882262.html",
+      "titleEn": "Teledyne LeCroy announces the Summit Z74 protocol exerciser for PCIe 7.0",
+      "summaryEn": "Teledyne LeCroy announced the Summit Z74 Protocol Exerciser for PCI Express 7.0 technology. It can generate protocol traffic on its own, and when paired with the Summit M616 Protocol Analyzer it helps teams debug link training, LTSSM transitions, protocol errors, and interoperability issues. It is available to development teams preparing for PCIe 7.0 validation programs."
+    },
+    {
+      "id": "cxl-ai-infra-summit-2026",
+      "date": "2026-09-15",
+      "tag": "event",
+      "title": "CXL Consortium、AI Infra Summit 2026 で CXL 3.2 の相互接続などを展示",
+      "summary": "CXL Consortium は、サンタクララで9月15〜17日に開かれた AI Infra Summit 2026 にパビリオンを出し、会員企業がメモリの拡張・プーリング（共有）や CXL 3.2 の相互接続を展示しました。VIAVI は自社の CXL エクササイザと Montage のリタイマの間で CXL 3.2 のリンクを動かし、Liqid は最大 160TB の DDR5 をサーバ間で割り当てるプーリングを示しました。パネルでは、大規模言語モデルの推論でメモリが壁になっている点が話し合われました。",
+      "source": "CXL Consortium ブログ",
+      "url": "https://computeexpresslink.org/blog/cxl-consortium-recap-scaling-ai-infrastructure-at-ai-infra-summit-2026-4862/",
+      "titleEn": "CXL Consortium shows CXL 3.2 interoperability at AI Infra Summit 2026",
+      "summaryEn": "At AI Infra Summit 2026 in Santa Clara, held from September 15 to 17, CXL Consortium members demonstrated memory expansion, memory pooling, and CXL 3.2 interoperability. VIAVI showed a live CXL 3.2 link between its CXL exerciser and a Montage Technology retimer, and Liqid showed pooling of up to 160 terabytes of DDR5 across servers. Panels discussed how memory has become the main constraint when scaling AI inference."
     },
     {
       "id": "marvell-cxl-vera",
@@ -143,6 +176,28 @@
       "summary": "PCI-SIG による初めての PCIe 6.x 適合試験ワークショップ（7月末まで）で、Astera Labs のスイッチ Scorpio とリタイマ Aries が合格しました。PAM4 の電気特性、コンフィグレーション、リンク層・トランザクション層の試験と、20以上の会員企業の機器との相互接続試験が行われました。",
       "source": "Astera Labs（ブログ）",
       "url": "https://asteralabs.com/resources/blog/industry-leading-high-volume-scorpio-smart-fabric-switches-and-aries-smart-retimers-achieve-compliance-at-first-pci-sig-6-x-workshop/"
+    },
+    {
+      "id": "teledyne-m616-gen7",
+      "date": "2026-08-04",
+      "tag": "product",
+      "title": "Teledyne LeCroy の「Summit M616」が PCIe 7.0 に対応へ",
+      "summary": "Teledyne LeCroy は、出荷中の PCIe プロトコルアナライザ／エクササイザ「Summit M616」が PCIe 7.0 に対応できる（PCIe 7.0 ready）と発表しました。今の装置に追加のモジュールを足すことで、128 GT/s の PCIe 7.0 の開発に広げられます。通信の取り込み・解析・生成や、リンクトレーニングや LTSSM の遷移のデバッグに使えます。",
+      "source": "Teledyne LeCroy（PR Newswire）",
+      "url": "https://www.prnewswire.com/news-releases/teledyne-lecroy-summit-m616-is-now-pci-express-7-0-ready-302842368.html",
+      "titleEn": "Teledyne LeCroy's Summit M616 is now PCIe 7.0 ready",
+      "summaryEn": "Teledyne LeCroy announced that its shipping Summit M616 PCIe protocol analyzer and exerciser is PCIe 7.0 ready. Owners can extend their systems to 128 GT/s PCIe 7.0 development through an add-on modular solution instead of buying new hardware. The platform captures, decodes, and generates traffic, and helps debug link training and LTSSM transitions."
+    },
+    {
+      "id": "kioxia-gp1",
+      "date": "2026-08-04",
+      "tag": "product",
+      "title": "Kioxia、GPU から直接読む PCIe 6.0 SSD「GP1」シリーズを発表",
+      "summary": "Kioxia は、GPU が直接アクセスすることを想定した超高 IOPS（1秒あたりの読み書き回数）の SSD「GP1」シリーズを発表しました。PCIe 6.0・NVMe 2.2 に対応し、低遅延のフラッシュメモリ XL-FLASH 第2世代を使って、512バイト単位のランダム読み出しで最大1000万 IOPS を目指します。HBM（GPU のそばの高速メモリ）を補うフラッシュの層として AI インフラ向けで、評価用サンプルは2026年末までに一部の顧客へ出荷予定です。",
+      "source": "Kioxia",
+      "url": "https://www.kioxia.com/en-jp/business/news/2026/20260804-1.html",
+      "titleEn": "Kioxia announces the GP1 Series PCIe 6.0 SSDs for direct GPU access",
+      "summaryEn": "Kioxia announced the GP1 Series, super high IOPS SSDs optimized for direct access from GPUs. The drives are designed to PCIe 6.0 and NVMe 2.2 and use second-generation XL-FLASH low-latency memory, targeting up to 10 million random read IOPS at a 512-byte block size. They are aimed at AI infrastructure as a flash tier that extends HBM, and evaluation samples are planned for select customers by the end of 2026."
     },
     {
       "id": "kioxia-cm10",
