@@ -28,7 +28,7 @@ struct SouthParkListView: View {
                     Text(loadError).foregroundStyle(.red)
                 }
             } footer: {
-                Text("公式チャンネルの新着15本です。「PC で保存して取り込む」は、PC で yt-dlp が動くサーバが必要です（同じ Wi-Fi のとき）。保存した動画は自分の学習用だけに使ってください。")
+                Text("公式チャンネルの新着動画です（PC につながるときは PC の yt-dlp で30本、つながらないときは YouTube の RSS で15本）。「PC で保存して取り込む」は、PC と同じ Wi-Fi のときに使えます。保存した動画は自分の学習用だけに使ってください。")
             }
         }
         .screenBackground()
@@ -107,7 +107,8 @@ struct SouthParkListView: View {
         defer { isLoading = false }
         do {
             videos = try await YouTubeFeed.latestVideos(handle: YouTubeFeed.southParkHandle,
-                                                        fallbackChannelID: YouTubeFeed.southParkFallbackID)
+                                                        fallbackChannelID: YouTubeFeed.southParkFallbackID,
+                                                        pcBase: pc.baseURL)
         } catch {
             loadError = error.localizedDescription
         }
