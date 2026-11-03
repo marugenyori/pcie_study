@@ -115,9 +115,14 @@ enum ClipTranscriber {
 
     // MARK: - 認識
 
+    /// 話の切れ目（間）ごとに届く結果をつなげて返す
+    ///
+    /// 最近の iOS では、間があくと認識結果がそこでリセットされ、最後の結果には最後の発話しか入らない。
+    /// そのため、発話の終わり（speechRecognitionMetadata が付いた結果）ごとに単語を集めておく。
+    /// 以前のように結果が積み上がる場合もあるので、すでに集めた時刻より後の単語だけを足す。
     private static func recognize(_ url: URL, with recognizer: SFSpeechRecognizer) async throws -> [SFTranscriptionSegment] {
         let request = SFSpeechURLRecognitionRequest(url: url)
-        request.shouldReportPartialResults = false
+        request.shouldReportPartialResults = true
         request.addsPunctuation = true
         request.taskHint = .dictation
         // 英語のモデルが iPhone に入っていれば、音声を外に送らずに認識する
@@ -127,14 +132,23 @@ enum ClipTranscriber {
 
         return try await withCheckedThrowingContinuation { continuation in
             var finished = false
+            var collected: [SFTranscriptionSegment] = []
             recognizer.recognitionTask(with: request) { result, error in
                 guard !finished else { return }
-                if let result, result.isFinal {
+                if let result, result.isFinal || result.speechRecognitionMetadata != nil {
+                    let lastTime = collected.last?.timestamp ?? -1
+                    collected += result.bestTranscription.segments.filter { $0.timestamp > lastTime + 0.01 }
+                }
+                if result?.isFinal == true {
                     finished = true
-                    continuation.resume(returning: result.bestTranscription.segments)
+                    continuation.resume(returning: collected)
                 } else if let error {
                     finished = true
-                    continuation.resume(throwing: error)
+                    if collected.isEmpty {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume(returning: collected)
+                    }
                 }
             }
         }
