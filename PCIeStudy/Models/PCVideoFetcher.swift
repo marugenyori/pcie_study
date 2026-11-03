@@ -25,6 +25,19 @@ enum PCVideoFetcher {
         }
     }
 
+    /// PC の youtube_library に保存してある動画を受け取る（ブラウザ版で取り込んだ動画を iPhone でも見るとき）
+    static func fetchLibraryVideo(youtubeID: String, base: URL?) async throws -> URL {
+        guard let base else { throw Failure.notConfigured }
+        let url = base.appending(path: "api/youtube/library/\(youtubeID)/video")
+        let (temporary, response) = try await URLSession.shared.download(from: url)
+        let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+        if code == 404 { throw Failure.failed("PC にこの動画がありません") }
+        guard code == 200 else { throw Failure.failed("HTTP \(code)") }
+        let destination = EnglishStore.newFileURL(pathExtension: "mp4")
+        try FileManager.default.moveItem(at: temporary, to: destination)
+        return destination
+    }
+
     struct Result {
         let title: String
         let videoFile: URL

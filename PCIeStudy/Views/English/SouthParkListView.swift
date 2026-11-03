@@ -123,7 +123,7 @@ struct SouthParkListView: View {
             }
             let lines = result.subtitles.map(SubtitleParser.parse)
             _ = await store.addClip(copiedFile: result.videoFile, title: result.title,
-                                    lines: (lines?.isEmpty ?? true) ? nil : lines)
+                                    lines: (lines?.isEmpty ?? true) ? nil : lines, youtubeID: video.id)
             imported.insert(video.id)
         } catch {
             fetchError = error.localizedDescription
