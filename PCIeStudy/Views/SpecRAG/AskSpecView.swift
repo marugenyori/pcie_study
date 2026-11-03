@@ -1,10 +1,36 @@
 import SwiftUI
 
-/// PC の仕様書QA（RAG）に質問する画面
+/// 質問する画面。PC の仕様書QA（RAG）・iPhone 内の Apple Intelligence・Claude Code から相手を選べる
 struct AskSpecView: View {
     var initialQuestion: String = ""
 
+    /// 質問する相手
+    enum Target: String, CaseIterable, Identifiable {
+        case spec, apple, claudeCode
+
+        var id: String { rawValue }
+
+        var label: String {
+            switch self {
+            case .spec: return "仕様書（PC）"
+            case .apple: return "Apple AI"
+            case .claudeCode: return "Claude Code"
+            }
+        }
+
+        var symbol: String {
+            switch self {
+            case .spec: return "book.and.wrench"
+            case .apple: return "sparkles"
+            case .claudeCode: return "chevron.left.forwardslash.chevron.right"
+            }
+        }
+    }
+
     @Environment(SpecRAGClient.self) private var client
+    @Environment(\.openURL) private var openURL
+    @State private var target = Target.spec
+    @State private var apple = AppleAIConversation()
     @State private var messages: [ChatMessage] = []
     @State private var input = ""
     @State private var status: ConnectionStatus = .checking
@@ -15,6 +41,7 @@ struct AskSpecView: View {
     struct ChatMessage: Identifiable {
         let id = UUID()
         let question: String
+        var target: Target = .spec
         var model: String?
         var answer = ""
         var sources: [SpecRAGClient.Source] = []
@@ -33,7 +60,9 @@ struct AskSpecView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    statusBanner
+                    if target == .spec {
+                        statusBanner
+                    }
                     if messages.isEmpty {
                         introCard
                     }
@@ -54,7 +83,7 @@ struct AskSpecView: View {
         }
         .safeAreaInset(edge: .bottom) { inputBar }
         .screenBackground()
-        .navigationTitle("仕様書に質問")
+        .navigationTitle("質問する")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -122,15 +151,44 @@ struct AskSpecView: View {
 
     private var introCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("PCIe 仕様書に質問できます", systemImage: "book.and.wrench")
-                .font(.headline)
-            Text("PCにある仕様書（Base 7.1）から関係する箇所を探し、ローカルのAIが根拠の番号付きで日本語で答えます。質問も仕様書も、自宅のネットワークの外には出ません。")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            Text("例：「Polling.Active から Polling.Configuration に進む条件は？」")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            switch target {
+            case .spec:
+                Label("PCIe 仕様書に質問できます", systemImage: Target.spec.symbol)
+                    .font(.headline)
+                Text("PCにある仕様書（Base 7.1）から関係する箇所を探し、ローカルのAIが根拠の番号付きで日本語で答えます。質問も仕様書も、自宅のネットワークの外には出ません。")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("例：「Polling.Active から Polling.Configuration に進む条件は？」")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            case .apple:
+                Label("Apple Intelligence に質問できます", systemImage: Target.apple.symbol)
+                    .font(.headline)
+                Text("iPhone の中の AI が答えます。PC がなくても、外出先でも使えて、料金もかかりません。仕様書は見ていないので、用語の意味や仕組みのざっくりした説明に向いています。")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let reason = AppleAIConversation.unavailableReason {
+                    Label(reason, systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Text("例：「TLP と DLLP の違いを、たとえ話で教えて」")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            case .claudeCode:
+                Label("Claude Code に質問できます", systemImage: Target.claudeCode.symbol)
+                    .font(.headline)
+                Text("送信すると、質問を入れた状態で Claude Code の新しいセッションが開きます（このアプリのリポジトリ付き）。最後の送信は自分で押してください。くわしい調べものや、アプリの問題・解説の直しを頼みたいときに向いています。")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("例：「Flit Mode のときの TLP ヘッダの違いを、表にまとめて」")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding()
         .cardStyle(cornerRadius: 16)
@@ -184,11 +242,18 @@ struct AskSpecView: View {
                     Label("回答AI：\(model)", systemImage: "cpu")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
-                }
-                if message.finished && message.error == nil {
-                    Text("ローカルのAIは誤ることがあります。数値やビット位置は、根拠の原文やPDFで確認してください。")
+                } else if message.target != .spec, !message.answer.isEmpty {
+                    Label(message.target.label, systemImage: message.target.symbol)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                }
+                if message.finished && message.error == nil && message.target != .claudeCode {
+                    Text("AIは誤ることがあります。数値やビット位置は、仕様書の原文やPDFで確認してください。")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                if message.finished {
+                    askOthersRow(message)
                 }
             }
             .padding()
@@ -217,11 +282,34 @@ struct AskSpecView: View {
         }
     }
 
+    /// 同じ質問を、ほかの相手にも聞く（答えを見比べる）
+    private func askOthersRow(_ message: ChatMessage) -> some View {
+        HStack(spacing: 8) {
+            Text("ほかにも聞く：").font(.caption2).foregroundStyle(.secondary)
+            ForEach(Target.allCases.filter { $0 != message.target }) { other in
+                Button {
+                    target = other
+                    send(message.question)
+                } label: {
+                    Label(other.label, systemImage: other.symbol)
+                }
+                .disabled(isStreaming || (other == .spec && !client.isConfigured))
+            }
+        }
+        .font(.caption.bold())
+        .buttonStyle(.borderless)
+    }
+
     // MARK: - 入力欄
 
     private var inputBar: some View {
         VStack(alignment: .leading, spacing: 6) {
-            if !client.models.isEmpty {
+            Picker("質問する相手", selection: $target) {
+                ForEach(Target.allCases) { Text($0.label).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .disabled(isStreaming)
+            if target == .spec && !client.models.isEmpty {
                 modelPicker
             }
             inputRow
@@ -267,11 +355,12 @@ struct AskSpecView: View {
                 .accessibilityLabel("止める")
             } else {
                 Button {
-                    send()
+                    send(input)
                 } label: {
                     Image(systemName: "arrow.up.circle.fill").font(.title)
                 }
-                .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !client.isConfigured)
+                .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                          || (target == .spec && !client.isConfigured))
                 .accessibilityLabel("送信")
             }
         }
@@ -302,12 +391,55 @@ struct AskSpecView: View {
         }
     }
 
-    private func send() {
-        let question = input.trimmingCharacters(in: .whitespacesAndNewlines)
+    private func send(_ text: String) {
+        let question = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !question.isEmpty else { return }
         input = ""
         inputFocused = false
-        let history = messages.filter { $0.finished && $0.error == nil }.map { (q: $0.question, a: $0.answer) }
+        switch target {
+        case .spec: askSpec(question)
+        case .apple: askApple(question)
+        case .claudeCode: openClaudeCode(question)
+        }
+    }
+
+    private func askApple(_ question: String) {
+        messages.append(ChatMessage(question: question, target: .apple, statusText: "考えています…"))
+        let index = messages.count - 1
+        streamTask = Task {
+            do {
+                messages[index].answer = try await apple.ask(question)
+            } catch {
+                messages[index].error = error.localizedDescription
+            }
+            messages[index].finished = true
+            streamTask = nil
+        }
+    }
+
+    /// 質問を入れた Claude Code の新しいセッションを開く（送信は自分で押す）
+    private func openClaudeCode(_ question: String) {
+        let prompt = """
+            PCIe学習アプリ（このリポジトリ）を使って PCIe を勉強している人からの質問です。
+            コードは変えずに、日本語で、専門用語には短い説明を添えて答えてください。
+            数値やビット位置を書くときは、PCIe Base Specification のどの章かも書き、確かでないものはそう書いてください。
+
+            質問：\(question)
+            """
+        var message = ChatMessage(question: question, target: .claudeCode, statusText: nil)
+        if let url = ClaudeCodeRequestView.sessionURL(prompt: prompt) {
+            openURL(url)
+            message.answer = "Claude Code の新しいセッションを開きました。内容を確かめて送信してください。答えは Claude Code の画面に出ます。"
+        } else {
+            message.error = "Claude Code を開けませんでした。"
+        }
+        message.finished = true
+        messages.append(message)
+    }
+
+    private func askSpec(_ question: String) {
+        let history = messages.filter { $0.finished && $0.error == nil && $0.target == .spec }
+            .map { (q: $0.question, a: $0.answer) }
         let model = client.effectiveModel
         messages.append(ChatMessage(question: question, model: model))
         let index = messages.count - 1
