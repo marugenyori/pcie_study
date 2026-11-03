@@ -208,3 +208,11 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - ブラウザ版で取り込んだ動画は、iPhone ではスクリプトだけ入る。PC で保存した YouTube の動画（`youtubeID` あり）は「PC から動画を受け取る」で取り込める
 - 注意：「記録をリセット」しても、次の同期で PC の記録が戻ってくる（合わせる・大きいほうを使うきまりのため）
 - 章・クイズ・英語レッスンのデータは、ブラウザ版用に `web/content.json` へ書き出す（`scripts/export/main.swift`、`.github/workflows/export-content.yml`）
+
+## 2026-11-03 ブラウザ版（Surface）
+
+- `web/`（index.html・style.css・app.js、ビルド不要）。PC の server.py が `/app/` で配り、Surface では http://localhost:8765/app/ を開く
+- 学ぶ（章）・クイズ（ランダム10問・苦手・全問・章ごと）・英語で聞く（ブラウザの音声合成。Edge の Natural の声）・配信で英語（PC で保存した動画の再生、スクリプト、1文くり返し・1文ずつ止める・速さ、フレーズ保存、ブラウザの翻訳機能があれば日本語訳）・フレーズ帳
+- 記録は `/api/sync` で iPhone と同期（混ぜ方は iPhone と同じ。docs/SYNC.md）。ページに戻ってきたときにも読み直す
+- 英語で聞くのスライド、仕様書への質問、曲を調べる、文字起こしは、まだブラウザ版にない（文字起こし・曲・訳は iPhone で作ると同期される）
+- 動作確認：クラウドで仮のサーバ（/api/sync と youtube_library だけ）と仮の content.json を作り、Chromium で全画面を開いて、クイズ・読了・フレーズ保存・PC の動画の取り込みが記録に入ることを確かめた
