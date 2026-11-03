@@ -161,6 +161,8 @@ function recordQuizAnswer(questionID, correct, combo) {
   }
   if (wasWeak !== weak.has(questionID)) p.weak = { value: [...weak].sort(), updatedAt: now() };
   countAnswer();
+  // デイリークエストなど、extra.js の処理に知らせる
+  if (window.onQuizAnswer) window.onQuizAnswer({ questionID, correct, combo, wasWeak });
   save();
 }
 
@@ -311,7 +313,10 @@ function quizSession(key) {
   let questions;
   if (key === "random10") questions = shuffle(content.questions).slice(0, 10);
   else if (key === "all") questions = shuffle(content.questions);
-  else if (key === "weak") {
+  else if (key.startsWith("level-")) {
+    const ids = new Set(content.chapters.filter((c) => c.level === key.slice(6)).map((c) => c.id));
+    questions = shuffle(content.questions.filter((q) => ids.has(q.chapterID)));
+  } else if (key === "weak") {
     const weak = new Set(P().weak?.value || []);
     questions = shuffle(content.questions.filter((q) => weak.has(q.id)));
   } else questions = content.questions.filter((q) => q.chapterID === key);
@@ -353,6 +358,7 @@ function quizSession(key) {
         <p>${md(q.explanation)}</p>
         ${q.detail ? `<details><summary>くわしい解説</summary><p>${md(q.detail)}</p></details>` : ""}
         ${spec}
+        ${window.quizAfterHTML ? window.quizAfterHTML(q, chosen) : ""}
       </div>
       <button class="btn primary" id="next">${last ? "結果を見る" : "次の問題 →"}</button>`;
     document.getElementById("next").onclick = () => {
@@ -514,18 +520,99 @@ function englishHome() {
 function englishLesson(id) {
   const lesson = content.english.find((l) => l.id === id);
   if (!lesson) return (app.innerHTML = "<p>レッスンが見つかりません</p>");
-  let tab = "listen", showEn = false, showJa = false, pause = false;
+  let tab = "slides", showEn = false, showJa = false, pause = false;
   const texts = lesson.sentences.map((s) => s.spoken || s.en);
 
   const draw = () => {
     app.innerHTML = `
       <p><span class="badge">${esc(lesson.level)}</span> <span class="muted small">${esc(lesson.titleJa)}</span></p>
       <h1>${esc(lesson.title)}</h1>
-      <div class="row">${[["listen", "聞く"], ["questions", "問題"], ["words", "単語"]].map(([k, l]) =>
+      <div class="row">${[["slides", "スライド"], ["listen", "聞く"], ["questions", "問題"], ["dictation", "書き取り"], ["words", "単語"]].map(([k, l]) =>
         `<button class="btn ${tab === k ? "primary" : ""}" data-tab="${k}">${l}</button>`).join("")}</div>
       <div id="body"></div>`;
     app.querySelectorAll("[data-tab]").forEach((b) => { b.onclick = () => { speech.stop(); tab = b.dataset.tab; draw(); }; });
-    ({ listen, questions, words })[tab]();
+    ({ slides, listen, questions, dictation, words })[tab]();
+  };
+
+  // 読み上げに合わせて、いま話している文の図を出す（visual.js の renderSlide）
+  const slides = () => {
+    let index = 0, playing = false, slideEn = true, slideJa = true;
+    const body = document.getElementById("body");
+    const show = () => {
+      const s = lesson.sentences[index];
+      body.innerHTML = `<div class="card">${window.renderSlide(lesson.id, index)}
+          ${slideEn ? `<p>${esc(s.en)}</p>` : ""}${slideJa ? `<p class="muted small">${esc(s.ja)}</p>` : ""}</div>
+        <div class="row"><button class="btn" id="prev" ${index === 0 ? "disabled" : ""}>◀</button>
+          <button class="btn primary" id="play">${playing ? "■ 止める" : index === 0 ? "▶ 最初から再生" : "▶ ここから再生"}</button>
+          <button class="btn" id="next" ${index === lesson.sentences.length - 1 ? "disabled" : ""}>▶</button>
+          <span class="muted small">${index + 1} / ${lesson.sentences.length}（← → キーでも切り替え）</span>
+          <label><input type="checkbox" id="sen" ${slideEn ? "checked" : ""}> 英文</label>
+          <label><input type="checkbox" id="sja" ${slideJa ? "checked" : ""}> 日本語訳</label></div>`;
+      const go = (d) => {
+        const n = index + d;
+        if (n < 0 || n >= lesson.sentences.length) return;
+        index = n;
+        if (playing) start(); else show();
+      };
+      document.getElementById("prev").onclick = () => go(-1);
+      document.getElementById("next").onclick = () => go(1);
+      document.getElementById("play").onclick = () => { if (playing) { playing = false; speech.stop(); show(); } else start(); };
+      document.getElementById("sen").onchange = (e) => { slideEn = e.target.checked; show(); };
+      document.getElementById("sja").onchange = (e) => { slideJa = e.target.checked; show(); };
+      document.onkeydown = (e) => {
+        if (tab !== "slides") return;
+        if (e.key === "ArrowLeft") go(-1);
+        if (e.key === "ArrowRight") go(1);
+      };
+    };
+    const start = () => {
+      playing = true;
+      speech.play(texts, index, (i) => {
+        if (i < 0) { playing = false; show(); return; }
+        index = i;
+        show();
+      });
+    };
+    show();
+  };
+
+  // 1文ずつ聞いて、空欄の単語を4択で選ぶ
+  const dictation = () => {
+    const items = lesson.sentences.filter((s) => s.key);
+    let index = 0, correct = 0;
+    const body = document.getElementById("body");
+    const show = () => {
+      if (index >= items.length) {
+        body.innerHTML = `<div class="card"><b>${items.length}問中 ${correct}問 正解</b>
+          <p class="muted small">間違えた語は「単語」タブや、「聞く」で英文を表示して確かめましょう。</p><button class="btn" id="again">もう一度</button></div>`;
+        document.getElementById("again").onclick = () => { index = 0; correct = 0; show(); };
+        return;
+      }
+      const item = items[index];
+      const others = shuffle([...new Set(items.map((s) => s.key))].filter((k) => k !== item.key)).slice(0, 3);
+      const choices = shuffle([item.key, ...others]);
+      body.innerHTML = `<div class="card"><p class="muted small">${index + 1} / ${items.length}　聞こえた単語を選んでください</p>
+          <button class="btn primary" id="say">🔊 もう一度聞く</button><p id="sentence">${esc(item.en.replace(item.key, "＿＿＿＿"))}</p><div id="ja"></div></div>
+        ${choices.map((c) => `<button class="choice" data-c="${esc(c)}">${esc(c)}</button>`).join("")}<div id="after"></div>`;
+      const say = () => speech.play([item.spoken || item.en], 0, () => {});
+      document.getElementById("say").onclick = say;
+      body.querySelectorAll(".choice").forEach((b) => {
+        b.onclick = () => {
+          if (body.querySelector(".choice:disabled")) return;
+          const chosen = b.dataset.c;
+          if (chosen === item.key) correct++;
+          body.querySelectorAll(".choice").forEach((x) => {
+            x.disabled = true;
+            x.classList.add(x.dataset.c === item.key ? "correct" : x.dataset.c === chosen ? "wrong" : "dimmed");
+          });
+          document.getElementById("sentence").textContent = item.en;
+          document.getElementById("ja").innerHTML = `<p class="muted small">${esc(item.ja)}</p>`;
+          document.getElementById("after").innerHTML = `<button class="btn primary" id="next">${index + 1 < items.length ? "次の文へ" : "結果を見る"}</button>`;
+          document.getElementById("next").onclick = () => { index++; show(); if (index < items.length) say(); };
+        };
+      });
+    };
+    show();
   };
 
   const listen = () => {
@@ -668,6 +755,7 @@ async function clipsHome() {
       <div id="dl-status" class="muted small"></div>
       <p class="muted small">保存した動画は自分の学習用だけに使ってください。iPhone の「配信で英語」にもスクリプトが同期され、iPhone では「PC から動画を受け取る」で動画も見られます。</p>
     </div>
+    ${window.clipsHomeExtraHTML ? window.clipsHomeExtraHTML() : ""}
     <h2>動画（${list.length}）</h2>
     <div class="card list">${list.length ? list.map((c) => `
       <a class="item" href="#/clip/${esc(c.id)}"><b>${esc(c.title)}</b>
@@ -688,6 +776,7 @@ async function clipsHome() {
     } catch (e) { status.textContent = `保存できませんでした：${e.message}`; }
   };
 
+  if (window.clipsHomeExtraBind) window.clipsHomeExtraBind();
   const known = new Set(list.map((c) => c.youtubeID).filter(Boolean));
   try {
     const res = await fetch("/api/youtube/library");
@@ -728,11 +817,30 @@ async function clipsHome() {
 
 /** ブラウザに翻訳機能（Translator API）があれば、まだ訳していない文を日本語に訳す */
 async function translateLines(clipID) {
-  if (!("Translator" in self)) throw new Error("このブラウザには翻訳機能がありません。iPhone で訳すと同期されます。");
-  const translator = await self.Translator.create({ sourceLanguage: "en", targetLanguage: "ja" });
   const clip = doc.english.clips[clipID];
-  for (const line of clip.lines || []) {
-    if (!line.japanese) line.japanese = await translator.translate(line.text);
+  const pending = (clip.lines || []).filter((l) => !l.japanese);
+  // ブラウザの翻訳機能は、すぐ使える（翻訳データが入っている）ときだけ使う。準備中だと待たされるため
+  let translator = null;
+  if ("Translator" in self) {
+    try {
+      const options = { sourceLanguage: "en", targetLanguage: "ja" };
+      // availability() も返事をしないことがあるので、2秒で見切る
+      const state = await Promise.race([self.Translator.availability(options), new Promise((r) => setTimeout(() => r("timeout"), 2000))]);
+      if (state === "available") translator = await self.Translator.create(options);
+    } catch (_) { translator = null; }
+  }
+  if (translator) {
+    for (const line of pending) line.japanese = await translator.translate(line.text);
+  } else {
+    // ブラウザに翻訳機能がないときは、PC の AI で訳す（docs/PC_WEB_EXTRAS.md）
+    for (let i = 0; i < pending.length; i += 20) {
+      const chunk = pending.slice(i, i + 20);
+      const res = await fetch("/api/llm/translate", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texts: chunk.map((l) => l.text), target: "ja" }) });
+      if (!res.ok) throw new Error(res.status === 404 ? "PC のサーバが翻訳に未対応です（docs/PC_WEB_EXTRAS.md の準備が必要）。iPhone で訳すと同期されます。" : `HTTP ${res.status}`);
+      const { translations } = await res.json();
+      chunk.forEach((l, j) => { if (translations[j]) l.japanese = translations[j]; });
+    }
   }
   clip.updatedAt = now();
   save();
@@ -766,7 +874,8 @@ function clipPlayer(id) {
       <div class="item"><b>${esc(s.title)}</b> ・ ${esc(s.artist)} <span class="muted small">${formatTime(s.start)}</span>
         ${s.appleMusicURL ? ` <a href="${esc(s.appleMusicURL)}" target="_blank">Apple Music</a>` : ""}
         <a href="https://open.spotify.com/search/${encodeURIComponent(`${s.title} ${s.artist}`)}" target="_blank">Spotify</a></div>`).join("")}</div>` : ""}
-    ${!lines.length ? `<div class="card muted">まだスクリプトがありません。iPhone で文字起こしすると、ここにも出ます。</div>` : ""}`;
+    ${!lines.length ? `<div class="card muted">まだスクリプトがありません。${hasVideo ? "下の「PC で文字起こし」を使うか、" : ""}iPhone で文字起こしすると、ここにも出ます。</div>` : ""}
+    ${window.clipExtrasHTML ? window.clipExtrasHTML(id, clip) : ""}`;
 
   const video = document.getElementById("video");
   const linesBox = document.getElementById("lines");
@@ -828,6 +937,7 @@ function clipPlayer(id) {
     e.target.textContent = "訳しています…";
     try { await translateLines(id); clipPlayer(id); } catch (err) { alert(err.message); e.target.disabled = false; e.target.textContent = "日本語に訳す"; }
   };
+  if (window.clipExtrasBind) window.clipExtrasBind(id, clip, video);
   cleanup = () => { if (video) video.pause(); };
 }
 
