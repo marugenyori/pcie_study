@@ -119,7 +119,23 @@ let game: [String: Any] = [
     "quests": DailyQuest.allCases.map { ["id": $0.rawValue, "title": $0.title, "goal": $0.goal] },
 ]
 
+func cells(_ row: [SimpleSlide.Cell]) -> [[String: Any]] {
+    row.map { cell in
+        switch cell {
+        case let .box(text, detail, on): return ["type": "box", "text": text, "detail": detail ?? "", "on": on]
+        case let .arrow(symbol, label, on): return ["type": "arrow", "symbol": symbol, "label": label ?? "", "on": on]
+        }
+    }
+}
+
+let englishSlides: [String: Any] = SimpleSlides.all(lessonIDs: EnglishData.all.map(\.id), count: { id in
+    EnglishData.lesson(id: id)?.sentences.count ?? 0
+}).mapValues { slides in
+    slides.map { ["rows": $0.rows.map(cells), "note": $0.note] }
+}
+
 let content: [String: Any] = [
+    "englishSlides": englishSlides,
     "diagrams": diagrams,
     "game": game,
     "chapters": chapters,

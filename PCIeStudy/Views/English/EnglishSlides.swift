@@ -80,7 +80,12 @@ struct EnglishSlide: View {
             case "en-config": ConfigSlide(index: index)
             case "en-msi": MSISlide(index: index)
             case "en-gen6": Gen6Slide(index: index)
-            default: Image(systemName: "photo").font(.largeTitle).foregroundStyle(.secondary)
+            default:
+                if let slide = SimpleSlides.slide(lessonID: lessonID, index: index) {
+                    SimpleSlideView(slide: slide)
+                } else {
+                    Image(systemName: "photo").font(.largeTitle).foregroundStyle(.secondary)
+                }
             }
         }
         .frame(maxWidth: .infinity, minHeight: 240)
@@ -545,5 +550,27 @@ private struct Gen6Slide: View {
             Text(label).font(.caption2.weight(.semibold)).multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+// MARK: - 箱と矢印を並べるだけのスライド（追加のレッスン用。中身は PCIeStudy/Data/EnglishSlideData.swift）
+
+private struct SimpleSlideView: View {
+    let slide: SimpleSlide
+
+    var body: some View {
+        VStack(spacing: 8) {
+            ForEach(Array(slide.rows.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: 6) {
+                    ForEach(Array(row.enumerated()), id: \.offset) { _, cell in
+                        switch cell {
+                        case let .box(text, detail, on): SlideBox(text: text, detail: detail, on: on)
+                        case let .arrow(symbol, label, on): SlideArrow(symbol: symbol, label: label, on: on)
+                        }
+                    }
+                }
+            }
+        }
+        SlideNote(text: slide.note)
     }
 }

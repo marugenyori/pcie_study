@@ -63,7 +63,32 @@ enum EnglishSpeech {
         return result.replacingOccurrences(of: #"\bx(\d+)\b"#, with: "by $1", options: .regularExpression)
     }
 
+    /// 前のものから順に置き換える（L0s を L0 より先に置くなど、長いものを先に）
     private static let replacements: [(String, String)] = [
+        ("sriov_numvfs", "S R I O V num V Fs"),
+        ("SR-IOV", "S R I O V"),
+        ("PM_PME", "P M P M E"),
+        ("WAKE#", "wake"),
+        ("1b/1b", "one b, one b"),
+        ("1000b", "one zero zero zero b"),
+        ("c-2", "c minus two"),
+        ("TS2", "T S two"),
+        ("EQ ", "E Q "),
+        ("CXL.io", "C X L dot I O"),
+        ("CXL.cache", "C X L dot cache"),
+        ("CXL.mem", "C X L dot mem"),
+        ("CXL", "C X L"),
+        ("PASID", "pass I D"),
+        ("L1.2", "L one point two"),
+        ("IOMMU", "I O M M U"),
+        ("ASPM", "A S P M"),
+        ("MRRS", "M R R S"),
+        ("D3cold", "D three cold"),
+        ("D3hot", "D three hot"),
+        ("D0", "D zero"),
+        ("D3", "D three"),
+        ("L0s", "L zero S"),
+        ("VC0", "V C zero"),
         ("REPLAY_NUM", "replay num"),
         ("REPLAY_TIMER", "replay timer"),
         ("128b/130b", "128 b, 130 b"),
@@ -78,6 +103,16 @@ enum EnglishSpeech {
         ("ACK", "ack"),
         ("NAK", "nak"),
         (" ID", " I D"),
+        ("MPS", "M P S"),
+        ("AER", "A E R"),
+        ("PME", "P M E"),
+        ("LTR", "L T R"),
+        ("TDISP", "T disp"),
+        ("SIOV", "S I O V"),
+        ("UIO", "U I O"),
+        ("ATS", "A T S"),
+        (" PF", " P F"),
+        (" VF", " V F"),
     ]
 }
 
@@ -123,7 +158,14 @@ enum EnglishData {
                    tip: "16進は「hex」を前に付けるか、「zero x」と読む。1と0を1桁ずつ読む人もいる"),
     ]
 
-    static let all: [EnglishLesson] = [
+    /// 章の順に並べた全レッスン（同じ章の中は書いた順）
+    static let all: [EnglishLesson] = (core + more + more2).enumerated().sorted { a, b in
+        let na = LessonData.chapter(id: a.element.chapterID)?.number ?? 0
+        let nb = LessonData.chapter(id: b.element.chapterID)?.number ?? 0
+        return na != nb ? na < nb : a.offset < b.offset
+    }.map(\.element)
+
+    private static let core: [EnglishLesson] = [
         EnglishLesson(
             id: "en-layers", title: "The Three Layers", titleJa: "3つの層", chapterID: "layers",
             sentences: [
