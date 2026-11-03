@@ -70,13 +70,13 @@ final class VoiceDownloader {
 
     /// 今の発音・速さで、まだ保存していない音声を PC に作ってもらう。完了したレッスン（skipping）の分は作らない
     @MainActor
-    func start(voice: String, speed: Double, skipping done: Set<String>) {
+    func start(voice: String, speed: Double, skipping completedLessons: Set<String>) {
         guard !isRunning else { return }
         guard let base = SpecRAGClient.savedBaseURL else {
             message = "PC のサーバのアドレスが未設定です。「質問する」の右上の歯車から設定してください。"
             return
         }
-        let texts = VoiceCache.texts(skipping: done).filter { !VoiceCache.contains(text: $0, voice: voice, speed: speed) }
+        let texts = VoiceCache.texts(skipping: completedLessons).filter { !VoiceCache.contains(text: $0, voice: voice, speed: speed) }
         isRunning = true
         done = 0
         failed = 0
