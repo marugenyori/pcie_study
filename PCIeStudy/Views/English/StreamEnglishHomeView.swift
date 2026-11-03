@@ -46,7 +46,16 @@ struct StreamEnglishHomeView: View {
                     }
                 }
             } footer: {
-                Text("iPhone の画面収録や、PC で録画して iCloud Drive・OneDrive などに入れた動画を使えます。録画は自分の学習用だけにし、共有やアップロードはしないでください。")
+                Text("iPhone の画面収録や、PC で録画して iCloud Drive・OneDrive などに入れた動画を使えます。「ファイル」からは、同じ名前の字幕ファイル（.srt / .vtt）も一緒に選ぶと、文字起こしの代わりに使います。録画は自分の学習用だけにし、共有やアップロードはしないでください。")
+            }
+
+            Section("公式チャンネルから") {
+                NavigationLink {
+                    SouthParkListView()
+                } label: {
+                    ToolRow(symbol: "play.tv", title: "South Park 公式",
+                            detail: "YouTube の新着動画。PC で保存して字幕付きで取り込む")
+                }
             }
 
             Section("動画") {
@@ -97,7 +106,8 @@ struct StreamEnglishHomeView: View {
             pickedItem = nil
             Task { await importFromPhotos(item) }
         }
-        .fileImporter(isPresented: $showsFileImporter, allowedContentTypes: [.movie, .audio]) { result in
+        .fileImporter(isPresented: $showsFileImporter, allowedContentTypes: [.movie, .audio] + Self.subtitleTypes,
+                      allowsMultipleSelection: true) { result in
             Task { await importFromFiles(result) }
         }
         .alert("取り込めませんでした", isPresented: Binding(get: { importError != nil },
@@ -130,16 +140,37 @@ struct StreamEnglishHomeView: View {
         }
     }
 
-    private func importFromFiles(_ result: Result<URL, Error>) async {
+    private static let subtitleExtensions = ["srt", "vtt"]
+    private static let subtitleTypes = subtitleExtensions.compactMap { UTType(filenameExtension: $0, conformingTo: .text) }
+
+    /// 動画（と、同じ名前の字幕ファイル .srt / .vtt）を取り込む。字幕があれば文字起こしの代わりに使う
+    private func importFromFiles(_ result: Result<[URL], Error>) async {
         isImporting = true
         defer { isImporting = false }
         do {
-            let source = try result.get()
-            let accessing = source.startAccessingSecurityScopedResource()
-            defer { if accessing { source.stopAccessingSecurityScopedResource() } }
-            let destination = EnglishStore.newFileURL(pathExtension: source.pathExtension)
-            try FileManager.default.copyItem(at: source, to: destination)
-            _ = await store.addClip(copiedFile: destination, title: source.deletingPathExtension().lastPathComponent)
+            let sources = try result.get()
+            let accessing = sources.map { $0.startAccessingSecurityScopedResource() }
+            defer {
+                for (source, ok) in zip(sources, accessing) where ok { source.stopAccessingSecurityScopedResource() }
+            }
+            let subtitles = sources.filter { Self.subtitleExtensions.contains($0.pathExtension.lowercased()) }
+            let media = sources.filter { !subtitles.contains($0) }
+            if media.isEmpty {
+                importError = "動画も一緒に選んでください。取り込み済みの動画に字幕を付けるときは、再生画面のメニューの「字幕ファイルを読み込む」を使います。"
+                return
+            }
+            for source in media {
+                let name = source.deletingPathExtension().lastPathComponent
+                // 「動画名.en.srt」のような名前も同じ動画の字幕とみなす。1本だけなら名前が違っても組にする
+                let subtitle = subtitles.first { $0.lastPathComponent.lowercased().hasPrefix(name.lowercased() + ".") }
+                    ?? (media.count == 1 && subtitles.count == 1 ? subtitles.first : nil)
+                let lines = subtitle.flatMap { try? String(contentsOf: $0, encoding: .utf8) }.map(SubtitleParser.parse)
+
+                let destination = EnglishStore.newFileURL(pathExtension: source.pathExtension)
+                try FileManager.default.copyItem(at: source, to: destination)
+                _ = await store.addClip(copiedFile: destination, title: name,
+                                        lines: (lines?.isEmpty ?? true) ? nil : lines)
+            }
         } catch {
             importError = error.localizedDescription
         }

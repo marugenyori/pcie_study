@@ -1,5 +1,6 @@
 import AVKit
 import UIKit
+import UniformTypeIdentifiers
 import SwiftUI
 
 /// 動画を再生しながら、文字起こしした英文を1文ずつ練習する
@@ -42,6 +43,7 @@ struct ClipPlayerView: View {
     @State private var translateError: String?
     @State private var showsQA = false
     @State private var showsSongs = false
+    @State private var showsSubtitleImporter = false
 
     init(clip: EnglishClip, startAt: Double? = nil) {
         clipID = clip.id
@@ -124,6 +126,11 @@ struct ClipPlayerView: View {
                                 Label("動画で Q&A（要約・クイズ・質問）", systemImage: "sparkles")
                             }
                         }
+                        Button {
+                            showsSubtitleImporter = true
+                        } label: {
+                            Label("字幕ファイルを読み込む", systemImage: "captions.bubble")
+                        }
                         Button(role: .destructive) {
                             loopLine = nil
                             Task { await transcribe() }
@@ -146,6 +153,10 @@ struct ClipPlayerView: View {
         }
         .sheet(item: $savingLine) { line in
             SavePhraseSheet(line: line, clipID: clipID)
+        }
+        .fileImporter(isPresented: $showsSubtitleImporter,
+                      allowedContentTypes: ["srt", "vtt"].compactMap { UTType(filenameExtension: $0, conformingTo: .text) }) { result in
+            importSubtitles(result)
         }
         .sheet(isPresented: $showsSongs) {
             SongListView(clipID: clipID) { seconds in
@@ -245,6 +256,13 @@ struct ClipPlayerView: View {
                     .buttonStyle(AppButtonStyle(.primary))
 
                     Button {
+                        showsSubtitleImporter = true
+                    } label: {
+                        Label("字幕ファイル（.srt / .vtt）を読み込む", systemImage: "captions.bubble").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(AppButtonStyle(.secondary))
+
+                    Button {
                         showsSongs = true
                     } label: {
                         Label("流れている曲を調べる", systemImage: "music.note.list").frame(maxWidth: .infinity)
@@ -255,6 +273,24 @@ struct ClipPlayerView: View {
             .padding()
             .cardStyle()
             .padding()
+        }
+    }
+
+    /// 字幕ファイルを、文字起こしの代わりに使う
+    private func importSubtitles(_ result: Result<URL, Error>) {
+        do {
+            let url = try result.get()
+            let accessing = url.startAccessingSecurityScopedResource()
+            defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+            let lines = SubtitleParser.parse(try String(contentsOf: url, encoding: .utf8))
+            guard !lines.isEmpty else {
+                transcribeError = "字幕ファイルから文を読み取れませんでした。"
+                return
+            }
+            loopLine = nil
+            store.setLines(lines, for: clipID)
+        } catch {
+            transcribeError = error.localizedDescription
         }
     }
 
