@@ -13,6 +13,8 @@ let serverAvailable = false;
 // MARK: - 小さな道具
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+/** アプリの文章にある **太字** と `コード` だけを HTML にする（ほかはそのまま文字として出す） */
+const md = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>");
 const now = () => new Date().toISOString();
 const todayKey = (d = new Date()) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -236,12 +238,12 @@ function renderBlocks(blocks) {
   return blocks.map((b) => {
     switch (b.type) {
       case "heading": return `<h2>${esc(b.text)}</h2>`;
-      case "text": return `<p>${esc(b.text)}</p>`;
-      case "bullets": return `<ul>${b.items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>`;
-      case "note": return `<div class="note">${esc(b.text)}</div>`;
+      case "text": return `<p>${md(b.text)}</p>`;
+      case "bullets": return `<ul>${b.items.map((i) => `<li>${md(i)}</li>`).join("")}</ul>`;
+      case "note": return `<div class="note">${md(b.text)}</div>`;
       case "figure": return `<pre class="figure">${esc(b.text)}</pre>`;
       case "table": return `<table><tr>${b.header.map((h) => `<th>${esc(h)}</th>`).join("")}</tr>${
-        b.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</table>`;
+        b.rows.map((r) => `<tr>${r.map((c) => `<td>${md(c)}</td>`).join("")}</tr>`).join("")}</table>`;
       default: return "";
     }
   }).join("");
@@ -341,15 +343,15 @@ function quizSession(key) {
       button.disabled = true;
       button.classList.add(i === q.answer ? "correct" : i === chosen ? "wrong" : "dimmed");
       const note = q.choiceNotes?.[i];
-      if (note) button.insertAdjacentHTML("beforeend", `<div class="muted small">${esc(note)}</div>`);
+      if (note) button.insertAdjacentHTML("beforeend", `<div class="muted small">${md(note)}</div>`);
     });
     const spec = q.spec ? `<div class="muted small">仕様書：§${esc(q.spec.section)} ${esc(q.spec.title)}（p.${q.spec.page}）</div>` : "";
     const last = index === questions.length - 1;
     document.getElementById("after").innerHTML = `
       <div class="card">
         <b>${correct ? "⭕ 正解" : "❌ 不正解"}</b>
-        <p>${esc(q.explanation)}</p>
-        ${q.detail ? `<details><summary>くわしい解説</summary><p>${esc(q.detail)}</p></details>` : ""}
+        <p>${md(q.explanation)}</p>
+        ${q.detail ? `<details><summary>くわしい解説</summary><p>${md(q.detail)}</p></details>` : ""}
         ${spec}
       </div>
       <button class="btn primary" id="next">${last ? "結果を見る" : "次の問題 →"}</button>`;
