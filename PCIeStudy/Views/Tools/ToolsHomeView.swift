@@ -28,7 +28,7 @@ struct ToolsHomeView: View {
                 }
                 Section("英語") {
                     NavigationLink {
-                        EnglishHomeView()
+                        StreamEnglishHomeView()
                     } label: {
                         ToolRow(symbol: "captions.bubble", title: "配信で英語", detail: "録画した動画を文字起こしして、1文ずつ聞き取り練習")
                     }

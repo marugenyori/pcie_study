@@ -24,6 +24,8 @@ final class ProgressStore {
     private var questBestCombo: Int
     private var questWeakCleared: Int
     private var questsDone: Set<String>
+    /// 聞き取り問題まで終えた英語レッスンのID
+    private(set) var englishDone: Set<String>
 
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private let sharedDefaults: UserDefaults
@@ -41,6 +43,7 @@ final class ProgressStore {
         static let questBestCombo = "questBestCombo"
         static let questWeakCleared = "questWeakCleared"
         static let questsDone = "questsDone"
+        static let englishDone = "englishDone"
     }
 
     init(defaults: UserDefaults = .standard, sharedDefaults: UserDefaults = AppGroup.defaults) {
@@ -59,6 +62,7 @@ final class ProgressStore {
         questBestCombo = defaults.integer(forKey: Keys.questBestCombo)
         questWeakCleared = defaults.integer(forKey: Keys.questWeakCleared)
         questsDone = Set(defaults.stringArray(forKey: Keys.questsDone) ?? [])
+        englishDone = Set(defaults.stringArray(forKey: Keys.englishDone) ?? [])
     }
 
     func isCompleted(_ chapterID: String) -> Bool {
@@ -202,6 +206,24 @@ final class ProgressStore {
         answeredTotal == 0 ? 0 : Double(correctTotal) / Double(answeredTotal)
     }
 
+    // MARK: 英語で聞く
+
+    func isEnglishDone(_ lessonID: String) -> Bool {
+        englishDone.contains(lessonID)
+    }
+
+    func markEnglishDone(_ lessonID: String) {
+        guard !englishDone.contains(lessonID) else { return }
+        englishDone.insert(lessonID)
+        defaults.set(Array(englishDone), forKey: Keys.englishDone)
+    }
+
+    /// 英語の聞き取り問題に1問答えた（今日の学習量と連続日数に数える。苦手リストには入れない）
+    func recordEnglishAnswer() {
+        stats.recordAnswer()
+        stats.save(to: sharedDefaults)
+    }
+
     // MARK: 毎日の学習
 
     func setDailyGoal(_ goal: Int) {
@@ -248,8 +270,10 @@ final class ProgressStore {
         questBestCombo = 0
         questWeakCleared = 0
         questsDone = []
+        englishDone = []
         [Keys.completed, Keys.quizBest, Keys.answered, Keys.correct, Keys.weak, Keys.dailyAnswers,
-         Keys.xp, Keys.gameBest, Keys.questDay, Keys.questBestCombo, Keys.questWeakCleared, Keys.questsDone].forEach {
+         Keys.xp, Keys.gameBest, Keys.questDay, Keys.questBestCombo, Keys.questWeakCleared, Keys.questsDone,
+         Keys.englishDone].forEach {
             defaults.removeObject(forKey: $0)
         }
         let goal = stats.dailyGoal
