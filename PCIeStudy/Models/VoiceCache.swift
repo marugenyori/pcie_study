@@ -82,7 +82,7 @@ final class VoiceDownloader {
         failed = 0
         total = texts.count
         message = texts.isEmpty ? "すべて保存済みです。" : nil
-        task = Task { @MainActor in
+        task = Task { @MainActor [self] in
             for text in texts {
                 if Task.isCancelled { break }
                 do {
