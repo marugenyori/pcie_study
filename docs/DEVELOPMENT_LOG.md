@@ -191,3 +191,10 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - 字幕ファイル（.srt / .vtt）を文字起こしの代わりに使えるようにした（`SubtitleParser.swift`）。「ファイルから取り込む」で動画と同じ名前の字幕を一緒に選ぶか、再生画面のメニュー →「字幕ファイルを読み込む」。YouTube の自動字幕で同じ行が重なる分は飛ばす
 - 実機で「com.apple.ShazamCore エラー102」になったため、署名の作り方を変えた：`SHSignatureGenerator.signature(from: AVAsset)` をやめ、AVAssetReader で 44.1kHz・モノラルの PCM に変えて `SHSignatureGenerator.append` に渡す。エラー表示は「署名の作成」と「照合」のどちらで失敗したかと、エラーのドメイン・番号を出す
 - 実機で South Park の一覧が出なかった（YouTube の公開 RSS フィードがエラーを返す）。PC の server.py に yt-dlp で一覧を返す `GET /api/youtube/channel` を足してもらい、アプリは PC を優先、だめなら RSS を使うようにした。失敗したときは PC と RSS それぞれの理由を表示する
+
+## 2026-11-03 英語で聞く：スライド
+
+- レッスンの最初のステップに「スライド」を追加。読み上げに合わせて、いま話している文の内容を図で見せる（`PCIeStudy/Views/English/EnglishSlides.swift`、`SlideStepView`）
+- 図はレッスンごとに1枚（3つの層、木構造、TLP とリクエスト、再送バッファ、クレジット、レーンと符号化、LTSSM、コンフィグ空間、MSI、PAM4 とフリット）で、文ごとに関係する部分を強調し、ひとことの説明を出す
+- 読み上げが次の文に進むとスライドもめくれる。左右のスワイプ・ボタンでも切り替えられ、再生中に切り替えるとそこから読み直す
+- 図の数値は、レッスンの英文にある数値だけを使った（仕様書との照合は英文と同じく未確認）

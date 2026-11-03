@@ -16,10 +16,11 @@ struct EnglishHomeView: View {
                     Text("PCIe の仕組みを英語で聞いて、技術英語の耳を作ります。1つのレッスンは次の順に進めるのがおすすめです。")
                         .font(.subheadline)
                     VStack(alignment: .leading, spacing: 4) {
-                        stepLine("1", "聞く：まず英文を隠したまま聞き、次に英文を見ながら聞く")
-                        stepLine("2", "問題：英語の質問に答えて、聞き取れたか確かめる")
-                        stepLine("3", "書き取り：1文ずつ聞いて、抜けた単語を選ぶ")
-                        stepLine("4", "単語：よく出る語の発音と、聞こえ方のコツ")
+                        stepLine("1", "スライド：図を見ながら聞いて、何の話かつかむ")
+                        stepLine("2", "聞く：英文を隠したまま聞き、次に英文を見ながら聞く")
+                        stepLine("3", "問題：英語の質問に答えて、聞き取れたか確かめる")
+                        stepLine("4", "書き取り：1文ずつ聞いて、抜けた単語を選ぶ")
+                        stepLine("5", "単語：よく出る語の発音と、聞こえ方のコツ")
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -146,10 +147,11 @@ struct EnglishLessonView: View {
     let player: SpeechPlayer
 
     enum Step: String, CaseIterable, Identifiable {
-        case listen, questions, dictation, words
+        case slides, listen, questions, dictation, words
         var id: String { rawValue }
         var label: String {
             switch self {
+            case .slides: return "スライド"
             case .listen: return "聞く"
             case .questions: return "問題"
             case .dictation: return "書き取り"
@@ -158,7 +160,7 @@ struct EnglishLessonView: View {
         }
     }
 
-    @State private var step: Step = .listen
+    @State private var step: Step = .slides
 
     var body: some View {
         ScrollView {
@@ -177,6 +179,7 @@ struct EnglishLessonView: View {
                 .pickerStyle(.segmented)
 
                 switch step {
+                case .slides: SlideStepView(lesson: lesson, player: player)
                 case .listen: ListenStepView(lesson: lesson, player: player)
                 case .questions: QuestionStepView(lesson: lesson, player: player)
                 case .dictation: DictationStepView(lesson: lesson, player: player)
@@ -203,6 +206,100 @@ struct EnglishLessonView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: step) { player.stop() }
         .onDisappear { player.stop() }
+    }
+}
+
+// MARK: スライド
+
+/// 読み上げに合わせて、いま話している内容の図を出す
+private struct SlideStepView: View {
+    let lesson: EnglishLesson
+    let player: SpeechPlayer
+
+    @State private var index = 0
+    @State private var showsEnglish = true
+    @State private var showsJapanese = true
+
+    private var source: String { "slides-\(lesson.id)" }
+    private var texts: [String] { lesson.sentences.map(\.en) }
+    private var isPlaying: Bool { player.isPlaying(source) }
+
+    var body: some View {
+        let sentence = lesson.sentences[index]
+        VStack(spacing: 12) {
+            VStack(spacing: 14) {
+                EnglishSlide(lessonID: lesson.id, index: index)
+                Divider()
+                VStack(alignment: .leading, spacing: 6) {
+                    if showsEnglish {
+                        Text(sentence.en).font(.body)
+                    }
+                    if showsJapanese {
+                        Text(sentence.ja).font(.subheadline).foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding()
+            .cardStyle()
+            .contentShape(Rectangle())
+            .gesture(DragGesture(minimumDistance: 30).onEnded { value in
+                if value.translation.width < -30 { go(by: 1) }
+                if value.translation.width > 30 { go(by: -1) }
+            })
+
+            HStack(spacing: 10) {
+                Button { go(by: -1) } label: {
+                    Image(systemName: "chevron.left")
+                }
+                .buttonStyle(AppButtonStyle(.secondary))
+                .disabled(index == 0)
+                .accessibilityLabel("前のスライド")
+
+                Button {
+                    if isPlaying {
+                        player.stop()
+                    } else {
+                        player.play(texts, from: index, source: source)
+                    }
+                } label: {
+                    Label(isPlaying ? "止める" : (index == 0 ? "最初から再生" : "ここから再生"),
+                          systemImage: isPlaying ? "stop.fill" : "play.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(AppButtonStyle(.primary))
+
+                Button { go(by: 1) } label: {
+                    Image(systemName: "chevron.right")
+                }
+                .buttonStyle(AppButtonStyle(.secondary))
+                .disabled(index == lesson.sentences.count - 1)
+                .accessibilityLabel("次のスライド")
+            }
+
+            Text("\(index + 1) / \(lesson.sentences.count)　左右にスワイプでも切り替えられます")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            VStack(spacing: 8) {
+                Toggle("英文を表示", isOn: $showsEnglish)
+                Toggle("日本語訳を表示", isOn: $showsJapanese)
+            }
+            .font(.subheadline)
+            .padding()
+            .cardStyle()
+        }
+        .onChange(of: player.currentIndex) { _, current in
+            // 読み上げが次の文に進んだら、スライドもめくる
+            if isPlaying, let current { index = current }
+        }
+    }
+
+    private func go(by delta: Int) {
+        let next = index + delta
+        guard lesson.sentences.indices.contains(next) else { return }
+        index = next
+        if isPlaying { player.play(texts, from: next, source: source) }
     }
 }
 
