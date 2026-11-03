@@ -175,18 +175,24 @@ function todayHome() {
   }
   const list = achievements();
   app.innerHTML = `
-    <h1>今日</h1>
-    <div class="grid">
-      <div class="card"><div class="muted small">連続日数</div><div class="stat">🔥 ${streak()} 日</div>
-        <div class="muted small">最長記録 ${p.bestStreak || 0} 日</div></div>
-      <div class="card"><div class="muted small">今日の問題数</div><div class="stat">${todayCount()} / ${dailyGoal()}</div>
+    <div class="card hero">
+      <div class="flame">🔥</div>
+      <div>
+        <div class="big">${streak()} 日連続</div>
+        <div class="sub">最長記録 ${p.bestStreak || 0} 日 ・ 今日 ${todayCount()} / ${dailyGoal()} 問</div>
         <div class="progress"><div style="width:${Math.min(100, (todayCount() / dailyGoal()) * 100)}%"></div></div>
-        <label class="small">1日の目標 <select id="goal">${[3, 5, 10, 20].map((g) =>
-          `<option ${g === dailyGoal() ? "selected" : ""}>${g}</option>`).join("")}</select> 問</label></div>
-      <div class="card"><div class="muted small">レベル</div><div class="stat">Lv ${lv}</div>
-        <div class="small">${esc(levelTitle(lv))}</div>
+        <label class="small sub">1日の目標 <select id="goal">${[3, 5, 10, 20].map((g) =>
+          `<option ${g === dailyGoal() ? "selected" : ""}>${g}</option>`).join("")}</select> 問</label>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card"><span class="icon-tile" style="--c:#ffc800">⭐</span><div class="muted small">レベル</div><div class="stat">Lv ${lv}</div>
+        <div class="small"><b>${esc(levelTitle(lv))}</b></div>
         <div class="progress"><div style="width:${((xp - start) / (end - start)) * 100}%"></div></div>
         <div class="muted small">${xp} XP（次まで ${end - xp}）</div></div>
+      <div class="card"><span class="icon-tile" style="--c:#1cb0f6">📖</span><div class="muted small">読んだ章</div>
+        <div class="stat">${(p.completedChapters || []).length} / ${content.chapters.length}</div>
+        <div class="muted small">正答率 ${p.answeredTotal ? Math.round((p.correctTotal / p.answeredTotal) * 100) : 0}%（${p.answeredTotal || 0} 問）</div></div>
     </div>
     <div class="card"><div class="muted small">直近4週間</div><div class="heat">${weeks.join("")}</div></div>
 
@@ -207,10 +213,10 @@ function todayHome() {
 
     <h2>すぐ始める</h2>
     <div class="grid">
-      <a class="card" href="#/quiz/random10"><b>ランダム10問</b></a>
-      <a class="card" href="#/quiz/weak"><b>苦手を復習</b><div class="muted small">${(p.weak?.value || []).length} 問</div></a>
-      <a class="card" href="#/game/survival"><b>サバイバル</b><div class="muted small">自己ベスト ${(p.gameBest || {}).survival || 0} 問</div></a>
-      <a class="card" href="#/english"><b>英語で聞く</b></a>
+      <a class="card" href="#/quiz/random10"><span class="icon-tile" style="--c:#58cc02">🎲</span><b>ランダム10問</b><div class="muted small">全範囲から</div></a>
+      <a class="card" href="#/quiz/weak"><span class="icon-tile" style="--c:#ff4b4b">🎯</span><b>苦手を復習</b><div class="muted small">${(p.weak?.value || []).length} 問</div></a>
+      <a class="card" href="#/game/survival"><span class="icon-tile" style="--c:#ff86d0">❤️</span><b>サバイバル</b><div class="muted small">自己ベスト ${(p.gameBest || {}).survival || 0} 問</div></a>
+      <a class="card" href="#/english"><span class="icon-tile" style="--c:#2b70c9">🎧</span><b>英語で聞く</b><div class="muted small">PCIe を英語で</div></a>
     </div>
 
     ${column ? `<h2>今日のコラム</h2><a class="card" href="#/column/${esc(column.id)}"><b>${esc(column.title)}</b>
@@ -484,10 +490,8 @@ function applySettings() {
   const root = document.documentElement;
   if (theme && themes[theme]) {
     root.style.setProperty("--tint", themes[theme]);
-    root.style.setProperty("--tint-soft", `${themes[theme]}26`);
   } else {
     root.style.removeProperty("--tint");
-    root.style.removeProperty("--tint-soft");
   }
   root.style.fontSize = `${size}%`;
   if (appearance === "system") root.removeAttribute("data-theme");
@@ -495,7 +499,7 @@ function applySettings() {
 }
 
 function settingsPage() {
-  const theme = localStorage.getItem("theme") || "teal";
+  const theme = localStorage.getItem("theme") || "lime";
   const size = localStorage.getItem("textSize") || "100";
   const appearance = localStorage.getItem("appearance") || "system";
   app.innerHTML = `<h1>表示の設定</h1>

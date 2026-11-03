@@ -1,34 +1,39 @@
 /* PCIe学習 ブラウザ版 — アプリの「ポップ」の見た目（縁取りと厚みのあるカード・ボタン）に合わせる */
+/* 色はアプリの初期設定（ポップ・ライム・白い背景）と同じ。ダークはアプリのポップのダークと同じ */
 :root {
-  --bg: #f4f6f8; --surface: #ffffff; --surface-2: #f0f3f5; --text: #1b2228; --muted: #66727c; --border: #e1e6ea;
-  --tint: #2fb5c4; --tint-strong: #1f97a5; --tint-soft: rgba(47, 181, 196, .13); --on-tint: #fff;
-  --good: #2e9d5b; --good-soft: rgba(46, 157, 91, .14); --bad: #d64545; --bad-soft: rgba(214, 69, 69, .12); --warn: #e08a00;
-  --radius: 16px; --edge: 4px; --sidebar: 248px;
+  --tint: #58cc02;
+  --tint-strong: color-mix(in srgb, var(--tint) 78%, #000);
+  --tint-soft: color-mix(in srgb, var(--tint) 16%, transparent);
+  --on-tint: #fff;
+  --bg: #ffffff; --surface: #ffffff; --surface-2: #f7f7f7; --text: #3c3c3c; --muted: #777777; --border: #e5e5e5;
+  --good: #58cc02; --good-soft: #d7ffb8; --bad: #ff4b4b; --bad-soft: #ffdfe0; --warn: #ff9600;
+  --radius: 16px; --edge: 4px; --sidebar: 256px;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f181c; --surface: #172227; --surface-2: #1d2a30; --text: #e9eef1; --muted: #93a1aa; --border: #2a3a41;
-    --tint-soft: rgba(47, 181, 196, .2); --good-soft: rgba(46, 157, 91, .22); --bad-soft: rgba(214, 69, 69, .2);
+    --bg: #131f24; --surface: #131f24; --surface-2: #202f36; --text: #f1f7fb; --muted: #8b9ca6; --border: #37464f;
+    --good-soft: rgba(88, 204, 2, .18); --bad-soft: rgba(255, 75, 75, .18);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0f181c; --surface: #172227; --surface-2: #1d2a30; --text: #e9eef1; --muted: #93a1aa; --border: #2a3a41;
-  --tint-soft: rgba(47, 181, 196, .2); --good-soft: rgba(46, 157, 91, .22); --bad-soft: rgba(214, 69, 69, .2);
+  --bg: #131f24; --surface: #131f24; --surface-2: #202f36; --text: #f1f7fb; --muted: #8b9ca6; --border: #37464f;
+  --good-soft: rgba(88, 204, 2, .18); --bad-soft: rgba(255, 75, 75, .18);
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--text);
-       font: 16px/1.75 "Segoe UI", "Yu Gothic UI", "Meiryo", "Hiragino Sans", system-ui, sans-serif; }
+       font: 500 16px/1.75 "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Meiryo", system-ui, sans-serif; }
+b, strong { font-weight: 800; }
 a { color: var(--tint); text-decoration: none; }
 a:hover { text-decoration: underline; }
 a.card:hover, .nav a:hover, a.btn:hover, a.item:hover { text-decoration: none; }
 :focus-visible { outline: 3px solid var(--tint); outline-offset: 2px; border-radius: 8px; }
-h1 { font-size: 1.75rem; line-height: 1.3; margin: .2em 0 .7em; letter-spacing: .01em; }
-h2 { font-size: 1.12rem; margin: 1.8em 0 .6em; display: flex; align-items: center; gap: 8px; }
+h1 { font-size: 1.9rem; font-weight: 800; line-height: 1.3; margin: .2em 0 .7em; }
+h2 { font-size: 1.2rem; font-weight: 800; margin: 1.8em 0 .6em; display: flex; align-items: center; gap: 8px; }
 h2 .small, h2 a { font-weight: 600; font-size: .85rem; margin-left: auto; }
 p { margin: .5em 0; }
 .muted { color: var(--muted); }
@@ -37,17 +42,21 @@ p { margin: .5em 0; }
 /* MARK: 枠組み（左のメニュー＋中身） */
 .layout { display: grid; grid-template-columns: var(--sidebar) 1fr; min-height: 100vh; }
 .sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface);
-           border-right: 1px solid var(--border); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.15rem; color: var(--text); padding: 6px 10px 14px; }
-.brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--tint); color: #fff; font-size: 1.05rem; }
+           border-right: 2px solid var(--border); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.45rem; color: var(--tint); padding: 4px 10px 16px; letter-spacing: .02em; }
+.brand-mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--tint); color: #fff;
+              font-size: 1.2rem; box-shadow: 0 4px 0 var(--tint-strong); }
 .nav { display: flex; flex-direction: column; gap: 2px; }
-.nav-group { font-size: .74rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; padding: 14px 12px 4px; }
-.nav a { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 12px; color: var(--text); font-weight: 600; }
+.nav-group { font-size: .76rem; font-weight: 800; color: var(--muted); letter-spacing: .1em; padding: 16px 12px 4px; }
+.nav a { display: flex; align-items: center; gap: 14px; padding: 7px 10px; border-radius: 14px; color: var(--muted); font-weight: 800;
+         border: 2px solid transparent; letter-spacing: .02em; }
 .nav a:hover { background: var(--surface-2); }
-.nav a.active { background: var(--tint-soft); color: var(--tint-strong); }
+.nav a.active { background: var(--tint-soft); border-color: var(--tint); color: var(--tint-strong); }
 :root[data-theme="dark"] .nav a.active { color: var(--tint); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .nav a.active { color: var(--tint); } }
-.nav .ico { width: 22px; text-align: center; font-size: 1.05rem; }
+/* アプリの ToolRow のように、項目ごとの色のついた四角にアイコンを置く */
+.nav .ico { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; font-size: 1.15rem; flex: none;
+            background: color-mix(in srgb, var(--c, var(--tint)) 20%, transparent); }
 .sync-box { margin-top: auto; display: flex; align-items: center; gap: 8px; padding: 12px; font-size: .78rem; color: var(--muted); }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: none; }
 .dot.ok { background: var(--good); }
@@ -86,6 +95,17 @@ main { max-width: 980px; margin: 0 auto; padding: 8px 28px 96px; }
 /* MARK: カード・一覧 */
 .card { display: block; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius);
         padding: 18px 20px; margin: 14px 0; box-shadow: 0 var(--edge) 0 var(--border); color: var(--text); }
+/* 今日のいちばん上：大きな連続日数と目標 */
+.hero { display: grid; grid-template-columns: auto 1fr; gap: 22px; align-items: center; padding: 22px 24px;
+        background: var(--tint); border-color: transparent; color: #fff; box-shadow: 0 var(--edge) 0 var(--tint-strong); }
+.hero .flame { font-size: 3.4rem; line-height: 1; }
+.hero .big { font-size: 2.4rem; font-weight: 800; line-height: 1.1; }
+.hero .sub { opacity: .92; font-weight: 700; }
+.hero .progress { background: rgba(255, 255, 255, .35); height: 14px; }
+.hero .progress > div { background: #fff; }
+.hero select { background: rgba(255, 255, 255, .95); color: #3c3c3c; border-color: transparent; padding: 4px 10px; }
+.icon-tile { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 13px; font-size: 1.35rem; margin-bottom: 8px;
+             background: color-mix(in srgb, var(--c, var(--tint)) 20%, transparent); }
 a.card { transition: transform .08s ease, box-shadow .08s ease; }
 a.card:hover { transform: translateY(-2px); box-shadow: 0 calc(var(--edge) + 2px) 0 var(--border); }
 a.card:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--border); }
@@ -100,20 +120,20 @@ a.card b { display: block; font-size: 1.02rem; margin-bottom: 2px; }
 .list .item:last-child { border-bottom: 0; }
 .card.list { padding: 4px 0; overflow: hidden; }
 .card.locked { opacity: .5; }
-.badge { display: inline-block; font-size: .74rem; font-weight: 800; padding: 2px 10px; border-radius: 99px; background: var(--tint-soft); color: var(--tint-strong); }
+.badge { display: inline-block; font-size: .76rem; font-weight: 800; padding: 2px 10px; border-radius: 99px; background: var(--tint-soft); color: var(--tint-strong); }
 .note { background: var(--tint-soft); border-radius: 12px; padding: 12px 16px; margin: 12px 0; }
-.stat { font-size: 2rem; font-weight: 800; color: var(--tint); line-height: 1.2; margin: 4px 0; letter-spacing: -.01em; }
+.stat { font-size: 2rem; font-weight: 800; color: var(--tint); line-height: 1.2; margin: 4px 0; }
 .progress { height: 10px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin: 8px 0 4px; }
 .progress > div { height: 100%; background: var(--tint); border-radius: 99px; transition: width .3s ease; }
 .result { margin: 0; }
 
 /* MARK: ボタン（アプリの AppButtonStyle に合わせ、下に厚み） */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 2px solid var(--border); background: var(--surface);
-       color: var(--tint); border-radius: 14px; padding: 8px 16px; font: inherit; font-weight: 800; cursor: pointer;
-       box-shadow: 0 3px 0 var(--border); transition: transform .06s ease, box-shadow .06s ease; }
+       color: var(--tint-strong); border-radius: 16px; padding: 9px 18px; font: inherit; font-weight: 800; cursor: pointer; letter-spacing: .03em;
+       box-shadow: 0 4px 0 var(--border); transition: transform .06s ease, box-shadow .06s ease; }
 .btn:hover { filter: brightness(1.03); }
-.btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--border); }
-.btn.primary { background: var(--tint); color: var(--on-tint); border-color: transparent; box-shadow: 0 3px 0 var(--tint-strong); }
+.btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--border); }
+.btn.primary { background: var(--tint); color: var(--on-tint); border-color: transparent; box-shadow: 0 4px 0 var(--tint-strong); }
 .btn.primary:active { box-shadow: 0 0 0 var(--tint-strong); }
 .btn:disabled { opacity: .45; cursor: default; transform: none; }
 .btn.small { padding: 4px 12px; font-size: .85rem; border-radius: 11px; }
@@ -132,6 +152,7 @@ button.choice[data-i="-1"]::before { content: "?"; }
 .choice > .muted { flex-basis: 100%; padding-left: 40px; }
 .choice.correct { border-color: var(--good); background: var(--good-soft); box-shadow: 0 3px 0 var(--good); }
 .choice.correct::before { background: var(--good) !important; color: #fff !important; }
+.choice.correct { color: color-mix(in srgb, var(--good) 70%, var(--text)); font-weight: 700; }
 .choice.wrong { border-color: var(--bad); background: var(--bad-soft); box-shadow: 0 3px 0 var(--bad); }
 .choice.wrong::before { background: var(--bad) !important; color: #fff !important; }
 .choice.dimmed { opacity: .55; }
