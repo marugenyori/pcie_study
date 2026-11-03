@@ -2302,6 +2302,1328 @@
       "title" : "NVMe と CXL：PCIe の上に乗る仲間たち"
     }
   ],
+  "diagrams" : {
+    "flitTLPRatio" : 0.921875,
+    "generations" : [
+      {
+        "efficiency" : 0.80000000000000004,
+        "encoding" : "8b\/10b",
+        "gen" : 1,
+        "isFlit" : false,
+        "name" : "Gen1",
+        "rate" : 2.5
+      },
+      {
+        "efficiency" : 0.80000000000000004,
+        "encoding" : "8b\/10b",
+        "gen" : 2,
+        "isFlit" : false,
+        "name" : "Gen2",
+        "rate" : 5
+      },
+      {
+        "efficiency" : 0.98461538461538467,
+        "encoding" : "128b\/130b",
+        "gen" : 3,
+        "isFlit" : false,
+        "name" : "Gen3",
+        "rate" : 8
+      },
+      {
+        "efficiency" : 0.98461538461538467,
+        "encoding" : "128b\/130b",
+        "gen" : 4,
+        "isFlit" : false,
+        "name" : "Gen4",
+        "rate" : 16
+      },
+      {
+        "efficiency" : 0.98461538461538467,
+        "encoding" : "128b\/130b",
+        "gen" : 5,
+        "isFlit" : false,
+        "name" : "Gen5",
+        "rate" : 32
+      },
+      {
+        "efficiency" : 1,
+        "encoding" : "1b\/1b（PAM4 + FLIT）",
+        "gen" : 6,
+        "isFlit" : true,
+        "name" : "Gen6",
+        "rate" : 64
+      },
+      {
+        "efficiency" : 1,
+        "encoding" : "1b\/1b（PAM4 + FLIT）",
+        "gen" : 7,
+        "isFlit" : true,
+        "name" : "Gen7",
+        "rate" : 128
+      }
+    ],
+    "ltssm" : {
+      "groups" : [
+        "Detect",
+        "Polling",
+        "Configuration",
+        "L0",
+        "Recovery",
+        "L0s",
+        "L1",
+        "L2",
+        "Disabled",
+        "Loopback",
+        "Hot Reset"
+      ],
+      "initial" : "Detect.Quiet",
+      "scenario" : [
+        "Detect.Quiet",
+        "Detect.Active",
+        "Polling.Active",
+        "Polling.Configuration",
+        "Configuration.Linkwidth.Start",
+        "Configuration.Linkwidth.Accept",
+        "Configuration.Lanenum.Wait",
+        "Configuration.Lanenum.Accept",
+        "Configuration.Complete",
+        "Configuration.Idle",
+        "L0",
+        "Recovery.RcvrLock",
+        "Recovery.RcvrCfg",
+        "Recovery.Speed",
+        "Recovery.RcvrLock",
+        "Recovery.Equalization",
+        "Recovery.RcvrLock",
+        "Recovery.RcvrCfg",
+        "Recovery.Idle",
+        "L0"
+      ],
+      "scenarioNotes" : [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "2.5 GT\/s（Gen1）でリンクアップ！ここから速度を上げます",
+        "",
+        "",
+        "両者がGen3以上に対応しているので速度を切り替えます",
+        "",
+        "新しい速度でイコライゼーションを実施",
+        "",
+        "",
+        "",
+        "目標速度でL0に到達。リンクアップ完了"
+      ],
+      "states" : [
+        {
+          "description" : "確定したリンク番号・レーン番号入りのTS2を交換し、N_FTSなどのパラメータを伝えます。",
+          "group" : "Configuration",
+          "id" : "Configuration.Complete",
+          "transitions" : [
+            {
+              "condition" : "TS2を8個連続で受信",
+              "to" : "Configuration.Idle"
+            }
+          ]
+        },
+        {
+          "description" : "アイドルデータ（論理的な0）を送り、データ送信の準備をします。ここでLinkUpが1になり、物理層がリンクアップをデータリンク層に通知します。Flit ModeではアイドルデータのかわりにIDLE Flitを送ります。",
+          "group" : "Configuration",
+          "id" : "Configuration.Idle",
+          "transitions" : [
+            {
+              "condition" : "アイドルデータを8シンボル受信し、1シンボル受信後に16シンボル送信（Flit ModeではIDLE Flitを2個連続で受信）",
+              "to" : "L0"
+            }
+          ]
+        },
+        {
+          "description" : "レーン番号を確定します。レーン反転（逆順配線）の検出もここで行われます。",
+          "group" : "Configuration",
+          "id" : "Configuration.Lanenum.Accept",
+          "transitions" : [
+            {
+              "condition" : "レーン番号が一致",
+              "to" : "Configuration.Complete"
+            }
+          ]
+        },
+        {
+          "description" : "下流ポートがレーン番号入りのTS1を送り、各レーンの番号を提案します。",
+          "group" : "Configuration",
+          "id" : "Configuration.Lanenum.Wait",
+          "transitions" : [
+            {
+              "condition" : "相手からレーン番号入りTS1を受信",
+              "to" : "Configuration.Lanenum.Accept"
+            }
+          ]
+        },
+        {
+          "description" : "上流ポートがリンク番号を受け入れ、リンク幅（x1, x4, x16など）が決まります。",
+          "group" : "Configuration",
+          "id" : "Configuration.Linkwidth.Accept",
+          "transitions" : [
+            {
+              "condition" : "リンク番号の合意",
+              "to" : "Configuration.Lanenum.Wait"
+            }
+          ]
+        },
+        {
+          "description" : "下流ポート（RC側）がリンク番号入りのTS1を送り、使えるレーンを確認します。",
+          "group" : "Configuration",
+          "id" : "Configuration.Linkwidth.Start",
+          "transitions" : [
+            {
+              "condition" : "相手からリンク番号入りTS1を受信",
+              "to" : "Configuration.Linkwidth.Accept"
+            },
+            {
+              "condition" : "上位層からLink Disableを指示された",
+              "to" : "Disabled"
+            },
+            {
+              "condition" : "Loopbackを指示された、またはLoopbackビット付きTS1を受信",
+              "to" : "Loopback"
+            },
+            {
+              "condition" : "24msタイムアウト",
+              "to" : "Detect.Quiet"
+            }
+          ]
+        },
+        {
+          "description" : "送信器が各レーンで相手の受信終端（負荷）の有無を電気的に検出します。検出できたレーンがリンクに使われます。",
+          "group" : "Detect",
+          "id" : "Detect.Active",
+          "transitions" : [
+            {
+              "condition" : "受信終端を検出",
+              "to" : "Polling.Active"
+            },
+            {
+              "condition" : "どのレーンでも検出できない",
+              "to" : "Detect.Quiet"
+            }
+          ]
+        },
+        {
+          "description" : "リセット解除直後の初期状態。送信器はElectrical Idle（無信号）。速度は2.5 GT\/sに戻されます。",
+          "group" : "Detect",
+          "id" : "Detect.Quiet",
+          "transitions" : [
+            {
+              "condition" : "12ms経過、または受信レーンでElectrical Idleの終了を検出",
+              "to" : "Detect.Active"
+            }
+          ]
+        },
+        {
+          "description" : "ソフトウェアによってリンクが無効化された状態。Electrical Idleのままです。",
+          "group" : "Disabled",
+          "id" : "Disabled",
+          "transitions" : [
+            {
+              "condition" : "Link Disableが解除される",
+              "to" : "Detect.Quiet"
+            }
+          ]
+        },
+        {
+          "description" : "リンク経由で下流デバイスをリセットします（TS1のHot Resetビット）。",
+          "group" : "Hot Reset",
+          "id" : "Hot Reset",
+          "transitions" : [
+            {
+              "condition" : "2ms経過",
+              "to" : "Detect.Quiet"
+            }
+          ]
+        },
+        {
+          "description" : "通常動作状態。TLPとDLLPを送受信します。初回は2.5 GT\/sですが、両者が高速な世代に対応していればRecoveryで速度を上げます。",
+          "group" : "L0",
+          "id" : "L0",
+          "transitions" : [
+            {
+              "condition" : "速度変更の要求／受信エラー／TS1を受信／Retrain Link",
+              "to" : "Recovery.RcvrLock"
+            },
+            {
+              "condition" : "送信側のアイドルが続きASPMで移行",
+              "to" : "L0s"
+            },
+            {
+              "condition" : "PM_Enter_L1などのDLLPハンドシェイク",
+              "to" : "L1"
+            },
+            {
+              "condition" : "PME_Turn_Off → PM_Enter_L23 ハンドシェイク後、主電源オフ",
+              "to" : "L2"
+            }
+          ]
+        },
+        {
+          "description" : "送信方向ごとに独立した低電力状態。EIOSを送ってElectrical Idleに入ります。復帰が非常に速いのが特徴です。Non-Flit Modeだけの状態で、Flit Modeでは使えません。",
+          "group" : "L0s",
+          "id" : "L0s",
+          "transitions" : [
+            {
+              "condition" : "FTSを送り、受信側がSKP（8b\/10b）またはSDS（128b\/130b）を受け取って復帰",
+              "to" : "L0"
+            },
+            {
+              "condition" : "受信側がN_FTSのタイムアウトまでに同期できなかった",
+              "to" : "Recovery.RcvrLock"
+            }
+          ]
+        },
+        {
+          "description" : "両方向とも停止する低電力状態。ASPMまたはデバイスのD3hot移行で入ります。L1.1\/L1.2のサブステートでさらに省電力化できます。",
+          "group" : "L1",
+          "id" : "L1",
+          "transitions" : [
+            {
+              "condition" : "どちらかが送信を再開（Electrical Idle終了）",
+              "to" : "Recovery.RcvrLock"
+            }
+          ]
+        },
+        {
+          "description" : "主電源がオフで、補助電源（Vaux）のみの状態。WAKE#やBeaconで起床します。",
+          "group" : "L2",
+          "id" : "L2",
+          "transitions" : [
+            {
+              "condition" : "電源再投入（ウェイクアップ）",
+              "to" : "Detect.Quiet"
+            }
+          ]
+        },
+        {
+          "description" : "受信したデータをそのまま送り返すテスト用の状態。ビットエラー率の測定などに使います。",
+          "group" : "Loopback",
+          "id" : "Loopback",
+          "transitions" : [
+            {
+              "condition" : "ループバック終了（EIOS受信）",
+              "to" : "Detect.Quiet"
+            }
+          ]
+        },
+        {
+          "description" : "TS1 Ordered Setを送り続け、受信側はビットロックとシンボルロックを確立します。差動ペアの極性反転もここで補正します。",
+          "group" : "Polling",
+          "id" : "Polling.Active",
+          "transitions" : [
+            {
+              "condition" : "TS1\/TS2を8個連続で受信し、TS1を1024個以上送信済み",
+              "to" : "Polling.Configuration"
+            },
+            {
+              "condition" : "24ms経過しても一部レーンが応答しない（測定用の終端など）",
+              "to" : "Polling.Compliance"
+            },
+            {
+              "condition" : "24msタイムアウト",
+              "to" : "Detect.Quiet"
+            }
+          ]
+        },
+        {
+          "description" : "コンプライアンステスト用のパターンを送信し続ける状態。測定器（終端のみ）が接続されたときに入ります。",
+          "group" : "Polling",
+          "id" : "Polling.Compliance",
+          "transitions" : [
+            {
+              "condition" : "Electrical Idleの終了を検出",
+              "to" : "Polling.Active"
+            }
+          ]
+        },
+        {
+          "description" : "TS2を送信し、相手も準備完了であることを確認します。",
+          "group" : "Polling",
+          "id" : "Polling.Configuration",
+          "transitions" : [
+            {
+              "condition" : "TS2を8個連続で受信し、TS2を16個送信",
+              "to" : "Configuration.Linkwidth.Start"
+            },
+            {
+              "condition" : "48msタイムアウト",
+              "to" : "Detect.Quiet"
+            }
+          ]
+        },
+        {
+          "description" : "Gen3以降の速度で、Phase 0〜3の手順により送信プリセットとFFE係数を両端で調整し、最適な信号品質を探します。",
+          "group" : "Recovery",
+          "id" : "Recovery.Equalization",
+          "transitions" : [
+            {
+              "condition" : "イコライゼーション完了",
+              "to" : "Recovery.RcvrLock"
+            }
+          ]
+        },
+        {
+          "description" : "アイドルデータを送り、L0に戻る準備をします。ここからHot Reset・Disabled・Loopbackへ分岐することもあります。",
+          "group" : "Recovery",
+          "id" : "Recovery.Idle",
+          "transitions" : [
+            {
+              "condition" : "アイドルデータを8シンボル受信し、16シンボル送信",
+              "to" : "L0"
+            },
+            {
+              "condition" : "ソフトウェアがSecondary Bus Resetを要求",
+              "to" : "Hot Reset"
+            },
+            {
+              "condition" : "ソフトウェアがLink Disableを設定",
+              "to" : "Disabled"
+            },
+            {
+              "condition" : "Loopbackビット付きTS1を送受信",
+              "to" : "Loopback"
+            }
+          ]
+        },
+        {
+          "description" : "TS2を交換して設定を確認します。TS2に速度変更要求（speed_change）が立っていればRecovery.Speedへ進みます。",
+          "group" : "Recovery",
+          "id" : "Recovery.RcvrCfg",
+          "transitions" : [
+            {
+              "condition" : "両者が速度変更に合意（speed_changeビット）",
+              "to" : "Recovery.Speed"
+            },
+            {
+              "condition" : "TS2を8個連続で受信（速度変更なし）",
+              "to" : "Recovery.Idle"
+            },
+            {
+              "condition" : "リンク幅やレーン番号の変更が必要",
+              "to" : "Configuration.Linkwidth.Start"
+            }
+          ]
+        },
+        {
+          "description" : "TS1を送り、受信側でビットロック（Gen3以降はブロックアラインメント）を取り直します。",
+          "group" : "Recovery",
+          "id" : "Recovery.RcvrLock",
+          "transitions" : [
+            {
+              "condition" : "TS1\/TS2を8個連続で受信",
+              "to" : "Recovery.RcvrCfg"
+            },
+            {
+              "condition" : "Gen3以上へ初めて変更した直後（イコライゼーションが必要）",
+              "to" : "Recovery.Equalization"
+            },
+            {
+              "condition" : "新しい速度でロックできない（元の速度に戻す）",
+              "to" : "Recovery.Speed"
+            },
+            {
+              "condition" : "24msタイムアウト",
+              "to" : "Detect.Quiet"
+            }
+          ]
+        },
+        {
+          "description" : "送信器をElectrical Idleにして、転送速度を切り替えます。",
+          "group" : "Recovery",
+          "id" : "Recovery.Speed",
+          "transitions" : [
+            {
+              "condition" : "新しい速度に切り替え完了",
+              "to" : "Recovery.RcvrLock"
+            }
+          ]
+        }
+      ]
+    },
+    "tlpFormats" : [
+      {
+        "dwCount" : 3,
+        "fields" : [
+          {
+            "detail" : "ヘッダ長とデータの有無。000=3DW\/データなし、001=4DW\/データなし、010=3DW\/データあり、011=4DW\/データあり、100=TLP Prefix。",
+            "dw" : 0,
+            "fullName" : "Format",
+            "hi" : 31,
+            "lo" : 29,
+            "name" : "Fmt"
+          },
+          {
+            "detail" : "Fmtと組み合わせてTLPの種類を決めます。例：00000=メモリ、00100=Config Type0、01010=Completion、10rrr=Message（rrrはルーティング方法）。",
+            "dw" : 0,
+            "fullName" : "Type",
+            "hi" : 28,
+            "lo" : 24,
+            "name" : "Type"
+          },
+          {
+            "detail" : "10-bit Tag使用時のTagの最上位ビット。",
+            "dw" : 0,
+            "fullName" : "Tag[9]",
+            "hi" : 23,
+            "lo" : 23,
+            "name" : "T9"
+          },
+          {
+            "detail" : "0〜7のトラフィッククラス。ポートでVC（仮想チャネル）にマッピングされ、QoSに使われます。順序規則は同じTC内でのみ適用されます。",
+            "dw" : 0,
+            "fullName" : "Traffic Class",
+            "hi" : 22,
+            "lo" : 20,
+            "name" : "TC"
+          },
+          {
+            "detail" : "10-bit Tag使用時のTagのビット8。",
+            "dw" : 0,
+            "fullName" : "Tag[8]",
+            "hi" : 19,
+            "lo" : 19,
+            "name" : "T8"
+          },
+          {
+            "detail" : "ID-Based Orderingビット。送信元が異なるTLP間の順序制約を緩めます。",
+            "dw" : 0,
+            "fullName" : "Attr[2]（IDO）",
+            "hi" : 18,
+            "lo" : 18,
+            "name" : "A2"
+          },
+          {
+            "detail" : "予約ビット。以前はLN（Lightweight Notification）ビットでしたが、現在の仕様では予約で、別の用途に再割り当てできるようになっています。",
+            "dw" : 0,
+            "fullName" : "Reserved（旧LN）",
+            "hi" : 17,
+            "lo" : 17,
+            "name" : "R"
+          },
+          {
+            "detail" : "1のときTPH（処理ヒント）が有効で、PHフィールドが意味を持ちます。",
+            "dw" : 0,
+            "fullName" : "TLP Hints",
+            "hi" : 16,
+            "lo" : 16,
+            "name" : "TH"
+          },
+          {
+            "detail" : "1のときTLP末尾にECRC（end-to-endのCRC）が付いています。",
+            "dw" : 0,
+            "fullName" : "TLP Digest",
+            "hi" : 15,
+            "lo" : 15,
+            "name" : "TD"
+          },
+          {
+            "detail" : "1のときデータが壊れていることを示します（Poisoned TLP）。受信側はデータを使ってはいけません。",
+            "dw" : 0,
+            "fullName" : "Error Poisoned",
+            "hi" : 14,
+            "lo" : 14,
+            "name" : "EP"
+          },
+          {
+            "detail" : "bit13=Relaxed Ordering、bit12=No Snoop。",
+            "dw" : 0,
+            "fullName" : "Attr[1:0]",
+            "hi" : 13,
+            "lo" : 12,
+            "name" : "Attr"
+          },
+          {
+            "detail" : "ATS用。00=未変換アドレス、01=変換要求、10=変換済みアドレス。",
+            "dw" : 0,
+            "fullName" : "Address Type",
+            "hi" : 11,
+            "lo" : 10,
+            "name" : "AT"
+          },
+          {
+            "detail" : "ペイロード長（DW単位）。0は1024DW（4KB）を意味します。データなしのMRdでは要求する読み出し長を示します。",
+            "dw" : 0,
+            "fullName" : "Length",
+            "hi" : 9,
+            "lo" : 0,
+            "name" : "Length"
+          },
+          {
+            "detail" : "リクエストを出したFunctionのBDF（Bus 8bit \/ Device 5bit \/ Function 3bit）。Completionの返送先になります。",
+            "dw" : 1,
+            "fullName" : "Requester ID",
+            "hi" : 31,
+            "lo" : 16,
+            "name" : "Requester ID"
+          },
+          {
+            "detail" : "未完了のリクエストを区別する番号。Requester IDとTagの組でCompletionを対応付けます。",
+            "dw" : 1,
+            "fullName" : "Tag",
+            "hi" : 15,
+            "lo" : 8,
+            "name" : "Tag"
+          },
+          {
+            "detail" : "最後のDWのうち有効なバイト（ビットごとに1バイト）。1DWの転送では0000にします。",
+            "dw" : 1,
+            "fullName" : "Last DW Byte Enables",
+            "hi" : 7,
+            "lo" : 4,
+            "name" : "Last BE"
+          },
+          {
+            "detail" : "最初のDWのうち有効なバイト。例：1111=4バイトすべて、0011=下位2バイト。",
+            "dw" : 1,
+            "fullName" : "First DW Byte Enables",
+            "hi" : 3,
+            "lo" : 0,
+            "name" : "1st BE"
+          },
+          {
+            "detail" : "32ビットのアクセス先アドレス。DW境界なので下位2ビットは含まれず、バイト単位の位置はByte Enableで示します。",
+            "dw" : 2,
+            "fullName" : "Address",
+            "hi" : 31,
+            "lo" : 2,
+            "name" : "Address[31:2]"
+          },
+          {
+            "detail" : "TPH（TLP Processing Hints）使用時のヒント。TH=0のときは予約（0）。",
+            "dw" : 2,
+            "fullName" : "Processing Hint",
+            "hi" : 1,
+            "lo" : 0,
+            "name" : "PH"
+          }
+        ],
+        "name" : "MRd\/MWr 3DW"
+      },
+      {
+        "dwCount" : 4,
+        "fields" : [
+          {
+            "detail" : "ヘッダ長とデータの有無。000=3DW\/データなし、001=4DW\/データなし、010=3DW\/データあり、011=4DW\/データあり、100=TLP Prefix。",
+            "dw" : 0,
+            "fullName" : "Format",
+            "hi" : 31,
+            "lo" : 29,
+            "name" : "Fmt"
+          },
+          {
+            "detail" : "Fmtと組み合わせてTLPの種類を決めます。例：00000=メモリ、00100=Config Type0、01010=Completion、10rrr=Message（rrrはルーティング方法）。",
+            "dw" : 0,
+            "fullName" : "Type",
+            "hi" : 28,
+            "lo" : 24,
+            "name" : "Type"
+          },
+          {
+            "detail" : "10-bit Tag使用時のTagの最上位ビット。",
+            "dw" : 0,
+            "fullName" : "Tag[9]",
+            "hi" : 23,
+            "lo" : 23,
+            "name" : "T9"
+          },
+          {
+            "detail" : "0〜7のトラフィッククラス。ポートでVC（仮想チャネル）にマッピングされ、QoSに使われます。順序規則は同じTC内でのみ適用されます。",
+            "dw" : 0,
+            "fullName" : "Traffic Class",
+            "hi" : 22,
+            "lo" : 20,
+            "name" : "TC"
+          },
+          {
+            "detail" : "10-bit Tag使用時のTagのビット8。",
+            "dw" : 0,
+            "fullName" : "Tag[8]",
+            "hi" : 19,
+            "lo" : 19,
+            "name" : "T8"
+          },
+          {
+            "detail" : "ID-Based Orderingビット。送信元が異なるTLP間の順序制約を緩めます。",
+            "dw" : 0,
+            "fullName" : "Attr[2]（IDO）",
+            "hi" : 18,
+            "lo" : 18,
+            "name" : "A2"
+          },
+          {
+            "detail" : "予約ビット。以前はLN（Lightweight Notification）ビットでしたが、現在の仕様では予約で、別の用途に再割り当てできるようになっています。",
+            "dw" : 0,
+            "fullName" : "Reserved（旧LN）",
+            "hi" : 17,
+            "lo" : 17,
+            "name" : "R"
+          },
+          {
+            "detail" : "1のときTPH（処理ヒント）が有効で、PHフィールドが意味を持ちます。",
+            "dw" : 0,
+            "fullName" : "TLP Hints",
+            "hi" : 16,
+            "lo" : 16,
+            "name" : "TH"
+          },
+          {
+            "detail" : "1のときTLP末尾にECRC（end-to-endのCRC）が付いています。",
+            "dw" : 0,
+            "fullName" : "TLP Digest",
+            "hi" : 15,
+            "lo" : 15,
+            "name" : "TD"
+          },
+          {
+            "detail" : "1のときデータが壊れていることを示します（Poisoned TLP）。受信側はデータを使ってはいけません。",
+            "dw" : 0,
+            "fullName" : "Error Poisoned",
+            "hi" : 14,
+            "lo" : 14,
+            "name" : "EP"
+          },
+          {
+            "detail" : "bit13=Relaxed Ordering、bit12=No Snoop。",
+            "dw" : 0,
+            "fullName" : "Attr[1:0]",
+            "hi" : 13,
+            "lo" : 12,
+            "name" : "Attr"
+          },
+          {
+            "detail" : "ATS用。00=未変換アドレス、01=変換要求、10=変換済みアドレス。",
+            "dw" : 0,
+            "fullName" : "Address Type",
+            "hi" : 11,
+            "lo" : 10,
+            "name" : "AT"
+          },
+          {
+            "detail" : "ペイロード長（DW単位）。0は1024DW（4KB）を意味します。データなしのMRdでは要求する読み出し長を示します。",
+            "dw" : 0,
+            "fullName" : "Length",
+            "hi" : 9,
+            "lo" : 0,
+            "name" : "Length"
+          },
+          {
+            "detail" : "リクエストを出したFunctionのBDF（Bus 8bit \/ Device 5bit \/ Function 3bit）。Completionの返送先になります。",
+            "dw" : 1,
+            "fullName" : "Requester ID",
+            "hi" : 31,
+            "lo" : 16,
+            "name" : "Requester ID"
+          },
+          {
+            "detail" : "未完了のリクエストを区別する番号。Requester IDとTagの組でCompletionを対応付けます。",
+            "dw" : 1,
+            "fullName" : "Tag",
+            "hi" : 15,
+            "lo" : 8,
+            "name" : "Tag"
+          },
+          {
+            "detail" : "最後のDWのうち有効なバイト（ビットごとに1バイト）。1DWの転送では0000にします。",
+            "dw" : 1,
+            "fullName" : "Last DW Byte Enables",
+            "hi" : 7,
+            "lo" : 4,
+            "name" : "Last BE"
+          },
+          {
+            "detail" : "最初のDWのうち有効なバイト。例：1111=4バイトすべて、0011=下位2バイト。",
+            "dw" : 1,
+            "fullName" : "First DW Byte Enables",
+            "hi" : 3,
+            "lo" : 0,
+            "name" : "1st BE"
+          },
+          {
+            "detail" : "64ビットアドレスの上位32ビット。上位が0のアドレスには3DWヘッダを使わなければなりません。",
+            "dw" : 2,
+            "fullName" : "Address（上位）",
+            "hi" : 31,
+            "lo" : 0,
+            "name" : "Address[63:32]"
+          },
+          {
+            "detail" : "64ビットアドレスの下位部分。",
+            "dw" : 3,
+            "fullName" : "Address（下位）",
+            "hi" : 31,
+            "lo" : 2,
+            "name" : "Address[31:2]"
+          },
+          {
+            "detail" : "TPH使用時のヒント。TH=0のときは予約。",
+            "dw" : 3,
+            "fullName" : "Processing Hint",
+            "hi" : 1,
+            "lo" : 0,
+            "name" : "PH"
+          }
+        ],
+        "name" : "MRd\/MWr 4DW"
+      },
+      {
+        "dwCount" : 3,
+        "fields" : [
+          {
+            "detail" : "ヘッダ長とデータの有無。000=3DW\/データなし、001=4DW\/データなし、010=3DW\/データあり、011=4DW\/データあり、100=TLP Prefix。",
+            "dw" : 0,
+            "fullName" : "Format",
+            "hi" : 31,
+            "lo" : 29,
+            "name" : "Fmt"
+          },
+          {
+            "detail" : "Fmtと組み合わせてTLPの種類を決めます。例：00000=メモリ、00100=Config Type0、01010=Completion、10rrr=Message（rrrはルーティング方法）。",
+            "dw" : 0,
+            "fullName" : "Type",
+            "hi" : 28,
+            "lo" : 24,
+            "name" : "Type"
+          },
+          {
+            "detail" : "10-bit Tag使用時のTagの最上位ビット。",
+            "dw" : 0,
+            "fullName" : "Tag[9]",
+            "hi" : 23,
+            "lo" : 23,
+            "name" : "T9"
+          },
+          {
+            "detail" : "0〜7のトラフィッククラス。ポートでVC（仮想チャネル）にマッピングされ、QoSに使われます。順序規則は同じTC内でのみ適用されます。",
+            "dw" : 0,
+            "fullName" : "Traffic Class",
+            "hi" : 22,
+            "lo" : 20,
+            "name" : "TC"
+          },
+          {
+            "detail" : "10-bit Tag使用時のTagのビット8。",
+            "dw" : 0,
+            "fullName" : "Tag[8]",
+            "hi" : 19,
+            "lo" : 19,
+            "name" : "T8"
+          },
+          {
+            "detail" : "ID-Based Orderingビット。送信元が異なるTLP間の順序制約を緩めます。",
+            "dw" : 0,
+            "fullName" : "Attr[2]（IDO）",
+            "hi" : 18,
+            "lo" : 18,
+            "name" : "A2"
+          },
+          {
+            "detail" : "予約ビット。以前はLN（Lightweight Notification）ビットでしたが、現在の仕様では予約で、別の用途に再割り当てできるようになっています。",
+            "dw" : 0,
+            "fullName" : "Reserved（旧LN）",
+            "hi" : 17,
+            "lo" : 17,
+            "name" : "R"
+          },
+          {
+            "detail" : "1のときTPH（処理ヒント）が有効で、PHフィールドが意味を持ちます。",
+            "dw" : 0,
+            "fullName" : "TLP Hints",
+            "hi" : 16,
+            "lo" : 16,
+            "name" : "TH"
+          },
+          {
+            "detail" : "1のときTLP末尾にECRC（end-to-endのCRC）が付いています。",
+            "dw" : 0,
+            "fullName" : "TLP Digest",
+            "hi" : 15,
+            "lo" : 15,
+            "name" : "TD"
+          },
+          {
+            "detail" : "1のときデータが壊れていることを示します（Poisoned TLP）。受信側はデータを使ってはいけません。",
+            "dw" : 0,
+            "fullName" : "Error Poisoned",
+            "hi" : 14,
+            "lo" : 14,
+            "name" : "EP"
+          },
+          {
+            "detail" : "bit13=Relaxed Ordering、bit12=No Snoop。",
+            "dw" : 0,
+            "fullName" : "Attr[1:0]",
+            "hi" : 13,
+            "lo" : 12,
+            "name" : "Attr"
+          },
+          {
+            "detail" : "ATS用。00=未変換アドレス、01=変換要求、10=変換済みアドレス。",
+            "dw" : 0,
+            "fullName" : "Address Type",
+            "hi" : 11,
+            "lo" : 10,
+            "name" : "AT"
+          },
+          {
+            "detail" : "ペイロード長（DW単位）。0は1024DW（4KB）を意味します。データなしのMRdでは要求する読み出し長を示します。",
+            "dw" : 0,
+            "fullName" : "Length",
+            "hi" : 9,
+            "lo" : 0,
+            "name" : "Length"
+          },
+          {
+            "detail" : "応答を返したFunctionのBDF。",
+            "dw" : 1,
+            "fullName" : "Completer ID",
+            "hi" : 31,
+            "lo" : 16,
+            "name" : "Completer ID"
+          },
+          {
+            "detail" : "000=SC（成功）、001=UR（Unsupported Request）、010=RRS（Request Retry Status。以前はCRS）、100=CA（Completer Abort）。それ以外は予約。",
+            "dw" : 1,
+            "fullName" : "Completion Status",
+            "hi" : 15,
+            "lo" : 13,
+            "name" : "Status"
+          },
+          {
+            "detail" : "PCI-Xブリッジが使うフラグ。PCIeデバイスは通常0。",
+            "dw" : 1,
+            "fullName" : "Byte Count Modified",
+            "hi" : 12,
+            "lo" : 12,
+            "name" : "BCM"
+          },
+          {
+            "detail" : "このCompletionを含め、リクエスト完了までに残っているバイト数。読み出しが複数のCplDに分割されるとき、受信側はこれで最後かどうかを判断できます。",
+            "dw" : 1,
+            "fullName" : "Byte Count",
+            "hi" : 11,
+            "lo" : 0,
+            "name" : "Byte Count"
+          },
+          {
+            "detail" : "元のリクエストを出したFunctionのBDF。Completionはこれを使ってID ルーティングされます。",
+            "dw" : 2,
+            "fullName" : "Requester ID",
+            "hi" : 31,
+            "lo" : 16,
+            "name" : "Requester ID"
+          },
+          {
+            "detail" : "元のリクエストのTag。Requester IDと組み合わせて、どのリクエストへの応答かを特定します。",
+            "dw" : 2,
+            "fullName" : "Tag",
+            "hi" : 15,
+            "lo" : 8,
+            "name" : "Tag"
+          },
+          {
+            "detail" : "予約ビット。",
+            "dw" : 2,
+            "fullName" : "Reserved",
+            "hi" : 7,
+            "lo" : 7,
+            "name" : "R"
+          },
+          {
+            "detail" : "このCompletionに含まれる最初のバイトのアドレス下位7ビット。分割されたCplDの位置合わせに使われます。",
+            "dw" : 2,
+            "fullName" : "Lower Address",
+            "hi" : 6,
+            "lo" : 0,
+            "name" : "Lower Address"
+          }
+        ],
+        "name" : "Completion"
+      }
+    ],
+    "tlpFramingOverhead" : 8,
+    "tlpTypeNames" : [
+      "MRd（Memory Read, 3DW）",
+      "MRdLk（ロック付き Memory Read, 3DW）",
+      "IORd（I\/O Read）",
+      "予約（未定義のType）",
+      "CfgRd0（Config Read Type 0）",
+      "CfgRd1（Config Read Type 1）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "Cpl（データなしCompletion）",
+      "CplLk（ロック付きCpl）",
+      "予約",
+      "予約",
+      "予約",
+      "予約（未定義のType）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "TCfgRd（廃止されたType。受信側はMalformed TLPとして扱う）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "MRd（Memory Read, 4DW）",
+      "MRdLk（ロック付き Memory Read, 4DW）",
+      "予約（I\/Oは3DWのみ）",
+      "予約（未定義のType）",
+      "予約（Configは3DWのみ）",
+      "予約（Configは3DWのみ）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（Completionは3DWのみ）",
+      "予約",
+      "予約",
+      "予約",
+      "予約",
+      "予約（未定義のType）",
+      "Msg（Message）・ルーティング：Root Complexへ",
+      "Msg（Message）・ルーティング：アドレスで",
+      "Msg（Message）・ルーティング：IDで",
+      "Msg（Message）・ルーティング：RCから全体へブロードキャスト",
+      "Msg（Message）・ルーティング：受信側で終端（Local）",
+      "Msg（Message）・ルーティング：RCへ集約（PME_TO_Ack用）",
+      "Msg（Message）・ルーティング：予約（受信側で終端）",
+      "Msg（Message）・ルーティング：予約（受信側で終端）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "MWr（Memory Write, 3DW）",
+      "予約",
+      "IOWr（I\/O Write）",
+      "予約（未定義のType）",
+      "CfgWr0（Config Write Type 0）",
+      "CfgWr1（Config Write Type 1）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "CplD（データ付きCompletion）",
+      "CplDLk（ロック付きCplD）",
+      "FetchAdd（AtomicOp, 3DW）",
+      "Swap（AtomicOp, 3DW）",
+      "CAS（AtomicOp, 3DW）",
+      "予約（未定義のType）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（Messageは4DW）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "DMWr（Deferrable Memory Write, 3DW）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "MWr（Memory Write, 4DW）",
+      "予約",
+      "予約（I\/Oは3DWのみ）",
+      "予約（未定義のType）",
+      "予約（Configは3DWのみ）",
+      "予約（Configは3DWのみ）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（Completionは3DWのみ）",
+      "予約",
+      "FetchAdd（AtomicOp, 4DW）",
+      "Swap（AtomicOp, 4DW）",
+      "CAS（AtomicOp, 4DW）",
+      "予約（未定義のType）",
+      "MsgD（データ付きMessage）・ルーティング：Root Complexへ",
+      "MsgD（データ付きMessage）・ルーティング：アドレスで",
+      "MsgD（データ付きMessage）・ルーティング：IDで",
+      "MsgD（データ付きMessage）・ルーティング：RCから全体へブロードキャスト",
+      "MsgD（データ付きMessage）・ルーティング：受信側で終端（Local）",
+      "MsgD（データ付きMessage）・ルーティング：RCへ集約（PME_TO_Ack用）",
+      "MsgD（データ付きMessage）・ルーティング：予約（受信側で終端）",
+      "MsgD（データ付きMessage）・ルーティング：予約（受信側で終端）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "DMWr（Deferrable Memory Write, 4DW）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "予約（未定義のType）",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "TLP Prefix",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）",
+      "予約（不正なFmt）"
+    ],
+    "topology" : {
+      "children" : [
+        {
+          "bdf" : "Bus 0",
+          "children" : [
+            {
+              "bdf" : "00:01.0",
+              "children" : [
+                {
+                  "bdf" : "01:00.0",
+                  "children" : [
+
+                  ],
+                  "detail" : "x16で接続されたグラフィックスカード。大きなBAR（VRAMのウィンドウ）を持ち、MSI-Xで割り込みを通知します。同じデバイスのHDMIオーディオが 01:00.1 として見えることもあります。",
+                  "header" : "Type 0",
+                  "id" : "gpu",
+                  "kind" : "Endpoint",
+                  "name" : "GPU"
+                }
+              ],
+              "detail" : "ルートポートは仮想PCI-PCIブリッジ（Type 1ヘッダ）です。Secondary Bus=1, Subordinate Bus=1 に設定され、Bus 1あてのTLPを下流へ送ります。",
+              "header" : "Type 1",
+              "id" : "rp1",
+              "kind" : "Root Port",
+              "name" : "Root Port 1"
+            },
+            {
+              "bdf" : "00:1c.0",
+              "children" : [
+                {
+                  "bdf" : "02:00.0",
+                  "children" : [
+                    {
+                      "bdf" : "03:00.0",
+                      "children" : [
+                        {
+                          "bdf" : "04:00.0",
+                          "children" : [
+
+                          ],
+                          "detail" : "x4接続のNVMe SSD。BAR0にコントローラのレジスタがあり、MSI-Xでキューごとに割り込みを出します。",
+                          "header" : "Type 0",
+                          "id" : "nvme",
+                          "kind" : "Endpoint",
+                          "name" : "NVMe SSD"
+                        }
+                      ],
+                      "detail" : "スイッチのダウンストリームポート。スイッチ内部の仮想バス（Bus 3）上にDevice 0として並びます。Secondary=4。",
+                      "header" : "Type 1",
+                      "id" : "dsp1",
+                      "kind" : "Switch (Downstream)",
+                      "name" : "DSP 1"
+                    },
+                    {
+                      "bdf" : "03:01.0",
+                      "children" : [
+                        {
+                          "bdf" : "05:00.0",
+                          "children" : [
+
+                          ],
+                          "detail" : "デュアルポートNICのFunction 0。マルチファンクションデバイスで、Header Typeのbit7が1になっています。",
+                          "header" : "Type 0",
+                          "id" : "nic0",
+                          "kind" : "Endpoint",
+                          "name" : "NIC Port0"
+                        },
+                        {
+                          "bdf" : "05:00.1",
+                          "children" : [
+
+                          ],
+                          "detail" : "同じNICのFunction 1。物理的なリンクは1本で、Function番号だけが異なります。",
+                          "header" : "Type 0",
+                          "id" : "nic1",
+                          "kind" : "Endpoint",
+                          "name" : "NIC Port1"
+                        }
+                      ],
+                      "detail" : "2つ目のダウンストリームポート。Bus 3上のDevice 1です。Secondary=5。",
+                      "header" : "Type 1",
+                      "id" : "dsp2",
+                      "kind" : "Switch (Downstream)",
+                      "name" : "DSP 2"
+                    }
+                  ],
+                  "detail" : "スイッチのアップストリームポート。Secondary Bus=3（スイッチ内部の仮想バス）、Subordinate=5。",
+                  "header" : "Type 1",
+                  "id" : "usp",
+                  "kind" : "Switch (Upstream)",
+                  "name" : "Switch USP"
+                }
+              ],
+              "detail" : "Secondary Bus=2, Subordinate Bus=5。配下のスイッチ全体（Bus 2〜5）をカバーします。",
+              "header" : "Type 1",
+              "id" : "rp2",
+              "kind" : "Root Port",
+              "name" : "Root Port 2"
+            }
+          ],
+          "detail" : "PCIe階層の根。Bus 0 にホストブリッジ（例：00:00.0）、内蔵デバイス、ルートポートが並びます。CPUからのメモリアクセスをTLPに変換し、デバイスからのDMAをメモリに届けます。",
+          "id" : "rc",
+          "kind" : "Root Complex",
+          "name" : "Root Complex"
+        }
+      ],
+      "detail" : "CPUコアとメモリコントローラ。PCIeデバイスへのアクセスはRoot Complexを通じて行われます。",
+      "id" : "cpu",
+      "kind" : "CPU",
+      "name" : "CPU"
+    }
+  },
   "english" : [
     {
       "chapterID" : "layers",
@@ -3259,6 +4581,71 @@
       ]
     }
   ],
+  "game" : {
+    "correctXP" : 10,
+    "dailyQuestionXP" : 20,
+    "levelTitles" : [
+      "見習いエンジニア",
+      "見習いエンジニア",
+      "レーン見習い",
+      "レーン見習い",
+      "リンクトレーナー",
+      "リンクトレーナー",
+      "リンクトレーナー",
+      "パケットマスター",
+      "パケットマスター",
+      "パケットマスター",
+      "プロトコル職人",
+      "プロトコル職人",
+      "プロトコル職人",
+      "プロトコル職人",
+      "スペック探検家",
+      "スペック探検家",
+      "スペック探検家",
+      "スペック探検家",
+      "スペック探検家",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター",
+      "PCIeマイスター"
+    ],
+    "perfectBonusXP" : 20,
+    "quests" : [
+      {
+        "goal" : 10,
+        "id" : "answer10",
+        "title" : "10問解く"
+      },
+      {
+        "goal" : 5,
+        "id" : "combo5",
+        "title" : "5問連続で正解する"
+      },
+      {
+        "goal" : 1,
+        "id" : "conquerWeak",
+        "title" : "苦手な問題を1問克服する"
+      }
+    ],
+    "questXP" : 30
+  },
   "glossary" : [
     {
       "category" : "基本",
