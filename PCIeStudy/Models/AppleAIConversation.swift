@@ -15,6 +15,12 @@ final class AppleAIConversation {
 
     /// LanguageModelSession（iOS 26 より前の型では持てないので AnyObject で持つ）
     private var session: AnyObject?
+    /// いつもの指示に足す内容（レッスンの英文など）
+    private let context: String
+
+    init(context: String = "") {
+        self.context = context
+    }
 
     private static let instructions = """
         あなたは、PCIe（PCI Express）を学んでいる日本人を手伝う先生です。
@@ -44,7 +50,8 @@ final class AppleAIConversation {
     func ask(_ question: String) async throws -> String {
         if let reason = Self.unavailableReason { throw Failure.unavailable(reason) }
         guard #available(iOS 26.0, *) else { throw Failure.unavailable("iOS 26 以上が必要です。") }
-        let current = (session as? LanguageModelSession) ?? LanguageModelSession(instructions: Self.instructions)
+        let instructions = context.isEmpty ? Self.instructions : Self.instructions + "\n\n" + context
+        let current = (session as? LanguageModelSession) ?? LanguageModelSession(instructions: instructions)
         session = current
         do {
             return try await current.respond(to: question).content

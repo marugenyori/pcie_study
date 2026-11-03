@@ -21,6 +21,7 @@ struct EnglishHomeView: View {
                         stepLine("3", "問題：英語の質問に答えて、聞き取れたか確かめる")
                         stepLine("4", "書き取り：1文ずつ聞いて、抜けた単語を選ぶ")
                         stepLine("5", "単語：よく出る語の発音と、聞こえ方のコツ")
+                        stepLine("6", "質問：わからないところを AI に聞く")
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -140,8 +141,7 @@ struct SpokenTermsView: View {
                                 Text(term.tip).font(.caption).foregroundStyle(.secondary)
                             }
                             Spacer()
-                            Image(systemName: player.isPlaying("term-\(term.id)") ? "speaker.wave.3.fill" : "speaker.wave.2")
-                                .foregroundStyle(.tint)
+                            SpeakerIcon(playing: player.isPlaying("term-\(term.id)"))
                         }
                     }
                     .buttonStyle(.plain)
@@ -159,11 +159,10 @@ struct SpokenTermsView: View {
 // MARK: - レッスン
 
 struct EnglishLessonView: View {
-    let lesson: EnglishLesson
     let player: SpeechPlayer
 
     enum Step: String, CaseIterable, Identifiable {
-        case slides, listen, questions, dictation, words
+        case slides, listen, questions, dictation, words, qa
         var id: String { rawValue }
         var label: String {
             switch self {
@@ -172,11 +171,46 @@ struct EnglishLessonView: View {
             case .questions: return "問題"
             case .dictation: return "書き取り"
             case .words: return "単語"
+            case .qa: return "質問"
+            }
+        }
+
+        var symbol: String {
+            switch self {
+            case .slides: return "rectangle.on.rectangle"
+            case .listen: return "ear"
+            case .questions: return "checkmark.circle"
+            case .dictation: return "pencil"
+            case .words: return "textformat.abc"
+            case .qa: return "bubble.left.and.bubble.right"
             }
         }
     }
 
+    /// 前後のレッスンへ移れるように、画面の中で持つ
+    @State private var lesson: EnglishLesson
     @State private var step: Step = .slides
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.goToTabRoot) private var goToTabRoot
+
+    init(lesson: EnglishLesson, player: SpeechPlayer) {
+        self.player = player
+        _lesson = State(initialValue: lesson)
+    }
+
+    private var lessonIndex: Int? { EnglishData.all.firstIndex { $0.id == lesson.id } }
+    private var previousLesson: EnglishLesson? {
+        lessonIndex.flatMap { $0 > 0 ? EnglishData.all[$0 - 1] : nil }
+    }
+    private var nextLesson: EnglishLesson? {
+        lessonIndex.flatMap { $0 + 1 < EnglishData.all.count ? EnglishData.all[$0 + 1] : nil }
+    }
+
+    private func open(_ other: EnglishLesson) {
+        player.stop()
+        lesson = other
+        step = .slides
+    }
 
     var body: some View {
         ScrollView {
@@ -189,17 +223,50 @@ struct EnglishLessonView: View {
                     Text(lesson.title).font(.title.bold())
                 }
 
-                Picker("ステップ", selection: $step) {
-                    ForEach(Step.allCases) { Text($0.label).tag($0) }
+                // ステップは6つあるので、横にすべらせて選ぶ
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(Step.allCases) { item in
+                            Button {
+                                step = item
+                            } label: {
+                                Label(item.label, systemImage: item.symbol)
+                            }
+                            .buttonStyle(AppButtonStyle(step == item ? .primary : .secondary))
+                            .controlSize(.small)
+                        }
+                    }
                 }
-                .pickerStyle(.segmented)
 
+                Group {
                 switch step {
                 case .slides: SlideStepView(lesson: lesson, player: player)
                 case .listen: ListenStepView(lesson: lesson, player: player)
                 case .questions: QuestionStepView(lesson: lesson, player: player)
                 case .dictation: DictationStepView(lesson: lesson, player: player)
                 case .words: WordsStepView(lesson: lesson, player: player)
+                case .qa: LessonQAView(lesson: lesson)
+                }
+                }
+                .id(lesson.id)
+
+                HStack {
+                    if let previousLesson {
+                        Button { open(previousLesson) } label: {
+                            Label(previousLesson.titleJa, systemImage: "chevron.left")
+                        }
+                        .buttonStyle(AppButtonStyle(.secondary))
+                        .controlSize(.small)
+                    }
+                    Spacer()
+                    if let nextLesson {
+                        Button { open(nextLesson) } label: {
+                            Label(nextLesson.titleJa, systemImage: "chevron.right")
+                                .labelStyle(TrailingIconLabelStyle())
+                        }
+                        .buttonStyle(AppButtonStyle(.secondary))
+                        .controlSize(.small)
+                    }
                 }
 
                 if let chapter = LessonData.chapter(id: lesson.chapterID) {
@@ -220,8 +287,50 @@ struct EnglishLessonView: View {
         .screenBackground()
         .navigationTitle(lesson.titleJa)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                // どこからでも行きたい場所へ移れるメニュー
+                Menu {
+                    Section("このレッスン") {
+                        ForEach(Step.allCases) { item in
+                            Button { step = item } label: { Label(item.label, systemImage: item.symbol) }
+                        }
+                    }
+                    Section("ほかのレッスン") {
+                        if let previousLesson {
+                            Button { open(previousLesson) } label: { Label("前：\(previousLesson.titleJa)", systemImage: "chevron.left") }
+                        }
+                        if let nextLesson {
+                            Button { open(nextLesson) } label: { Label("次：\(nextLesson.titleJa)", systemImage: "chevron.right") }
+                        }
+                        Menu("すべてのレッスン") {
+                            ForEach(EnglishData.all) { other in
+                                Button(other.titleJa) { open(other) }
+                            }
+                        }
+                    }
+                    Section("戻る") {
+                        Button { dismiss() } label: { Label("英語で聞くの一覧", systemImage: "list.bullet") }
+                        Button { goToTabRoot(.learn) } label: { Label("学ぶのトップ", systemImage: "book") }
+                        Button { goToTabRoot(.today) } label: { Label("今日", systemImage: "flame") }
+                    }
+                } label: {
+                    Label("移動", systemImage: "arrow.triangle.turn.up.right.diamond")
+                }
+            }
+        }
         .onChange(of: step) { player.stop() }
         .onDisappear { player.stop() }
+    }
+}
+
+/// 文字のあとにアイコンを置くラベル（「次へ ›」のように）
+struct TrailingIconLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 4) {
+            configuration.title
+            configuration.icon
+        }
     }
 }
 
@@ -366,9 +475,7 @@ private struct ListenStepView: View {
                     player.play(texts, from: index, source: source, pause: shadowing)
                 } label: {
                     HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: current ? "speaker.wave.3.fill" : "play.circle")
-                            .foregroundStyle(.tint)
-                            .frame(width: 24)
+                        SpeakerIcon(playing: current, size: 36)
                         VStack(alignment: .leading, spacing: 6) {
                             Text(sentence.en)
                                 .font(.body)
@@ -466,7 +573,7 @@ private struct QuestionStepView: View {
                 Button {
                     player.say(question.question, source: source)
                 } label: {
-                    Image(systemName: player.isPlaying(source) ? "speaker.wave.3.fill" : "speaker.wave.2")
+                    SpeakerIcon(playing: player.isPlaying(source))
                 }
                 .accessibilityLabel("質問を聞く")
             }
@@ -634,8 +741,7 @@ private struct WordsStepView: View {
                             Text(word.tip).font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer(minLength: 0)
-                        Image(systemName: player.isPlaying(source) ? "speaker.wave.3.fill" : "speaker.wave.2")
-                            .foregroundStyle(.tint)
+                        SpeakerIcon(playing: player.isPlaying(source))
                     }
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -645,5 +751,189 @@ private struct WordsStepView: View {
                 .cardStyle()
             }
         }
+    }
+}
+
+/// 押しやすい大きさの、丸いスピーカーのボタンの絵（タップできる範囲は 44pt 以上）
+struct SpeakerIcon: View {
+    var playing: Bool
+    var size: CGFloat = 44
+
+    var body: some View {
+        Image(systemName: playing ? "speaker.wave.3.fill" : "speaker.wave.2.fill")
+            .font(.body.weight(.semibold))
+            .foregroundStyle(.white)
+            .frame(width: size, height: size)
+            .background(Circle().fill(.tint))
+            .frame(minWidth: 44, minHeight: 44)
+            .contentShape(Rectangle())
+            .accessibilityLabel(playing ? "再生中" : "読み上げる")
+    }
+}
+
+// MARK: 質問
+
+/// レッスンの内容について質問する（iPhone の Apple Intelligence、または Claude Code・仕様書）
+private struct LessonQAView: View {
+    let lesson: EnglishLesson
+
+    private struct Message: Identifiable {
+        let id = UUID()
+        let question: String
+        var answer = ""
+        var error: String?
+        var finished = false
+    }
+
+    @Environment(\.openURL) private var openURL
+    @State private var conversation: AppleAIConversation
+    @State private var messages: [Message] = []
+    @State private var input = ""
+    @State private var isWorking = false
+
+    init(lesson: EnglishLesson) {
+        self.lesson = lesson
+        _conversation = State(initialValue: AppleAIConversation(context: Self.context(lesson)))
+    }
+
+    /// AI に渡すレッスンの内容
+    private static func context(_ lesson: EnglishLesson) -> String {
+        let sentences = lesson.sentences.map { "- \($0.en)（\($0.ja)）" }.joined(separator: "\n")
+        let words = lesson.words.map { "- \($0.word)：\($0.ja)" }.joined(separator: "\n")
+        return """
+            いま学んでいるのは、英語のリスニング教材「\(lesson.title)（\(lesson.titleJa)）」です。
+            英文の意味・文法・発音・PCIe の内容について質問されたら、この教材をもとに答えてください。
+            英語の言い回しを聞かれたら、例文もつけてください。
+
+            --- 英文（日本語訳） ---
+            \(sentences)
+
+            --- 単語 ---
+            \(words)
+            """
+    }
+
+    private let examples = [
+        "2文目の文法を説明して",
+        "このレッスンでいちばん大事なポイントは？",
+        "似た意味の英語の言い方を教えて",
+        "この内容を英語で人に説明する練習をしたい",
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
+                Label("このレッスンについて質問", systemImage: "bubble.left.and.bubble.right")
+                    .font(.headline)
+                Text("英文の意味・文法・発音や、PCIe の内容について聞けます。iPhone の中の AI（Apple Intelligence）が、このレッスンの英文をもとに答えます。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if let reason = AppleAIConversation.unavailableReason {
+                    Label(reason, systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack {
+                        ForEach(examples, id: \.self) { example in
+                            Button(example) { input = example }
+                                .buttonStyle(AppButtonStyle(.secondary))
+                                .controlSize(.small)
+                        }
+                    }
+                }
+            }
+            .padding()
+            .cardStyle()
+
+            ForEach(messages) { message in
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(message.question)
+                        .padding(10)
+                        .foregroundStyle(.white)
+                        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.tint))
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                    if !message.finished {
+                        ProgressView()
+                    }
+                    if !message.answer.isEmpty {
+                        Text(message.answer).textSelection(.enabled)
+                    }
+                    if let error = message.error {
+                        Text(error).font(.callout).foregroundStyle(.red)
+                    }
+                    if message.finished {
+                        HStack {
+                            Button {
+                                askClaudeCode(message.question)
+                            } label: {
+                                Label("Claude Code に聞く", systemImage: "chevron.left.forwardslash.chevron.right")
+                            }
+                            NavigationLink {
+                                AskSpecView(initialQuestion: message.question)
+                            } label: {
+                                Label("仕様書に聞く", systemImage: "book.and.wrench")
+                            }
+                        }
+                        .font(.caption.bold())
+                        .buttonStyle(.borderless)
+                    }
+                }
+                .padding()
+                .cardStyle()
+            }
+
+            HStack(alignment: .bottom, spacing: 8) {
+                TextField("質問を入力（日本語でも英語でも）", text: $input, axis: .vertical)
+                    .lineLimit(1...4)
+                    .padding(10)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+                Button {
+                    Task { await send() }
+                } label: {
+                    Image(systemName: "arrow.up.circle.fill").font(.largeTitle)
+                }
+                .disabled(isWorking || input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .accessibilityLabel("送信")
+            }
+            if AppleAIConversation.unavailableReason != nil {
+                Button {
+                    askClaudeCode(input)
+                } label: {
+                    Label("Claude Code に聞く", systemImage: "chevron.left.forwardslash.chevron.right")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(AppButtonStyle(.secondary))
+                .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
+    }
+
+    private func send() async {
+        let question = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !question.isEmpty else { return }
+        input = ""
+        messages.append(Message(question: question))
+        let index = messages.count - 1
+        isWorking = true
+        defer { isWorking = false }
+        do {
+            messages[index].answer = try await conversation.ask(question)
+        } catch {
+            messages[index].error = error.localizedDescription
+        }
+        messages[index].finished = true
+    }
+
+    private func askClaudeCode(_ question: String) {
+        let text = question.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        let prompt = """
+            PCIe学習アプリの「英語で聞く」のレッスン「\(lesson.title)」（PCIeStudy/Data/EnglishData*.swift の \(lesson.id)）について質問です。
+            コードは変えずに、日本語で答えてください。
+
+            質問：\(text)
+            """
+        if let url = ClaudeCodeRequestView.sessionURL(prompt: prompt) { openURL(url) }
     }
 }
