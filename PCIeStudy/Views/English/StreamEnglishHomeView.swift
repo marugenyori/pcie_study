@@ -28,7 +28,8 @@ struct StreamEnglishHomeView: View {
     var body: some View {
         List {
             Section {
-                PhotosPicker(selection: $pickedItem, matching: .videos) {
+                // .current：元の形式のまま受け取る（既定の .automatic だと形式を変換するので、長い動画は数分かかる）
+                PhotosPicker(selection: $pickedItem, matching: .videos, preferredItemEncoding: .current) {
                     Label("写真から動画を取り込む", systemImage: "photo.on.rectangle")
                 }
                 Button {
@@ -39,7 +40,9 @@ struct StreamEnglishHomeView: View {
                 if isImporting {
                     HStack(spacing: 10) {
                         ProgressView()
-                        Text("取り込み中…").foregroundStyle(.secondary)
+                        Text("取り込み中…（iCloud にだけある動画は、ダウンロードの時間もかかります）")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
                 }
             } footer: {
