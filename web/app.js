@@ -188,7 +188,7 @@ const routes = [
 let cleanup = null;
 function render() {
   if (cleanup) { cleanup(); cleanup = null; }
-  speechSynthesis.cancel();
+  speech.stop();
   const hash = location.hash || "#/";
   document.querySelectorAll(".topbar nav a").forEach((a) => {
     a.classList.toggle("active", hash.startsWith(a.getAttribute("href")));
@@ -377,27 +377,90 @@ function quizSession(key) {
   show();
 }
 
-// MARK: - 英語で聞く（読み上げはブラウザの音声合成。Edge の「Natural」の声がきれい）
+// MARK: - 英語で聞く
+//
+// PC のサーバに AI の音声合成（Kokoro、docs/PC_TTS.md）があればその声で、なければブラウザの音声合成で読む。
 
 const speech = {
   rate: Number(localStorage.getItem("speechRate") || 1),
   voiceName: localStorage.getItem("speechVoice") || "",
-  voices() {
+  /** PC の声の一覧（GET /api/tts/voices）。使えないときは空 */
+  pcVoices: [],
+  audio: null,
+  token: 0,
+  async loadPCVoices() {
+    try {
+      const res = await fetch("/api/tts/voices");
+      if (res.ok) this.pcVoices = (await res.json()).voices || [];
+    } catch (_) { this.pcVoices = []; }
+  },
+  browserVoices() {
     return speechSynthesis.getVoices().filter((v) => v.lang.startsWith("en"));
   },
-  voice() {
-    const list = this.voices();
-    return list.find((v) => v.name === this.voiceName)
-      || list.find((v) => /natural/i.test(v.name) && v.lang === "en-US")
-      || list.find((v) => v.lang === "en-US") || list[0];
+  /** 選べる声：PC の声（"pc:af_heart" の形）とブラウザの声 */
+  choices() {
+    return [
+      ...this.pcVoices.map((v) => ({ value: `pc:${v.id}`, label: `PC の AI の声：${v.label || v.id}` })),
+      ...this.browserVoices().map((v) => ({ value: v.name, label: `ブラウザ：${v.name}` })),
+    ];
   },
-  /** texts を順に読む。onIndex(i) で今の文、pause なら1文ごとに間を空ける */
-  play(texts, start, onIndex, pause = false) {
+  current() {
+    const values = this.choices().map((c) => c.value);
+    if (values.includes(this.voiceName)) return this.voiceName;
+    if (this.pcVoices.length) return `pc:${this.pcVoices[0].id}`;
+    const list = this.browserVoices();
+    const best = list.find((v) => /natural/i.test(v.name) && v.lang === "en-US") || list.find((v) => v.lang === "en-US") || list[0];
+    return best ? best.name : "";
+  },
+  stop() {
+    this.token++;
     speechSynthesis.cancel();
+    if (this.audio) { this.audio.pause(); this.audio = null; }
+  },
+  /** texts を順に読む。onIndex(i) で今の文（終わったら -1）、pause なら1文ごとに間を空ける */
+  play(texts, start, onIndex, pause = false) {
+    this.stop();
+    const voice = this.current();
+    if (voice.startsWith("pc:")) this.playPC(texts, start, onIndex, pause, voice.slice(3));
+    else this.playBrowser(texts, start, onIndex, pause, voice);
+  },
+  async playPC(texts, start, onIndex, pause, voice) {
+    const token = this.token;
+    const url = (text) => `/api/tts?${new URLSearchParams({ text, voice, speed: String(this.rate) })}`;
+    // 次の文の音声は、今の文を読んでいるあいだに作っておく
+    let next = new Audio(url(texts[start]));
+    for (let i = start; i < texts.length; i++) {
+      if (token !== this.token) return;
+      const audio = next;
+      next = i + 1 < texts.length ? new Audio(url(texts[i + 1])) : null;
+      if (next) next.preload = "auto";
+      this.audio = audio;
+      onIndex(i);
+      try {
+        await new Promise((resolve, reject) => {
+          audio.onended = resolve;
+          audio.onerror = () => reject(new Error("PC の声を読み込めませんでした"));
+          audio.play().catch(reject);
+        });
+      } catch (e) {
+        if (token !== this.token) return;
+        // PC の声が使えないときは、残りをブラウザの声で読む
+        this.pcVoices = [];
+        this.playBrowser(texts, i, onIndex, pause, this.current());
+        return;
+      }
+      if (token !== this.token) return;
+      if (i < texts.length - 1) await new Promise((r) => setTimeout(r, pause ? 1200 + texts[i].length * 60 : 250));
+    }
+    if (token === this.token) onIndex(-1);
+  },
+  playBrowser(texts, start, onIndex, pause, voiceName) {
+    speechSynthesis.cancel();
+    const voice = this.browserVoices().find((v) => v.name === voiceName);
     texts.slice(start).forEach((text, offset) => {
       const u = new SpeechSynthesisUtterance(text);
-      u.voice = this.voice();
-      u.lang = u.voice?.lang || "en-US";
+      if (voice) u.voice = voice;
+      u.lang = voice?.lang || "en-US";
       u.rate = this.rate;
       u.onstart = () => onIndex(start + offset);
       u.onend = () => {
@@ -415,7 +478,8 @@ speechSynthesis.onvoiceschanged = () => {};
 
 function englishHome() {
   const done = new Set(P().englishDone || []);
-  const voices = speech.voices();
+  const voices = speech.choices();
+  const selected = speech.current();
   app.innerHTML = `
     <h1>英語で聞く</h1>
     <div class="card">
@@ -423,10 +487,12 @@ function englishHome() {
         <label>速さ <select id="rate">${[[0.8, "ゆっくり"], [1, "ふつう"], [1.2, "はやめ"]].map(([v, l]) =>
           `<option value="${v}" ${speech.rate === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
         <label>声 <select id="voice">${voices.map((v) =>
-          `<option ${speech.voice()?.name === v.name ? "selected" : ""}>${esc(v.name)}</option>`).join("")}</select></label>
+          `<option value="${esc(v.value)}" ${selected === v.value ? "selected" : ""}>${esc(v.label)}</option>`).join("")}</select></label>
         <button class="btn small" id="sample">試しに聞く</button>
       </div>
-      <p class="muted small">Edge なら「Microsoft … Online (Natural)」の声が自然です。</p>
+      <p class="muted small">${speech.pcVoices.length
+        ? "PC の AI の声（Kokoro）が使えます。いちばん自然です。"
+        : "PC の AI の声（docs/PC_TTS.md）を準備すると、もっと自然な声で読めます。今はブラウザの声で読みます（Edge なら Natural の声が自然です）。"}</p>
     </div>
     <h2>レッスン（${done.size} / ${content.english.length}）</h2>
     <div class="card list">${content.english.map((l) => `
@@ -442,7 +508,7 @@ function englishHome() {
   app.querySelectorAll("[data-term]").forEach((b) => {
     b.onclick = () => speech.play([content.spokenTerms[Number(b.dataset.term)].speech], 0, () => {});
   });
-  if (!voices.length) speechSynthesis.onvoiceschanged = () => { if (location.hash === "#/english") englishHome(); };
+  if (!speech.browserVoices().length) speechSynthesis.onvoiceschanged = () => { if (location.hash === "#/english") englishHome(); };
 }
 
 function englishLesson(id) {
@@ -458,7 +524,7 @@ function englishLesson(id) {
       <div class="row">${[["listen", "聞く"], ["questions", "問題"], ["words", "単語"]].map(([k, l]) =>
         `<button class="btn ${tab === k ? "primary" : ""}" data-tab="${k}">${l}</button>`).join("")}</div>
       <div id="body"></div>`;
-    app.querySelectorAll("[data-tab]").forEach((b) => { b.onclick = () => { speechSynthesis.cancel(); tab = b.dataset.tab; draw(); }; });
+    app.querySelectorAll("[data-tab]").forEach((b) => { b.onclick = () => { speech.stop(); tab = b.dataset.tab; draw(); }; });
     ({ listen, questions, words })[tab]();
   };
 
@@ -478,7 +544,7 @@ function englishLesson(id) {
           ${showJa ? `<div class="ja">${esc(s.ja)}</div>` : ""}</div></div>`).join("")}`;
     const highlight = (i) => body.querySelectorAll(".line").forEach((el) => el.classList.toggle("current", Number(el.dataset.i) === i));
     document.getElementById("play").onclick = () => speech.play(texts, 0, highlight, pause);
-    document.getElementById("stop").onclick = () => { speechSynthesis.cancel(); highlight(-1); };
+    document.getElementById("stop").onclick = () => { speech.stop(); highlight(-1); };
     document.getElementById("en").onchange = (e) => { showEn = e.target.checked; listen(); };
     document.getElementById("ja").onchange = (e) => { showJa = e.target.checked; listen(); };
     document.getElementById("pause").onchange = (e) => { pause = e.target.checked; };
@@ -820,7 +886,7 @@ async function start() {
     app.innerHTML = `<div class="card">学習データ（content.json）を読み込めませんでした。PC で pcie_study を git pull してください。</div>`;
     return;
   }
-  await pull();
+  await Promise.all([pull(), speech.loadPCVoices()]);
   window.addEventListener("hashchange", render);
   // iPhone で学習した分を取り込むため、ページに戻ってきたときにも読み直す
   document.addEventListener("visibilitychange", async () => {

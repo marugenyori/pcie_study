@@ -35,6 +35,7 @@ struct EnglishHomeView: View {
                 Picker("発音", selection: Binding(get: { player.accent }, set: { player.setAccent($0) })) {
                     ForEach(SpeechPlayer.Accent.allCases) { Text($0.label).tag($0) }
                 }
+                Toggle("PC の AI の声を使う", isOn: Binding(get: { player.usesPCVoice }, set: { player.setUsesPCVoice($0) }))
                 Button {
                     player.say("The Data Link Layer replays the TLP when it receives a NAK.", source: "sample")
                 } label: {
@@ -43,6 +44,9 @@ struct EnglishHomeView: View {
             } header: {
                 Text("音声")
             } footer: {
+                if player.usesPCVoice {
+                    Text(pcVoiceNote)
+                }
                 if !player.hasEnhancedVoice(for: player.accent) {
                     Text("声が機械っぽいときは、iPhone の「設定」→「アクセシビリティ」→「読み上げコンテンツ」→「声」→「英語」で、「拡張」や「プレミアム」の声をダウンロードすると自然になります。")
                 }
@@ -71,6 +75,18 @@ struct EnglishHomeView: View {
         .screenBackground()
         .navigationTitle("英語で聞く")
         .onDisappear { player.stop() }
+    }
+
+    /// PC の声の状態の説明
+    private var pcVoiceNote: String {
+        if player.accent.pcVoice == nil {
+            return "PC の AI の声はアメリカ・イギリスの発音だけです。この発音は iPhone の声で読みます。"
+        }
+        switch player.pcVoiceWorked {
+        case true?: return "PC の AI の声で読んでいます（PC と同じ Wi‑Fi のとき。家の外では iPhone の声）。"
+        case false?: return "PC の AI の声が使えなかったので、iPhone の声で読みました。PC のサーバが動いているか、PC 側の準備（docs/PC_TTS.md）ができているか確認してください。"
+        case nil: return "PC と同じ Wi‑Fi のときは、PC の AI の声（Kokoro）で読みます。家の外では iPhone の声で読みます。"
+        }
     }
 
     private func stepLine(_ number: String, _ text: String) -> some View {

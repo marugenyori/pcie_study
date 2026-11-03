@@ -44,8 +44,15 @@ final class SpecRAGClient {
     var isConfigured: Bool { baseURL != nil }
 
     /// 「192.168.1.10」だけでも「http://192.168.1.10:8765」として扱う
-    var baseURL: URL? {
-        var text = serverAddress
+    var baseURL: URL? { Self.baseURL(from: serverAddress) }
+
+    /// 保存してあるアドレスから作る（SpecRAGClient を持たない読み上げなどから使う）
+    static var savedBaseURL: URL? {
+        baseURL(from: UserDefaults.standard.string(forKey: key) ?? "")
+    }
+
+    static func baseURL(from address: String) -> URL? {
+        var text = address
         guard !text.isEmpty else { return nil }
         if !text.contains("://") { text = "http://" + text }
         guard var comps = URLComponents(string: text), comps.host?.isEmpty == false else { return nil }
