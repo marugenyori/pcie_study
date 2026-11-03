@@ -152,9 +152,16 @@ final class SpeechPlayer {
         activateAudioSession()
         self.source = source
         isSpeaking = true
-        // PC の声が使えなかった直後（1分以内）は、待たずに iPhone の声で読む
+        // PC の声が使えなかった直後（1分以内）は、待たずに iPhone の声で読む。
+        // ただし、すべての文の音声が iPhone に保存してあれば、PC につながらなくても PC の声で読む
         let recentlyFailed = pcFailedAt.map { Date().timeIntervalSince($0) < 60 } ?? false
-        if usesPCVoice, !recentlyFailed, let voice = accent.pcVoice, let base = SpecRAGClient.savedBaseURL {
+        guard usesPCVoice, let voice = accent.pcVoice else {
+            speakWithSynthesizer(items, pause: pause)
+            return
+        }
+        let allSaved = items.allSatisfy { VoiceCache.contains(text: $0.text, voice: voice, speed: speed.pcSpeed) }
+        let base = recentlyFailed ? nil : SpecRAGClient.savedBaseURL
+        if allSaved || base != nil {
             speakWithPC(items, pause: pause, base: base, voice: voice)
         } else {
             speakWithSynthesizer(items, pause: pause)
@@ -175,7 +182,7 @@ final class SpeechPlayer {
     }
 
     /// PC で音声を作ってもらい、順に再生する。次の文の音声は、今の文を読んでいるあいだに作っておく
-    private func speakWithPC(_ items: [(text: String, index: Int?)], pause: Bool, base: URL, voice: String) {
+    private func speakWithPC(_ items: [(text: String, index: Int?)], pause: Bool, base: URL?, voice: String) {
         let speedValue = speed.pcSpeed
         let currentSpeed = speed
         pcTask = Task { @MainActor [weak self] in
@@ -209,24 +216,32 @@ final class SpeechPlayer {
         }
     }
 
+    private static func fetchAudio(_ text: String, base: URL?, voice: String, speed: Double) -> Task<Data, Error> {
+        Task { try await audio(for: text, base: base, voice: voice, speed: speed) }
+    }
+
+    /// PC の声の音声。iPhone に保存してあればそれを使い、なければ PC で作って保存する
     /// GET /api/tts?text=…&voice=…&speed=…（PC 側は docs/PC_TTS.md）
-    private static func fetchAudio(_ text: String, base: URL, voice: String, speed: Double) -> Task<Data, Error> {
-        Task {
-            var components = URLComponents(url: base.appending(path: "api/tts"), resolvingAgainstBaseURL: false)
-            components?.queryItems = [
-                URLQueryItem(name: "text", value: EnglishSpeech.spoken(text)),
-                URLQueryItem(name: "voice", value: voice),
-                URLQueryItem(name: "speed", value: String(speed)),
-            ]
-            guard let url = components?.url else { throw URLError(.badURL) }
-            var request = URLRequest(url: url)
-            request.timeoutInterval = 20
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard (response as? HTTPURLResponse)?.statusCode == 200, !data.isEmpty else {
-                throw URLError(.badServerResponse)
-            }
-            return data
+    static func audio(for text: String, base: URL?, voice: String, speed: Double) async throws -> Data {
+        if let saved = VoiceCache.audio(text: text, voice: voice, speed: speed) { return saved }
+        guard let base else { throw URLError(.notConnectedToInternet) }
+        var components = URLComponents(url: base.appending(path: "api/tts"), resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "text", value: EnglishSpeech.spoken(text)),
+            URLQueryItem(name: "voice", value: voice),
+            URLQueryItem(name: "speed", value: String(speed)),
+            // 小さく保存できるよう AAC（m4a）を頼む。PC が対応していなければ WAV のまま返ってくる
+            URLQueryItem(name: "format", value: "m4a"),
+        ]
+        guard let url = components?.url else { throw URLError(.badURL) }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 20
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200, !data.isEmpty else {
+            throw URLError(.badServerResponse)
         }
+        VoiceCache.save(data, text: text, voice: voice, speed: speed)
+        return data
     }
 
     /// 音声を最後まで再生する（stop() で途中で止めたときも戻る）

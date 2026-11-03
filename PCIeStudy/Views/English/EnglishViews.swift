@@ -5,6 +5,7 @@ import SwiftUI
 struct EnglishHomeView: View {
     @Environment(ProgressStore.self) private var progress
     @State private var player = SpeechPlayer()
+    @State private var downloader = VoiceDownloader()
 
     var body: some View {
         List {
@@ -37,6 +38,9 @@ struct EnglishHomeView: View {
                     ForEach(SpeechPlayer.Accent.allCases) { Text($0.label).tag($0) }
                 }
                 Toggle("PC の AI の声を使う", isOn: Binding(get: { player.usesPCVoice }, set: { player.setUsesPCVoice($0) }))
+                if player.usesPCVoice, let voice = player.accent.pcVoice {
+                    voiceDownloadRow(voice: voice)
+                }
                 Button {
                     player.say("The Data Link Layer replays the TLP when it receives a NAK.", source: "sample")
                 } label: {
@@ -78,13 +82,46 @@ struct EnglishHomeView: View {
         .onDisappear { player.stop() }
     }
 
+    /// PC の声を iPhone に保存する（家の外でも PC の声で聞くため）
+    @ViewBuilder
+    private func voiceDownloadRow(voice: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if downloader.isRunning {
+                ProgressView(value: Double(downloader.done), total: Double(max(downloader.total, 1))) {
+                    Text("PC の声を保存中… \(downloader.done) / \(downloader.total)").font(.caption)
+                }
+                Button("止める", role: .cancel) { downloader.cancel() }
+                    .font(.caption.bold())
+            } else {
+                Button {
+                    downloader.start(voice: voice, speed: player.speed.pcSpeed)
+                } label: {
+                    Label("PC の声をダウンロード（家の外でも使う）", systemImage: "arrow.down.circle")
+                }
+            }
+            HStack {
+                Text("保存した音声：\(ByteCountFormatter.string(fromByteCount: downloader.savedBytes, countStyle: .file))")
+                Spacer()
+                if downloader.savedBytes > 0 && !downloader.isRunning {
+                    Button("削除", role: .destructive) { downloader.removeAll() }
+                        .buttonStyle(.borderless)
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            if let message = downloader.message {
+                Text(message).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+    }
+
     /// PC の声の状態の説明
     private var pcVoiceNote: String {
         if player.accent.pcVoice == nil {
             return "PC の AI の声はアメリカ・イギリスの発音だけです。この発音は iPhone の声で読みます。"
         }
         switch player.pcVoiceWorked {
-        case true?: return "PC の AI の声で読んでいます（PC と同じ Wi‑Fi のとき。家の外では iPhone の声）。"
+        case true?: return "PC の AI の声で読んでいます（PC と同じ Wi‑Fi のとき）。家の外でも使うには、上の「PC の声をダウンロード」で保存しておきます。保存は今の発音・速さの分だけです。"
         case false?: return "PC の AI の声が使えなかったので、iPhone の声で読みました。PC のサーバが動いているか、PC 側の準備（docs/PC_TTS.md）ができているか確認してください。"
         case nil: return "PC と同じ Wi‑Fi のときは、PC の AI の声（Kokoro）で読みます。家の外では iPhone の声で読みます。"
         }
