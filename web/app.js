@@ -34,7 +34,10 @@ const shuffle = (array) => {
   }
   return a;
 };
-const setSyncStatus = (text) => { document.getElementById("sync-status").textContent = text; };
+const setSyncStatus = (text, ok = true) => {
+  document.getElementById("sync-status").textContent = text;
+  document.getElementById("sync-dot").className = `dot ${ok ? "ok" : "ng"}`;
+};
 
 // MARK: - 同期（アプリの ProgressStore.merge / EnglishStore.merge と同じきまり）
 
@@ -94,7 +97,7 @@ async function pull() {
     setSyncStatus("iPhone と同期済み");
   } catch (e) {
     serverAvailable = false;
-    setSyncStatus("同期できません（PC のサーバが同期に未対応か、止まっています）");
+    setSyncStatus("iPhone と同期できません（PC のサーバを確認）", false);
   }
 }
 
@@ -111,7 +114,7 @@ function save() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setSyncStatus(`同期しました（${new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}）`);
     } catch (e) {
-      setSyncStatus("PC に書き込めませんでした");
+      setSyncStatus("PC に書き込めませんでした", false);
     }
   }, 800);
 }
@@ -192,9 +195,16 @@ function render() {
   if (cleanup) { cleanup(); cleanup = null; }
   speech.stop();
   const hash = location.hash || "#/";
-  document.querySelectorAll(".topbar nav a").forEach((a) => {
-    a.classList.toggle("active", hash.startsWith(a.getAttribute("href")));
+  // 今いる場所のメニューを強調し、上の帯に場所の名前と「戻る」を出す
+  let current = null;
+  document.querySelectorAll(".nav a, .tabbar a").forEach((a) => {
+    const on = new RegExp(a.dataset.match).test(hash);
+    a.classList.toggle("active", on);
+    if (on && a.closest(".nav")) current = a;
   });
+  document.getElementById("crumb").textContent = current ? [...current.querySelectorAll("span")].map((x) => x.textContent).join(" ") : "";
+  document.querySelector("#pagebar .back").hidden = /^#?\/?$/.test(hash);
+  document.body.classList.remove("menu-open");
   for (const [pattern, view] of routes) {
     const m = hash.match(pattern);
     if (m) {
@@ -1036,6 +1046,21 @@ function phraseBook() {
 
 // MARK: - 起動
 
+/** 狭い画面用の下のタブ（メニューの主な項目を写す）と、メニューの開け閉め */
+function setupChrome() {
+  const tabbar = document.createElement("nav");
+  tabbar.className = "tabbar";
+  tabbar.innerHTML = [...document.querySelectorAll(".nav a.tab")].map((a) => a.outerHTML).join("");
+  document.body.appendChild(tabbar);
+  document.getElementById("menu-btn").onclick = (e) => { e.stopPropagation(); document.body.classList.toggle("menu-open"); };
+  document.addEventListener("click", (e) => {
+    if (document.body.classList.contains("menu-open") && !e.target.closest("#sidebar")) document.body.classList.remove("menu-open");
+  });
+  window.addEventListener("scroll", () => {
+    document.getElementById("pagebar").classList.toggle("scrolled", window.scrollY > 4);
+  }, { passive: true });
+}
+
 async function start() {
   try {
     const saved = localStorage.getItem("pcieStudyDoc");
@@ -1048,6 +1073,7 @@ async function start() {
     return;
   }
   await Promise.all([pull(), speech.loadPCVoices()]);
+  setupChrome();
   window.addEventListener("hashchange", render);
   // iPhone で学習した分を取り込むため、ページに戻ってきたときにも読み直す
   document.addEventListener("visibilitychange", async () => {
