@@ -1,0 +1,39 @@
+name: App ID の設定
+
+# Apple Developer の Identifiers で、アプリ本体の App ID に Capability / App Service を追加する
+# Actions → App ID の設定 → Run workflow から、種類（例：SHAZAMKIT）を入れて実行する
+on:
+  workflow_dispatch:
+    inputs:
+      capability:
+        description: "追加する種類（App Store Connect API の capabilityType）"
+        type: string
+        default: SHAZAMKIT
+
+jobs:
+  enable:
+    name: App ID に追加
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BUNDLE_ID: ${{ secrets.BUNDLE_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: App Store Connect API キーを配置
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/keys"
+          printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
+          echo "ASC_KEY_PATH=$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8" >> "$GITHUB_ENV"
+
+      - name: App ID に追加
+        env:
+          CAPABILITY: ${{ inputs.capability }}
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet "pyjwt[crypto]"
+          "$RUNNER_TEMP/venv/bin/python" .github/scripts/enable_capability.py "$CAPABILITY" "$BUNDLE_ID"
