@@ -38,7 +38,7 @@ struct LearnView: View {
                     NavigationLink {
                         AskSpecView()
                     } label: {
-                        Label("仕様書に質問（PCのRAG）", systemImage: "bubble.left.and.text.bubble.right")
+                        Label("質問する（仕様書・Apple AI・Claude Code）", systemImage: "bubble.left.and.text.bubble.right")
                     }
                     NavigationLink {
                         ColumnListView()
