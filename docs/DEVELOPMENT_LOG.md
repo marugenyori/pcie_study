@@ -199,6 +199,14 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - 読み上げが次の文に進むとスライドもめくれる。左右のスワイプ・ボタンでも切り替えられ、再生中に切り替えるとそこから読み直す
 - 図の数値は、レッスンの英文にある数値だけを使った（仕様書との照合は英文と同じく未確認）
 
+## 2026-11-03 質問する：仕様書・Apple AI・Claude Code
+
+- 「仕様書に質問」を「質問する」にして、相手を選べるようにした（入力欄の上の切り替え）
+  - 仕様書（PC）：今までどおり PC の RAG
+  - Apple AI：iPhone 内の Apple Intelligence（iOS 26 以上、`AppleAIConversation.swift`）。会話を覚えて続けて聞ける。PC なし・外出先でも使える
+  - Claude Code：質問を入れた Claude Code の新しいセッションを開く（`ClaudeCodeRequestView.sessionURL`、送信は自分で押す）
+- 答えの下の「ほかにも聞く」で、同じ質問をほかの相手にも聞いて見比べられる
+
 ## 2026-11-03 ブラウザ版との同期（アプリ側）
 
 - PC のサーバの GET/PUT /api/sync を通して、ブラウザ版と記録を同期する（`SyncClient.swift`、形は `SyncDocument.swift` と `docs/SYNC.md`）
