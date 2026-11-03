@@ -16,7 +16,7 @@ struct PickedMovie: Transferable {
 }
 
 /// 配信の録画で英語を学ぶ：動画の一覧と取り込み
-struct EnglishHomeView: View {
+struct StreamEnglishHomeView: View {
     @Environment(EnglishStore.self) private var store
     @State private var pickedItem: PhotosPickerItem?
     @State private var showsFileImporter = false
