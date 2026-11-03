@@ -506,7 +506,7 @@ function englishHome() {
         <b>${esc(l.title)}</b> <span class="muted small">${esc(l.titleJa)}・${esc(l.level)}</span></a>`).join("")}</div>
     <h2>PCIe の言葉の英語での読み方</h2>
     <div class="card list">${content.spokenTerms.map((t, i) => `
-      <div class="item"><button class="btn small" data-term="${i}">▶</button>
+      <div class="item"><button class="speak" data-term="${i}" aria-label="読み上げる">🔊</button>
         <b>${esc(t.written)}</b> … ${esc(t.reading)}<div class="muted small">${esc(t.tip)}</div></div>`).join("")}</div>`;
   document.getElementById("rate").onchange = (e) => { speech.rate = Number(e.target.value); localStorage.setItem("speechRate", speech.rate); };
   document.getElementById("voice").onchange = (e) => { speech.voiceName = e.target.value; localStorage.setItem("speechVoice", speech.voiceName); };
@@ -521,17 +521,68 @@ function englishLesson(id) {
   const lesson = content.english.find((l) => l.id === id);
   if (!lesson) return (app.innerHTML = "<p>レッスンが見つかりません</p>");
   let tab = "slides", showEn = false, showJa = false, pause = false;
+  const position = content.english.indexOf(lesson);
+  const prev = content.english[position - 1], next = content.english[position + 1];
   const texts = lesson.sentences.map((s) => s.spoken || s.en);
 
   const draw = () => {
     app.innerHTML = `
       <p><span class="badge">${esc(lesson.level)}</span> <span class="muted small">${esc(lesson.titleJa)}</span></p>
       <h1>${esc(lesson.title)}</h1>
-      <div class="row">${[["slides", "スライド"], ["listen", "聞く"], ["questions", "問題"], ["dictation", "書き取り"], ["words", "単語"]].map(([k, l]) =>
+      <div class="row">${[["slides", "スライド"], ["listen", "聞く"], ["questions", "問題"], ["dictation", "書き取り"], ["words", "単語"], ["qa", "質問"]].map(([k, l]) =>
         `<button class="btn ${tab === k ? "primary" : ""}" data-tab="${k}">${l}</button>`).join("")}</div>
-      <div id="body"></div>`;
+      <div id="body"></div>
+      <div class="row lesson-nav">
+        ${prev ? `<a class="btn" href="#/english/${esc(prev.id)}">← ${esc(prev.titleJa)}</a>` : ""}
+        <a class="btn" href="#/english">英語で聞くの一覧</a>
+        <select id="jump"><option value="">ほかのレッスンへ…</option>${content.english.map((l) =>
+          `<option value="${esc(l.id)}" ${l.id === lesson.id ? "disabled" : ""}>${esc(l.titleJa)}</option>`).join("")}</select>
+        <span class="spacer"></span>
+        ${next ? `<a class="btn primary" href="#/english/${esc(next.id)}">${esc(next.titleJa)} →</a>` : ""}
+      </div>`;
+    document.getElementById("jump").onchange = (e) => { if (e.target.value) location.hash = `#/english/${e.target.value}`; };
     app.querySelectorAll("[data-tab]").forEach((b) => { b.onclick = () => { speech.stop(); tab = b.dataset.tab; draw(); }; });
-    ({ slides, listen, questions, dictation, words })[tab]();
+    ({ slides, listen, questions, dictation, words, qa })[tab]();
+  };
+
+  // レッスンの内容について PC の AI に質問する（iPhone の Apple Intelligence の代わり）
+  const qa = () => {
+    const body = document.getElementById("body");
+    const history = [];
+    const system = `いま学んでいるのは、英語のリスニング教材「${lesson.title}（${lesson.titleJa}）」です。英文の意味・文法・発音・PCIe の内容について質問されたら、この教材をもとに日本語で答えてください。英語の言い回しを聞かれたら例文もつけてください。\n\n--- 英文（日本語訳） ---\n${lesson.sentences.map((s) => `- ${s.en}（${s.ja}）`).join("\n")}\n\n--- 単語 ---\n${lesson.words.map((w) => `- ${w.word}：${w.ja}`).join("\n")}`;
+    const examples = ["2文目の文法を説明して", "このレッスンでいちばん大事なポイントは？", "似た意味の英語の言い方を教えて", "この内容を英語で人に説明する練習をしたい"];
+    body.innerHTML = `<div class="card"><b>このレッスンについて質問</b>
+        <p class="muted small">英文の意味・文法・発音や、PCIe の内容について聞けます。PC の AI がこのレッスンの英文をもとに答えます。</p>
+        <div class="row">${examples.map((e) => `<button class="btn small" data-ex="${esc(e)}">${esc(e)}</button>`).join("")}</div></div>
+      <div id="qa-chat"></div>
+      <div class="card row"><input type="text" id="qa-in" placeholder="質問を入力（日本語でも英語でも）"><button class="btn primary" id="qa-send">質問</button>
+        <button class="btn" id="qa-cc">Claude Code に聞く</button></div>`;
+    body.querySelectorAll("[data-ex]").forEach((b) => { b.onclick = () => { document.getElementById("qa-in").value = b.dataset.ex; }; });
+    const ask = async () => {
+      const input = document.getElementById("qa-in");
+      const question = input.value.trim();
+      if (!question) return;
+      input.value = "";
+      const box = document.createElement("div");
+      box.innerHTML = `<div class="bubble user">${esc(question)}</div><div class="note">…</div>`;
+      document.getElementById("qa-chat").appendChild(box);
+      const answer = box.querySelector(".note");
+      history.push({ role: "user", content: question });
+      try {
+        const text = await llmChat(history, { system, onToken: (t) => { answer.innerHTML = md(t).replace(/\n/g, "<br>"); } });
+        history.push({ role: "assistant", content: text });
+      } catch (e) {
+        history.pop();
+        answer.innerHTML = `<span style="color:var(--bad)">${esc(e.message)}</span>`;
+      }
+    };
+    document.getElementById("qa-send").onclick = ask;
+    document.getElementById("qa-in").onkeydown = (e) => { if (e.key === "Enter") ask(); };
+    document.getElementById("qa-cc").onclick = () => {
+      const question = document.getElementById("qa-in").value.trim();
+      if (!question) return;
+      window.open(claudeCodeURL(`PCIe学習アプリの「英語で聞く」のレッスン「${lesson.title}」（PCIeStudy/Data/EnglishData*.swift の ${lesson.id}）について質問です。コードは変えずに、日本語で答えてください。\n\n質問：${question}`), "_blank");
+    };
   };
 
   // 読み上げに合わせて、いま話している文の図を出す（visual.js の renderSlide）
@@ -592,7 +643,7 @@ function englishLesson(id) {
       const others = shuffle([...new Set(items.map((s) => s.key))].filter((k) => k !== item.key)).slice(0, 3);
       const choices = shuffle([item.key, ...others]);
       body.innerHTML = `<div class="card"><p class="muted small">${index + 1} / ${items.length}　聞こえた単語を選んでください</p>
-          <button class="btn primary" id="say">🔊 もう一度聞く</button><p id="sentence">${esc(item.en.replace(item.key, "＿＿＿＿"))}</p><div id="ja"></div></div>
+          <button class="btn primary big" id="say">🔊 もう一度聞く</button><p id="sentence">${esc(item.en.replace(item.key, "＿＿＿＿"))}</p><div id="ja"></div></div>
         ${choices.map((c) => `<button class="choice" data-c="${esc(c)}">${esc(c)}</button>`).join("")}<div id="after"></div>`;
       const say = () => speech.play([item.spoken || item.en], 0, () => {});
       document.getElementById("say").onclick = say;
@@ -626,7 +677,7 @@ function englishLesson(id) {
         <label><input type="checkbox" id="pause" ${pause ? "checked" : ""}> 1文ごとに止める</label>
       </div>
       ${lesson.sentences.map((s, i) => `
-        <div class="line" data-i="${i}"><span class="time">▶</span><div>
+        <div class="line" data-i="${i}"><span class="speak" aria-hidden="true">🔊</span><div>
           <div class="${showEn ? "" : "hidden-text"}">${esc(s.en)}</div>
           ${showJa ? `<div class="ja">${esc(s.ja)}</div>` : ""}</div></div>`).join("")}`;
     const highlight = (i) => body.querySelectorAll(".line").forEach((el) => el.classList.toggle("current", Number(el.dataset.i) === i));
@@ -643,7 +694,7 @@ function englishLesson(id) {
     const answered = {};
     body.innerHTML = lesson.questions.map((q, qi) => `
       <div class="card" data-q="${qi}">
-        <div class="row"><b>Q${qi + 1}. ${esc(q.question)}</b><button class="btn small" data-say="${qi}">▶</button></div>
+        <div class="row"><b style="flex:1">Q${qi + 1}. ${esc(q.question)}</b><button class="speak" data-say="${qi}" aria-label="質問を聞く">🔊</button></div>
         ${q.choices.map((c, ci) => `<button class="choice" data-c="${ci}">${esc(c)}</button>`).join("")}
         <div class="after"></div>
       </div>`).join("");
@@ -673,7 +724,7 @@ function englishLesson(id) {
 
   const words = () => {
     document.getElementById("body").innerHTML = `<div class="card list">${lesson.words.map((w, i) => `
-      <div class="item"><button class="btn small" data-w="${i}">▶</button> <b>${esc(w.word)}</b> … ${esc(w.ja)}
+      <div class="item row"><button class="speak" data-w="${i}" aria-label="読み上げる">🔊</button> <b>${esc(w.word)}</b> … ${esc(w.ja)}
         <div class="muted small">${esc(w.tip)}</div></div>`).join("")}</div>`;
     app.querySelectorAll("[data-w]").forEach((b) => { b.onclick = () => speech.play([lesson.words[Number(b.dataset.w)].word], 0, () => {}); });
   };
@@ -954,7 +1005,7 @@ function phraseBook() {
       const clip = p.clipID && doc.english.clips[p.clipID];
       return `<div class="item">
         <div class="row"><b style="flex:1">${esc(p.text)}</b>
-          <button class="btn small" data-say="${esc(p.id)}">▶</button>
+          <button class="speak" data-say="${esc(p.id)}" aria-label="読み上げる">🔊</button>
           <button class="btn small" data-memo="${esc(p.id)}">メモ</button>
           <button class="btn small" data-del="${esc(p.id)}">削除</button></div>
         ${p.memo ? `<div class="muted">${esc(p.memo)}</div>` : ""}

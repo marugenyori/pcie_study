@@ -18,7 +18,7 @@ iPhone アプリには、iPhone の中の機能（音声認識・Apple Intellige
 | メソッド | パス | 中身 |
 |---|---|---|
 | POST | `/api/llm/chat` | 本文 `{"messages": [{"role": "user", "content": "…"}], "system": "…（なくてもよい）", "format": "json（なくてもよい）"}`。答えは `/api/ask` と同じ1行1 JSON のストリーム（`{"type":"token","t":"…"}`、最後に `{"type":"done"}`、失敗は `{"type":"error","message":"…"}`） |
-| POST | `/api/llm/translate` | 本文 `{"texts": ["英文", …], "target": "ja"}` → `{"translations": ["訳", …]}`（同じ順番・同じ数） |
+| POST | `/api/llm/translate` | 本文 `{"texts": ["文", …], "target": "ja" または "en"}` → `{"translations": ["訳", …]}`（同じ順番・同じ数）。"ja" は英語→日本語（動画のスクリプト）、"en" は日本語→英語（ニュースを英語で聞く） |
 | POST | `/api/library/upload?filename=名前.mp4` | 本文は動画ファイルそのもの → `{"id": "up-xxxxxxxx", "title": "名前"}`。youtube_library に入れ、`/api/youtube/library` の一覧にも出す |
 | POST | `/api/transcribe` | 本文 `{"id": "<youtube_library の ID>"}` → `{"job": "…"}` |
 | GET | `/api/transcribe/jobs/<job>` | `{"state": "queued/running/done/error", "progress": 0〜1, "lines": [{"start": 1.2, "end": 3.4, "text": "…"}], "error": "…"}` |
@@ -30,7 +30,7 @@ server.py に、ブラウザ版で使う PC の AI の機能を追加してく�
 仕様は marugenyori/pcie_study リポジトリの docs/PC_WEB_EXTRAS.md の「API」のとおりです。
 
 1. /api/llm/chat：Ollama の /api/chat に、仕様書QAで使っている既定のモデルで流す（stream）。format が "json" なら Ollama にも format=json を渡す
-2. /api/llm/translate：Ollama で英語→日本語に訳す。1回にまとめて頼み、JSON の配列で受け取って、数が合わなければ1文ずつ訳し直す
+2. /api/llm/translate：Ollama で訳す（target が "ja" なら英語→日本語、"en" なら日本語→英語）。1回にまとめて頼み、JSON の配列で受け取って、数が合わなければ1文ずつ訳し直す
 3. /api/library/upload：受け取った動画を youtube_library/up-<ランダム8文字>.<拡張子> に保存。
    ブラウザと iPhone で再生できない形式（H.264/AAC の mp4 以外）なら、ffmpeg で mp4（H.264・AAC）に変換する。
    2 GB まで。/api/youtube/library の一覧と /video にも出す

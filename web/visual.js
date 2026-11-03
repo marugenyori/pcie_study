@@ -427,7 +427,17 @@ const slideDefs = {
     : [[B("PCIe 5.0", "32 GT/s", false), A("→", "2倍", true), B("PCIe 6.0", "64 GT/s", true)]],
     ["PCIe 6.0 は 64 GT/s", "速くする代わりに、1回で2ビット送る", "段階の差が小さいので、ノイズに弱い", "軽い FEC（前方誤り訂正）を追加", "決まった大きさのフリット（256 バイト）で送る", "FEC で直せないものは CRC で見つけて再送"][i]],
 };
+/** content.json の englishSlides（アプリの EnglishSlideData と同じもの）の矢印の名前を記号にする */
+const arrowSymbols = { "arrow.right": "→", "arrow.left": "←", "arrow.down": "↓", "arrow.left.arrow.right": "⇄", xmark: "✕", checkmark: "✓" };
 window.renderSlide = (lessonID, index) => {
+  const shared = content.englishSlides && content.englishSlides[lessonID];
+  if (shared && shared[index]) {
+    const slide = shared[index];
+    const rows = slide.rows.map((row) => row.map((c) => (c.type === "arrow"
+      ? A(arrowSymbols[c.symbol] || "→", c.label, c.on)
+      : B(c.text, c.detail, c.on))));
+    return slideHTML(rows, slide.note);
+  }
   const def = slideDefs[lessonID];
   if (!def) return "";
   const [rows, note] = def(index);

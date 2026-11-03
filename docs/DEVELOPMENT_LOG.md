@@ -245,3 +245,13 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - ブラウザ版にないもの：曲を調べる（ShazamKit は iPhone だけ。iPhone で調べた結果は同期される）、ウィジェット、通知
 - 書き出しのワークフローは、動かしたブランチに content.json を入れるようにした（ブランチで試せる）
 - 動作確認：仮のサーバで全画面を開いてエラーがないこと、帯域（Gen5 x16 = 63.02 GB/s）・ECAM・BAR の計算、ACK/NAK の動き、取り込み→文字起こし→要約・クイズ・質問・翻訳の流れを Chromium で確かめた
+
+## 2026-11-03 英語で聞くを充実させる
+
+- レッスンを 10 → 34 本に（`EnglishData+More.swift`）。残りの章（PCIe とは・世代・電源・順序・エラー・QoS・SR-IOV・イコライゼーション・MPS）と、PCIe 7.0 の新機能（128 GT/s の信号・EQ の順番・送受信のイコライザ・プリコーディング・半フリットの TLP 数・レジスタ・6.x の機能）、6.x・仮想化・割り込みの残り（フリット・L0p・CXL・IOMMU/ATS/ACS・ARI・MSI-X・ウェイク）。英文は各章の内容（仕様書と照合済み）から書き下ろしたが、英文そのものの照合はまだ。一覧は章の順
+- 追加のレッスンのスライドは、箱と矢印の並びのデータ（`PCIeStudy/Data/EnglishSlideData.swift`）にして、iPhone とブラウザ版（content.json の englishSlides）で同じものを出す
+- 読み上げの書き換えに略語を追加（SR-IOV・ASPM・AER・L0s・D3cold・CXL.io・PASID など。長いものを先に置き換える）
+- レッスンに「質問」ステップを追加。iPhone は Apple Intelligence にレッスンの英文を渡して答えさせ、Claude Code・仕様書にも聞ける。ブラウザ版は PC の AI
+- スピーカーのボタンを、丸い 44pt 以上のボタンにした（`SpeakerIcon`）。ブラウザ版も 46px の丸
+- 戻りやすく：同じタブをもう一度押すとそのタブのいちばん上に戻る（`ContentView` の tabSelection、`AppTab.swift` の goToTabRoot）。レッスンの右上の「移動」から、ステップ・前後のレッスン・すべてのレッスン・英語で聞くの一覧・学ぶのトップ・今日へ。画面の下に前後のレッスンのボタン。ブラウザ版は画面左下に「戻る」「今日」、レッスンの下に前後・一覧・ほかのレッスンへ
+- PCIe ニュースを英語で聞く（`NewsEnglishView.swift`）：ニュースの「英語で聞く」から。news.json に titleEn・summaryEn があればそれを、なければ iPhone の翻訳（iOS 18 以上）で日本語から英語にして保存。1文ずつ読み上げる。ブラウザ版はブラウザの翻訳機能か PC の AI

@@ -29,6 +29,9 @@ struct NewsItem: Identifiable, Hashable, Codable {
     /// 出典
     let source: String
     let url: String?
+    /// 英語の題名と要約（あれば「英語で聞く」で使う。なければ iPhone の翻訳で作る）
+    var titleEn: String? = nil
+    var summaryEn: String? = nil
 
     init(id: String, date: String, tag: Tag, title: String, summary: String, source: String, url: String?) {
         self.id = id
@@ -50,6 +53,8 @@ struct NewsItem: Identifiable, Hashable, Codable {
         summary = try c.decode(String.self, forKey: .summary)
         source = try c.decode(String.self, forKey: .source)
         url = try c.decodeIfPresent(String.self, forKey: .url)
+        titleEn = try c.decodeIfPresent(String.self, forKey: .titleEn)
+        summaryEn = try c.decodeIfPresent(String.self, forKey: .summaryEn)
     }
 }
 

@@ -88,7 +88,70 @@ const newsTags = { spec: "仕様", roadmap: "ロードマップ", compliance: "�
 const newsRow = (n) => `<div class="item"><span class="badge">${esc(newsTags[n.tag] || n.tag)}</span>
   <span class="muted small">${esc(n.date)}</span><div><b>${esc(n.title)}</b></div>
   <div class="small">${esc(n.summary)}</div>
-  <div class="muted small">出典：${n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.source)}</a>` : esc(n.source)}</div></div>`;
+  <div class="row small"><span class="muted">出典：${n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.source)}</a>` : esc(n.source)}</span>
+    <span class="spacer"></span><a class="btn small" href="#/news-en/${esc(n.id)}">🔊 英語で聞く</a></div></div>`;
+
+/** ニュースを英語にする：news.json の英語版 → このブラウザに保存した訳 → ブラウザの翻訳機能 → PC の AI の順に試す */
+async function newsEnglish(n) {
+  const end = (t) => (/[.!?]$/.test(t.trim()) ? t.trim() : `${t.trim()}.`);
+  if (n.summaryEn) return `${n.titleEn ? `${end(n.titleEn)} ` : ""}${n.summaryEn}`;
+  const key = `newsEnglish.${n.id}`;
+  try { const cached = localStorage.getItem(key); if (cached) return cached; } catch (_) { /* 続ける */ }
+  let english = null;
+  if ("Translator" in self) {
+    try {
+      const options = { sourceLanguage: "ja", targetLanguage: "en" };
+      const state = await Promise.race([self.Translator.availability(options), new Promise((r) => setTimeout(() => r("timeout"), 2000))]);
+      if (state === "available") {
+        const t = await self.Translator.create(options);
+        english = `${end(await t.translate(n.title))} ${await t.translate(n.summary)}`;
+      }
+    } catch (_) { english = null; }
+  }
+  if (!english) {
+    const res = await fetch("/api/llm/translate", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texts: [n.title, n.summary], target: "en" }) });
+    if (!res.ok) throw new Error(res.status === 404 ? "英語にするには、PC の AI の準備（docs/PC_WEB_EXTRAS.md）が必要です" : `HTTP ${res.status}`);
+    const { translations } = await res.json();
+    english = `${end(translations[0])} ${translations[1]}`;
+  }
+  try { localStorage.setItem(key, english); } catch (_) { /* 続ける */ }
+  return english;
+}
+
+async function newsEnglishPage(id) {
+  app.innerHTML = `<p class="muted">読み込み中…</p>`;
+  const n = (await loadNews().catch(() => [])).find((x) => x.id === id);
+  if (!n) { app.innerHTML = "<p>ニュースが見つかりません</p>"; return; }
+  app.innerHTML = `<p class="muted small">${esc(n.date)}</p><h1>${esc(n.title)}</h1><div id="en" class="muted">英語にしています…</div>`;
+  let english;
+  try { english = await newsEnglish(n); } catch (e) {
+    const box = document.getElementById("en");
+    if (box) box.innerHTML = `<p style="color:var(--bad)">${esc(e.message)}</p>`;
+    return;
+  }
+  // 「6.0」のような数字の点では切らず、文の終わりの記号のあとに空白があるところで切る
+  const sentences = english.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+  let showEn = true, showJa = false;
+  const draw = () => {
+    // 訳しているあいだに別の画面に移っていたら何もしない
+    if (!document.getElementById("en")) return;
+    document.getElementById("en").outerHTML = `<div id="en">
+      <div class="card row"><button class="btn primary big" id="play">▶ 最初から聞く</button><button class="btn" id="stop">■ 止める</button>
+        <label><input type="checkbox" id="sen" ${showEn ? "checked" : ""}> 英文</label><label><input type="checkbox" id="sja" ${showJa ? "checked" : ""}> 日本語</label></div>
+      ${sentences.map((t, i) => `<div class="line" data-i="${i}"><span class="speak" aria-hidden="true">🔊</span><div class="${showEn ? "" : "hidden-text"}">${esc(t)}</div></div>`).join("")}
+      ${showJa ? `<div class="card small">${esc(n.summary)}</div>` : ""}
+      <p class="muted small">${n.summaryEn ? "英文は news.json の英語版です。" : "英文は翻訳で作ったものです。固有名詞や数値は元の記事で確かめてください。"}</p>
+      <a class="btn" href="#/news">ニュースの一覧へ</a></div>`;
+    const highlight = (i) => document.querySelectorAll("#en .line").forEach((el) => el.classList.toggle("current", Number(el.dataset.i) === i));
+    document.getElementById("play").onclick = () => speech.play(sentences, 0, highlight);
+    document.getElementById("stop").onclick = () => { speech.stop(); highlight(-1); };
+    document.getElementById("sen").onchange = (e) => { showEn = e.target.checked; draw(); };
+    document.getElementById("sja").onchange = (e) => { showJa = e.target.checked; draw(); };
+    document.querySelectorAll("#en .line").forEach((el) => { el.onclick = () => speech.play(sentences, Number(el.dataset.i), highlight); });
+  };
+  draw();
+}
 
 // MARK: - 今日
 
@@ -461,6 +524,7 @@ routes.unshift(
   [/^#\/column\/(.+)$/, columnDetail],
   [/^#\/glossary$/, glossary],
   [/^#\/news$/, newsList],
+  [/^#\/news-en\/(.+)$/, newsEnglishPage],
   [/^#\/quiz$/, quizMenuFull],
   [/^#\/game\/survival$/, survival],
   [/^#\/ask(?:\?(.*))?$/, askPage],
