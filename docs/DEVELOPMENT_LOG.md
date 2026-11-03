@@ -170,3 +170,10 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - 写真からの取り込みが遅い（10分の動画で5分以上）のを修正：PhotosPicker の `preferredItemEncoding` を `.current` にして、形式の変換をせず元のファイルのまま受け取る
 - 文字起こしを速くするため、iOS 26 以上では SpeechAnalyzer（`SpeechTranscriber`）で音声全体を一度に認識する。英語の認識データは初回にダウンロードする。iOS 26 より前は、今までどおり 50 秒ずつ区切る方法
 - 再生画面の右上（吹き出しのボタン）で、全文の日本語訳を英文の下に表示できるようにした（iOS 18 以上の翻訳機能 `TranslationSession` でまとめて訳す、`TranscriptTranslation`）。訳は文ごとに保存し、スクリプトの共有・コピーにも入る。初回は翻訳データのダウンロードを iPhone が尋ねる
+
+## 2026-11-03 配信で英語：動画で Q&A
+
+- 再生画面右上のメニュー →「動画で Q&A」で、文字起こしをもとに 要約・英語の4択クイズ・質問（チャット）ができる（`PCIeStudy/Views/English/ClipQAView.swift`）
+- AI は iPhone 内の Apple Intelligence（Foundation Models、iOS 26 以上）。通信も料金もかからない（従量課金の API は使わない方針のため）。Apple Intelligence に対応していない iPhone や、オフのときは理由を表示する
+- AI が一度に読める量（約4000トークン）に合わせ、文字起こしは先頭から約7000文字まで渡す。長い動画はどこまで使ったかを表示する
+- 答えに出てくる時刻 [分:秒] はボタンになり、タップするとその位置から再生する
