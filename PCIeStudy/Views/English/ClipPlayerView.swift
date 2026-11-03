@@ -40,6 +40,8 @@ struct ClipPlayerView: View {
     /// 全文の日本語訳を表示する
     @State private var showsJapanese = false
     @State private var translateError: String?
+    @State private var showsQA = false
+    @State private var showsSongs = false
 
     init(clip: EnglishClip, startAt: Double? = nil) {
         clipID = clip.id
@@ -110,6 +112,18 @@ struct ClipPlayerView: View {
                         } label: {
                             Label("スクリプトをコピー", systemImage: "doc.on.doc")
                         }
+                        Button {
+                            showsSongs = true
+                        } label: {
+                            Label("流れている曲を調べる", systemImage: "music.note.list")
+                        }
+                        if #available(iOS 26.0, *) {
+                            Button {
+                                showsQA = true
+                            } label: {
+                                Label("動画で Q&A（要約・クイズ・質問）", systemImage: "sparkles")
+                            }
+                        }
                         Button(role: .destructive) {
                             loopLine = nil
                             Task { await transcribe() }
@@ -132,6 +146,18 @@ struct ClipPlayerView: View {
         }
         .sheet(item: $savingLine) { line in
             SavePhraseSheet(line: line, clipID: clipID)
+        }
+        .sheet(isPresented: $showsSongs) {
+            SongListView(clipID: clipID) { seconds in
+                seek(to: seconds, play: true)
+            }
+        }
+        .sheet(isPresented: $showsQA) {
+            if #available(iOS 26.0, *) {
+                ClipQAView(title: clip?.title ?? "", lines: lines) { seconds in
+                    seek(to: seconds, play: true)
+                }
+            }
         }
         .modifier(TranslationSheet(isPresented: $showsTranslation, text: translatingText))
         .modifier(TranscriptTranslation(isActive: showsJapanese && !transcribing, lines: lines,
@@ -217,6 +243,13 @@ struct ClipPlayerView: View {
                         Text("文字起こしを始める").frame(maxWidth: .infinity)
                     }
                     .buttonStyle(AppButtonStyle(.primary))
+
+                    Button {
+                        showsSongs = true
+                    } label: {
+                        Label("流れている曲を調べる", systemImage: "music.note.list").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(AppButtonStyle(.secondary))
                 }
             }
             .padding()
