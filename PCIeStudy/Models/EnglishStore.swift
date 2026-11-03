@@ -94,14 +94,15 @@ final class EnglishStore {
 
     /// フォルダにコピー済みのファイルを一覧に加える
     @MainActor
-    func addClip(copiedFile url: URL, title: String? = nil) async -> EnglishClip {
+    func addClip(copiedFile url: URL, title: String? = nil, lines: [TranscriptLine]? = nil) async -> EnglishClip {
         let duration = (try? await AVURLAsset(url: url).load(.duration).seconds) ?? 0
         let formatter = DateFormatter()
         formatter.dateFormat = "M/d HH:mm"
         let clip = EnglishClip(title: title ?? "\(formatter.string(from: Date())) の動画",
                                fileName: url.lastPathComponent,
                                addedAt: Date(),
-                               duration: duration.isFinite ? duration : 0)
+                               duration: duration.isFinite ? duration : 0,
+                               lines: lines)
         clips.insert(clip, at: 0)
         saveClips()
         return clip

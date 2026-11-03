@@ -183,3 +183,9 @@ PC の Claude Code で作業した内容（PCIe_RAG はこのリポジトリに�
 - 再生画面右上のメニュー（文字起こし前はカードのボタン）→「流れている曲を調べる」で、ShazamKit で曲名・アーティスト・ジャケットを表示（`PCIeStudy/Models/SongFinder.swift`、`PCIeStudy/Views/English/SongListView.swift`）
 - 20秒ごとに12秒ずつ切り出して照合し、同じ曲が続くときは最初の時刻だけ残す。時刻をタップでその場面から再生、Apple Music で開く、Spotify は曲名とアーティストで検索した画面を開く（ShazamKit は Spotify の ID を返さない）、歌詞は Web 検索
 - ShazamKit は App Service なので、Apple Developer の Identifiers で、アプリ本体の App ID（Study、`com.marugenyori.study`）の「App Services」タブで ShazamKit を有効にした（ウィジェットは不要）。App Store Connect API の capabilityType には ShazamKit がないため、API（`enable-capability.yml`）では設定できない
+
+## 2026-11-03 配信で英語：South Park 公式の動画と字幕ファイル
+
+- 「配信で英語」に「South Park 公式」を追加。YouTube の公開 RSS フィードで公式チャンネルの新着15本を表示する（`YouTubeFeed.swift`、`SouthParkListView.swift`）。チャンネル ID は @southpark のページから読み取り、読めなければ `UC7R27sAWc_DqOldtI1JcYhQ` を使う（クラウドからは YouTube に接続できず、ID は実機で未確認）
+- 「PC で保存して取り込む」：アプリが PC の server.py に URL を送り、PC の yt-dlp が動画と英語字幕を保存して、アプリが受け取る（`PCVideoFetcher.swift`）。アプリの中では YouTube から直接保存しない。PC 側は `docs/PC_YOUTUBE_SERVER.md` の依頼文で、PC の Claude Code に追加してもらう
+- 字幕ファイル（.srt / .vtt）を文字起こしの代わりに使えるようにした（`SubtitleParser.swift`）。「ファイルから取り込む」で動画と同じ名前の字幕を一緒に選ぶか、再生画面のメニュー →「字幕ファイルを読み込む」。YouTube の自動字幕で同じ行が重なる分は飛ばす
