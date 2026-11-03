@@ -37,9 +37,15 @@ def call(method: str, url: str, auth: str, body=None):
         "Authorization": f"Bearer {auth}",
         "Content-Type": "application/json",
     })
-    with urllib.request.urlopen(req, timeout=30) as res:
-        raw = res.read()
-        return json.loads(raw) if raw else None
+    try:
+        with urllib.request.urlopen(req, timeout=30) as res:
+            raw = res.read()
+            return json.loads(raw) if raw else None
+    except urllib.error.HTTPError as e:
+        # API のエラーの中身（使える値の一覧など）を表示してから止める
+        print(f"{method} {url} → HTTP {e.code}")
+        print(e.read().decode(errors="replace"))
+        raise
 
 
 def main() -> int:
@@ -54,7 +60,7 @@ def main() -> int:
         print(f"::error::App ID {identifier} が見つかりません")
         return 1
 
-    current = call("GET", f"{API}/bundleIds/{bundle['id']}/bundleIdCapabilities?limit=200", auth)["data"]
+    current = call("GET", f"{API}/bundleIds/{bundle['id']}/bundleIdCapabilities", auth)["data"]
     names = sorted(c["attributes"]["capabilityType"] for c in current)
     print(f"{identifier} の現在の設定: {', '.join(names) or '（なし）'}")
     if capability in names:
@@ -70,7 +76,6 @@ def main() -> int:
         call("POST", f"{API}/bundleIdCapabilities", auth, body)
     except urllib.error.HTTPError as e:
         print(f"::error::{capability} を有効にできませんでした（HTTP {e.code}）")
-        print(e.read().decode(errors="replace"))
         return 1
     print(f"{capability} を有効にしました")
     return 0
