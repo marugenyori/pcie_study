@@ -102,7 +102,7 @@ struct NewsListView: View {
     }
 
     private func reload(force: Bool) async {
-        if await NewsData.refresh(minInterval: force ? 0 : 3 * 3600) {
+        if await NewsData.refresh(minInterval: force ? 0 : 10 * 60) {
             WidgetCenter.shared.reloadTimelines(ofKind: "NewsWidget")
         }
     }

@@ -1,3 +1,4 @@
+import BackgroundTasks
 import SwiftUI
 import UIKit
 import WidgetKit
@@ -13,6 +14,16 @@ struct PCIeStudyApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
+        appScene
+            .backgroundTask(.appRefresh(Self.newsRefreshTask)) {
+                Self.scheduleNewsRefresh()
+                if await NewsData.refresh(minInterval: 0) {
+                    WidgetCenter.shared.reloadTimelines(ofKind: "NewsWidget")
+                }
+            }
+    }
+
+    private var appScene: some Scene {
         WindowGroup {
             ContentView()
                 .applyAppSettings(settings)
@@ -32,17 +43,29 @@ struct PCIeStudyApp: App {
                     if phase == .active || phase == .background {
                         syncWithPC(inBackground: phase == .background)
                     }
+                    // 閉じているあいだも、ときどきニュースを読み込むよう iPhone に頼んでおく
+                    if phase == .background { Self.scheduleNewsRefresh() }
                     guard phase == .active else { return }
                     progress.reloadShared()
                     Task { await reminder.reschedule(stats: progress.stats) }
                     Task {
-                        // GitHub に新しいニュースがあれば読み込み、ウィジェットにも反映する
-                        if await NewsData.refresh() {
+                        // GitHub に新しいニュースがあれば読み込み、ウィジェットにも反映する（開くたび、10分に1回まで）
+                        if await NewsData.refresh(minInterval: 10 * 60) {
                             WidgetCenter.shared.reloadTimelines(ofKind: "NewsWidget")
                         }
                     }
                 }
         }
+    }
+
+    /// バックグラウンドでニュースを読み込む処理の名前（Info.plist の BGTaskSchedulerPermittedIdentifiers と同じ）
+    static let newsRefreshTask = "pciestudy.news-refresh"
+
+    /// アプリを閉じているあいだのニュースの読み込みを頼む（実行の時刻は iPhone が使い方に合わせて決める）
+    static func scheduleNewsRefresh() {
+        let request = BGAppRefreshTaskRequest(identifier: newsRefreshTask)
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 2 * 3600)
+        try? BGTaskScheduler.shared.submit(request)
     }
 
     private func syncWithPC(inBackground: Bool) {
