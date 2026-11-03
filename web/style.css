@@ -100,3 +100,14 @@ details p { white-space: pre-wrap; }
 .s-arrow.on { color: var(--tint); opacity: 1; }
 .s-note { align-self: center; color: var(--tint); background: var(--tint-soft); font-weight: 700; font-size: .85rem; padding: 4px 12px; border-radius: 99px; }
 input[type=number] { width: 5em; font: inherit; padding: 6px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+
+/* 押しやすい丸いスピーカーのボタン（44px 以上） */
+.speak { flex: none; width: 46px; height: 46px; border-radius: 50%; border: 0; background: var(--tint); color: #fff;
+         font-size: 1.2rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.speak:hover { filter: brightness(1.08); }
+.line .speak { width: 38px; height: 38px; font-size: 1rem; }
+.btn.big { padding: 12px 20px; font-size: 1.05rem; }
+.lesson-nav { margin-top: 20px; }
+/* どこからでも戻れるよう、画面の下に固定する「戻る」ボタン */
+.backbar { position: fixed; left: 16px; bottom: 16px; z-index: 20; display: flex; gap: 8px; }
+.backbar button { box-shadow: 0 2px 8px rgba(0, 0, 0, .15); }

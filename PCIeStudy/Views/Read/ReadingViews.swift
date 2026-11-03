@@ -164,6 +164,13 @@ struct NewsRow: View {
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                     Spacer()
+                    NavigationLink {
+                        NewsEnglishView(item: item)
+                    } label: {
+                        Label("英語で聞く", systemImage: "ear")
+                            .font(.caption.bold())
+                    }
+                    .buttonStyle(.borderless)
                     if let urlString = item.url, let url = URL(string: urlString) {
                         Link(destination: url) {
                             Label("記事を開く", systemImage: "safari")
