@@ -62,3 +62,5 @@ input[type=text] { width: 100%; }
 .stat { font-size: 1.8rem; font-weight: 800; color: var(--tint); }
 .progress { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
 .progress > div { height: 100%; background: var(--tint); }
+code { font: .9em Consolas, "Courier New", monospace; background: var(--tint-soft); padding: 0 4px; border-radius: 4px; }
+details p { white-space: pre-wrap; }
