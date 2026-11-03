@@ -21,6 +21,20 @@ struct EnglishClip: Codable, Identifiable, Hashable {
     var duration: Double
     /// まだ文字起こししていないときは nil
     var lines: [TranscriptLine]?
+    /// 流れていた曲（まだ調べていないときは nil）
+    var songs: [SongMatch]?
+}
+
+/// ShazamKit で見つけた曲
+struct SongMatch: Codable, Hashable, Identifiable {
+    var id = UUID()
+    /// 動画の中で曲が見つかった時刻（秒）
+    var start: Double
+    var title: String
+    var artist: String
+    var artworkURL: URL?
+    var appleMusicURL: URL?
+    var webURL: URL?
 }
 
 /// フレーズ帳の1件
@@ -103,6 +117,12 @@ final class EnglishStore {
     func setLines(_ lines: [TranscriptLine], for id: UUID) {
         guard let index = clips.firstIndex(where: { $0.id == id }) else { return }
         clips[index].lines = lines
+        saveClips()
+    }
+
+    func setSongs(_ songs: [SongMatch], for id: UUID) {
+        guard let index = clips.firstIndex(where: { $0.id == id }) else { return }
+        clips[index].songs = songs
         saveClips()
     }
 
