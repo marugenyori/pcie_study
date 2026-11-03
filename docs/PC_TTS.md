@@ -17,6 +17,7 @@
 - 声：アプリは アメリカ = `af_heart`、イギリス = `bf_emma` を使う。少なくともこの2つは返す（ほかに `am_michael`、`bm_george` なども一覧に入れてよい）
 - speed：0.5〜2.0（アプリは 0.8 / 1.0 / 1.15）
 - text は 600 文字まで（超えたら 400）
+- `format=m4a` が付いていたら、ffmpeg で AAC（m4a、64 kbps くらい）にして `audio/mp4` で返す。iPhone に音声を保存する（「PC の声をダウンロード」）とき、WAV の 1/10 くらいの大きさになる。付いていなければ WAV
 - 同じ voice・speed・text の音声は `tts_cache/` に保存して、2回目からはすぐ返す（レッスンの英文は毎回同じ）
 
 ## 依頼文（PC の Claude Code に、PCIe_RAG のフォルダで貼る）
@@ -33,4 +34,11 @@ server.py に、英文を AI の音声合成で読み上げた音声を返す AP
 - できたら、サーバを起動し直して、PowerShell から
   curl "http://localhost:8765/api/tts?text=The%20Data%20Link%20Layer%20replays%20the%20TLP.&voice=af_heart&speed=1.0" -o test.wav
   を実行し、test.wav を再生して自然に聞こえることを確かめる。1文を作るのにかかった秒数も教えて
+```
+
+## 追加の依頼文：m4a で返す（2026-11-03 追加）
+
+```
+server.py の /api/tts に、format=m4a が付いていたら ffmpeg で AAC（m4a、64 kbps 程度）に変換して audio/mp4 で返す機能を足してください。
+変換した m4a も tts_cache に保存して、2回目はすぐ返してください。仕様は marugenyori/pcie_study の docs/PC_TTS.md のとおりです。
 ```
