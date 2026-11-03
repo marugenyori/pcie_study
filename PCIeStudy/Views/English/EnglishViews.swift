@@ -94,10 +94,13 @@ struct EnglishHomeView: View {
                     .font(.caption.bold())
             } else {
                 Button {
-                    downloader.start(voice: voice, speed: player.speed.pcSpeed)
+                    downloader.start(voice: voice, speed: player.speed.pcSpeed, skipping: progress.englishDone)
                 } label: {
                     Label("PC の声をダウンロード（家の外でも使う）", systemImage: "arrow.down.circle")
                 }
+                Text("完了したレッスン（\(progress.englishDone.count) 本）の分はダウンロードしません。")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
             HStack {
                 Text("保存した音声：\(ByteCountFormatter.string(fromByteCount: downloader.savedBytes, countStyle: .file))")

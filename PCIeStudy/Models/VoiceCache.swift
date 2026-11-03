@@ -41,10 +41,10 @@ enum VoiceCache {
         try? FileManager.default.removeItem(at: folder)
     }
 
-    /// 「英語で聞く」で読み上げる文のすべて（レッスンの英文・単語・問題、読み方の一覧）
-    static var allTexts: [String] {
+    /// 「英語で聞く」で読み上げる文（レッスンの英文・単語・問題、読み方の一覧）。skipping のレッスンは入れない
+    static func texts(skipping done: Set<String> = []) -> [String] {
         var texts: [String] = []
-        for lesson in EnglishData.all {
+        for lesson in EnglishData.all where !done.contains(lesson.id) {
             texts += lesson.sentences.map(\.en)
             texts += lesson.words.map(\.word)
             texts += lesson.questions.map(\.question)
@@ -68,15 +68,15 @@ final class VoiceDownloader {
 
     @ObservationIgnored private var task: Task<Void, Never>?
 
-    /// 今の発音・速さで、まだ保存していない音声を PC に作ってもらう
+    /// 今の発音・速さで、まだ保存していない音声を PC に作ってもらう。完了したレッスン（skipping）の分は作らない
     @MainActor
-    func start(voice: String, speed: Double) {
+    func start(voice: String, speed: Double, skipping done: Set<String>) {
         guard !isRunning else { return }
         guard let base = SpecRAGClient.savedBaseURL else {
             message = "PC のサーバのアドレスが未設定です。「質問する」の右上の歯車から設定してください。"
             return
         }
-        let texts = VoiceCache.allTexts.filter { !VoiceCache.contains(text: $0, voice: voice, speed: speed) }
+        let texts = VoiceCache.texts(skipping: done).filter { !VoiceCache.contains(text: $0, voice: voice, speed: speed) }
         isRunning = true
         done = 0
         failed = 0
