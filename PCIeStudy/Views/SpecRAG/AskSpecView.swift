@@ -480,6 +480,9 @@ struct AskSpecView: View {
 /// 接続先の設定
 struct SpecRAGSettingsView: View {
     @Environment(SpecRAGClient.self) private var client
+    @Environment(SyncClient.self) private var sync
+    @Environment(ProgressStore.self) private var progress
+    @Environment(EnglishStore.self) private var english
     @Environment(\.dismiss) private var dismiss
     @State private var address = ""
     @State private var testResult: String?
@@ -512,6 +515,31 @@ struct SpecRAGSettingsView: View {
                     Text("PCのサーバのアドレス")
                 } footer: {
                     Text("ポート番号を省略すると 8765 になります。")
+                }
+
+                Section {
+                    Button {
+                        Task { await sync.sync(progress: progress, english: english, base: client.baseURL) }
+                    } label: {
+                        if sync.isSyncing {
+                            ProgressView()
+                        } else {
+                            Label("今すぐ同期", systemImage: "arrow.triangle.2.circlepath")
+                        }
+                    }
+                    .disabled(!client.isConfigured || sync.isSyncing)
+                    if let lastSynced = sync.lastSynced {
+                        Text("最後に同期：\(lastSynced.formatted(date: .abbreviated, time: .shortened))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    if let problem = sync.problem {
+                        Text(problem).font(.caption).foregroundStyle(.orange)
+                    }
+                } header: {
+                    Text("ブラウザ版との同期")
+                } footer: {
+                    Text("クイズの成績・連続日数・フレーズ帳・動画のスクリプトなどを、PC のブラウザ版と同じにします。アプリを開いたときと閉じたときにも、自動で同期します（同じ Wi‑Fi のとき）。動画ファイルは同期しません。")
                 }
 
                 Section("PC側の準備") {

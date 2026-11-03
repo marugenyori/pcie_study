@@ -44,6 +44,8 @@ final class ProgressStore {
         static let questWeakCleared = "questWeakCleared"
         static let questsDone = "questsDone"
         static let englishDone = "englishDone"
+        static let weakUpdatedAt = "weakUpdatedAt"
+        static let goalUpdatedAt = "goalUpdatedAt"
     }
 
     init(defaults: UserDefaults = .standard, sharedDefaults: UserDefaults = AppGroup.defaults) {
@@ -101,6 +103,9 @@ final class ProgressStore {
         defaults.set(answeredTotal, forKey: Keys.answered)
         defaults.set(correctTotal, forKey: Keys.correct)
         defaults.set(Array(weakQuestionIDs), forKey: Keys.weak)
+        if wasWeak != weakQuestionIDs.contains(questionID) {
+            defaults.set(Date(), forKey: Keys.weakUpdatedAt)
+        }
 
         stats.recordAnswer()
         stats.save(to: sharedDefaults)
@@ -229,6 +234,7 @@ final class ProgressStore {
     func setDailyGoal(_ goal: Int) {
         stats.setGoal(goal)
         stats.save(to: sharedDefaults)
+        defaults.set(Date(), forKey: Keys.goalUpdatedAt)
     }
 
     /// 「今日の1問」の回答（その日に1回だけ記録する）
@@ -255,6 +261,71 @@ final class ProgressStore {
     func reloadShared() {
         let latest = StudyStats.load(from: sharedDefaults)
         if latest != stats { stats = latest }
+    }
+
+    // MARK: 同期（docs/SYNC.md）
+
+    /// PC に送る記録
+    func syncSnapshot() -> SyncProgress {
+        let distant = Date(timeIntervalSince1970: 0)
+        return SyncProgress(
+            completedChapters: completedChapters.sorted(),
+            quizBest: quizBest,
+            answeredTotal: answeredTotal,
+            correctTotal: correctTotal,
+            xp: xp,
+            weak: Stamped(value: weakQuestionIDs.sorted(),
+                          updatedAt: defaults.object(forKey: Keys.weakUpdatedAt) as? Date ?? distant),
+            englishDone: englishDone.sorted(),
+            dailyCounts: stats.dailyCounts,
+            goalMetDays: stats.goalMetDays.sorted(),
+            bestStreak: stats.bestStreak,
+            dailyGoal: Stamped(value: stats.dailyGoal,
+                               updatedAt: defaults.object(forKey: Keys.goalUpdatedAt) as? Date ?? distant),
+            dailyAnswers: dailyAnswers,
+            gameBest: gameBest
+        )
+    }
+
+    /// PC から読んだ記録を混ぜる（集合は合わせる、数は大きいほう、日時付きの値は新しいほう）
+    func merge(_ remote: SyncProgress) {
+        completedChapters.formUnion(remote.completedChapters ?? [])
+        quizBest.merge(remote.quizBest ?? [:]) { max($0, $1) }
+        answeredTotal = max(answeredTotal, remote.answeredTotal ?? 0)
+        correctTotal = max(correctTotal, remote.correctTotal ?? 0)
+        xp = max(xp, remote.xp ?? 0)
+        if let weak = remote.weak,
+           weak.updatedAt > (defaults.object(forKey: Keys.weakUpdatedAt) as? Date ?? .distantPast) {
+            weakQuestionIDs = Set(weak.value)
+            defaults.set(weak.updatedAt, forKey: Keys.weakUpdatedAt)
+        }
+        englishDone.formUnion(remote.englishDone ?? [])
+        dailyAnswers.merge(remote.dailyAnswers ?? [:]) { local, _ in local }
+        gameBest.merge(remote.gameBest ?? [:]) { max($0, $1) }
+
+        var merged = stats
+        merged.dailyCounts.merge(remote.dailyCounts ?? [:]) { max($0, $1) }
+        merged.goalMetDays.formUnion(remote.goalMetDays ?? [])
+        merged.bestStreak = max(merged.bestStreak, remote.bestStreak ?? 0, merged.currentStreak())
+        if let goal = remote.dailyGoal,
+           goal.updatedAt > (defaults.object(forKey: Keys.goalUpdatedAt) as? Date ?? .distantPast) {
+            merged.dailyGoal = goal.value
+            defaults.set(goal.updatedAt, forKey: Keys.goalUpdatedAt)
+        }
+        if merged != stats {
+            stats = merged
+            stats.save(to: sharedDefaults)
+        }
+
+        defaults.set(Array(completedChapters), forKey: Keys.completed)
+        defaults.set(quizBest, forKey: Keys.quizBest)
+        defaults.set(answeredTotal, forKey: Keys.answered)
+        defaults.set(correctTotal, forKey: Keys.correct)
+        defaults.set(xp, forKey: Keys.xp)
+        defaults.set(Array(weakQuestionIDs), forKey: Keys.weak)
+        defaults.set(Array(englishDone), forKey: Keys.englishDone)
+        defaults.set(dailyAnswers, forKey: Keys.dailyAnswers)
+        defaults.set(gameBest, forKey: Keys.gameBest)
     }
 
     func resetAll() {

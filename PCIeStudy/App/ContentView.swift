@@ -44,4 +44,5 @@ struct ContentView: View {
         .environment(AppSettings())
         .environment(SpecRAGClient())
         .environment(EnglishStore())
+        .environment(SyncClient())
 }

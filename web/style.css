@@ -1,0 +1,64 @@
+:root {
+  --bg: #f7f8fa; --surface: #fff; --text: #1d1f23; --muted: #6b7280; --border: #e3e5e8;
+  --tint: #2fb5c4; --tint-soft: rgba(47, 181, 196, .14); --good: #2e9d5b; --bad: #d64545;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #131f24; --surface: #18262c; --text: #eef1f3; --muted: #9aa5ad; --border: #2c3b42;
+          --tint-soft: rgba(47, 181, 196, .22); }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+       font: 16px/1.7 "Segoe UI", "Yu Gothic UI", "Hiragino Sans", system-ui, sans-serif; }
+a { color: var(--tint); text-decoration: none; }
+.topbar { position: sticky; top: 0; z-index: 10; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+          padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.topbar nav { display: flex; gap: 14px; flex-wrap: wrap; }
+.topbar nav a { color: var(--text); font-weight: 600; }
+.topbar nav a.active { color: var(--tint); }
+.brand { font-weight: 800; color: var(--text); }
+.sync { margin-left: auto; font-size: .8rem; color: var(--muted); }
+main { max-width: 880px; margin: 0 auto; padding: 20px 16px 80px; }
+h1 { font-size: 1.6rem; margin: .2em 0 .6em; }
+h2 { font-size: 1.15rem; margin: 1.4em 0 .5em; }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+.card { background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 16px 18px;
+        margin: 12px 0; box-shadow: 0 4px 0 var(--border); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.grid .card { margin: 0; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+.btn { display: inline-flex; align-items: center; gap: 6px; border: 2px solid var(--border); background: var(--surface);
+       color: var(--tint); border-radius: 12px; padding: 7px 14px; font: inherit; font-weight: 700; cursor: pointer; }
+.btn.primary { background: var(--tint); color: #fff; border-color: transparent; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.small { padding: 3px 10px; font-size: .85rem; }
+.list a.item, .list .item { display: block; padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+.list .item:last-child { border-bottom: 0; }
+.badge { display: inline-block; font-size: .75rem; font-weight: 700; padding: 1px 8px; border-radius: 99px;
+         background: var(--tint-soft); color: var(--tint); }
+.choice { display: block; width: 100%; text-align: left; margin: 8px 0; padding: 12px 14px; border-radius: 14px;
+          border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; cursor: pointer; }
+.choice.correct { border-color: var(--good); background: rgba(46, 157, 91, .15); }
+.choice.wrong { border-color: var(--bad); background: rgba(214, 69, 69, .12); }
+.choice.dimmed { opacity: .6; }
+.note { background: var(--tint-soft); border-radius: 12px; padding: 10px 14px; margin: 10px 0; }
+pre.figure { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px; overflow-x: auto;
+             font: 13px/1.4 Consolas, "Courier New", monospace; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: .92rem; }
+th, td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
+.line { display: flex; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--border);
+        background: var(--surface); margin: 8px 0; cursor: pointer; }
+.line.current { border-color: var(--good); background: rgba(46, 157, 91, .12); }
+.line .time { color: var(--muted); font: 13px/1.9 Consolas, monospace; min-width: 44px; }
+.line .ja { color: var(--muted); font-size: .9rem; }
+.hidden-text { filter: blur(6px); }
+video { width: 100%; max-height: 60vh; background: #000; border-radius: 12px; }
+.player { position: sticky; top: 58px; z-index: 5; background: var(--bg); padding-bottom: 8px; }
+input[type=text], textarea, select { font: inherit; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border);
+         background: var(--surface); color: var(--text); }
+input[type=text] { width: 100%; }
+.stat { font-size: 1.8rem; font-weight: 800; color: var(--tint); }
+.progress { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress > div { height: 100%; background: var(--tint); }

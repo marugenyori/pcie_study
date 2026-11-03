@@ -23,7 +23,10 @@ struct ClipPlayerView: View {
     private let startAt: Double?
 
     @Environment(EnglishStore.self) private var store
+    @Environment(SpecRAGClient.self) private var pc
     @State private var player: AVPlayer
+    @State private var fetchingVideo = false
+    @State private var fetchVideoError: String?
     @State private var timeObserver: Any?
     @State private var currentTime = 0.0
     @State private var rate: Float = 1.0
@@ -66,9 +69,14 @@ struct ClipPlayerView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            VideoPlayer(player: player)
-                .aspectRatio(16 / 9, contentMode: .fit)
-                .background(Color.black)
+            if clip?.hasVideo ?? false {
+                VideoPlayer(player: player)
+                    .aspectRatio(16 / 9, contentMode: .fit)
+                    .background(Color.black)
+            } else {
+                missingVideo
+                    .aspectRatio(16 / 9, contentMode: .fit)
+            }
 
             controls
                 .padding(.horizontal)
@@ -185,6 +193,54 @@ struct ClipPlayerView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(transcribeError ?? "")
+        }
+    }
+
+    // MARK: - 動画がこの iPhone にないとき
+
+    /// ブラウザ版で取り込んだ動画は、スクリプトだけ同期される。PC で保存した動画なら受け取れる
+    private var missingVideo: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "film.stack").font(.largeTitle).foregroundStyle(.secondary)
+            if clip?.youtubeID != nil {
+                Text("動画は PC にあります").font(.subheadline)
+                if fetchingVideo {
+                    ProgressView("受け取り中…")
+                } else {
+                    Button {
+                        Task { await fetchVideo() }
+                    } label: {
+                        Label("PC から動画を受け取る", systemImage: "square.and.arrow.down")
+                    }
+                    .buttonStyle(AppButtonStyle(.primary))
+                    .controlSize(.small)
+                }
+                if let fetchVideoError {
+                    Text(fetchVideoError).font(.caption).foregroundStyle(.red)
+                }
+            } else {
+                Text("動画はほかの端末にあります。スクリプト・訳・フレーズは使えます。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.secondarySystemBackground))
+    }
+
+    private func fetchVideo() async {
+        guard let youtubeID = clip?.youtubeID else { return }
+        fetchingVideo = true
+        fetchVideoError = nil
+        defer { fetchingVideo = false }
+        do {
+            let file = try await PCVideoFetcher.fetchLibraryVideo(youtubeID: youtubeID, base: pc.baseURL)
+            store.attachVideo(copiedFile: file, to: clipID)
+            player.replaceCurrentItem(with: AVPlayerItem(url: file))
+        } catch {
+            fetchVideoError = error.localizedDescription
         }
     }
 
