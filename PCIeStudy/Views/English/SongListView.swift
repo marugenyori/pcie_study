@@ -97,6 +97,11 @@ struct SongListView: View {
                         Label("Apple Music", systemImage: "music.note")
                     }
                 }
+                if let url = spotifySearchURL(song) {
+                    Link(destination: url) {
+                        Label("Spotify", systemImage: "music.note.list")
+                    }
+                }
                 if let url = lyricsSearchURL(song) {
                     Link(destination: url) {
                         Label("歌詞を検索", systemImage: "magnifyingglass")
@@ -107,6 +112,13 @@ struct SongListView: View {
             .buttonStyle(.borderless)
         }
         .padding(.vertical, 4)
+    }
+
+    /// ShazamKit は Spotify の曲 ID を返さないので、曲名とアーティストで Spotify を検索する
+    /// （open.spotify.com のリンクは、Spotify アプリが入っていればアプリで開く）
+    private func spotifySearchURL(_ song: SongMatch) -> URL? {
+        let query = "\(song.title) \(song.artist)".addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#")))
+        return query.flatMap { URL(string: "https://open.spotify.com/search/\($0)") }
     }
 
     /// ShazamKit は歌詞を返さないので、曲名とアーティストで Web 検索する
