@@ -8,6 +8,8 @@ struct TranscriptLine: Codable, Identifiable, Hashable {
     var start: Double
     var end: Double
     var text: String
+    /// 日本語訳（訳したあとに入る）
+    var japanese: String?
 }
 
 /// 取り込んだ動画（ファイルはアプリの中にコピーして持つ）
@@ -100,6 +102,16 @@ final class EnglishStore {
 
     func setLines(_ lines: [TranscriptLine], for id: UUID) {
         guard let index = clips.firstIndex(where: { $0.id == id }) else { return }
+        clips[index].lines = lines
+        saveClips()
+    }
+
+    /// 文の ID → 日本語訳 を書き込む
+    func setTranslations(_ translations: [UUID: String], for id: UUID) {
+        guard let index = clips.firstIndex(where: { $0.id == id }), var lines = clips[index].lines else { return }
+        for i in lines.indices {
+            if let japanese = translations[lines[i].id] { lines[i].japanese = japanese }
+        }
         clips[index].lines = lines
         saveClips()
     }

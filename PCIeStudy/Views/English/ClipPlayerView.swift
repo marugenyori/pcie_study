@@ -37,6 +37,9 @@ struct ClipPlayerView: View {
     @State private var savingLine: TranscriptLine?
     @State private var translatingText = ""
     @State private var showsTranslation = false
+    /// 全文の日本語訳を表示する
+    @State private var showsJapanese = false
+    @State private var translateError: String?
 
     init(clip: EnglishClip, startAt: Double? = nil) {
         clipID = clip.id
@@ -49,7 +52,11 @@ struct ClipPlayerView: View {
 
     /// 共有・コピー用のスクリプト（1行に1文、先頭に時刻）
     private var scriptText: String {
-        let body = lines.map { "[\(TimeText.format($0.start))] \($0.text)" }.joined(separator: "\n")
+        let body = lines.map { line in
+            let english = "[\(TimeText.format(line.start))] \(line.text)"
+            guard showsJapanese, let japanese = line.japanese else { return english }
+            return english + "\n　\(japanese)"
+        }.joined(separator: "\n")
         return "\(clip?.title ?? "")\n\n\(body)"
     }
 
@@ -74,6 +81,16 @@ struct ClipPlayerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if clip?.lines != nil {
+                if TranscriptTranslation.isSupported {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showsJapanese.toggle()
+                        } label: {
+                            Image(systemName: showsJapanese ? "character.bubble.fill" : "character.bubble")
+                        }
+                        .accessibilityLabel(showsJapanese ? "日本語訳を隠す" : "日本語訳を表示する")
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         hidesText.toggle()
@@ -117,6 +134,15 @@ struct ClipPlayerView: View {
             SavePhraseSheet(line: line, clipID: clipID)
         }
         .modifier(TranslationSheet(isPresented: $showsTranslation, text: translatingText))
+        .modifier(TranscriptTranslation(isActive: showsJapanese && !transcribing, lines: lines,
+                                        onTranslated: { store.setTranslations($0, for: clipID) },
+                                        onError: { translateError = $0 }))
+        .alert("翻訳できませんでした", isPresented: Binding(get: { translateError != nil },
+                                                    set: { if !$0 { translateError = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(translateError ?? "")
+        }
         .alert("文字起こしできませんでした", isPresented: Binding(get: { transcribeError != nil },
                                                        set: { if !$0 { transcribeError = nil } })) {
             Button("OK", role: .cancel) {}
@@ -247,10 +273,23 @@ struct ClipPlayerView: View {
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .padding(.top, 2)
-            Text(line.text)
-                .font(.body)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .redacted(reason: hidden ? .placeholder : [])
+            VStack(alignment: .leading, spacing: 4) {
+                Text(line.text)
+                    .font(.body)
+                if showsJapanese {
+                    if let japanese = line.japanese {
+                        Text(japanese)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("翻訳中…")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .redacted(reason: hidden ? .placeholder : [])
             if hidden {
                 Button {
                     revealed.insert(line.id)
