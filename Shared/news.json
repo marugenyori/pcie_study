@@ -1,6 +1,28 @@
 {
-  "updated": "2026-11-03",
+  "updated": "2026-11-08",
   "items": [
+    {
+      "id": "astera-q3-2026",
+      "date": "2026-11-03",
+      "tag": "industry",
+      "title": "Astera Labs の決算：PCIe スイッチ「Scorpio」が最大の製品群に",
+      "summary": "Astera Labs の2026年7〜9月期の売上は過去最高の5億8,490万ドル（前年同期の約2.5倍）でした。320レーンの PCIe ファブリックスイッチ（多数の GPU などをつなぐ中継チップ）「Scorpio X」の量産が進み、Scorpio が売上で最大の製品群になりました。PCIe 7 対応の信号調整チップ（リタイマ：弱った信号を整え直すチップ）群「Aries 7」は、10〜12月期に一部の顧客へサンプル出荷を始める予定です。",
+      "titleEn": "Astera Labs Q3 2026: Scorpio PCIe switches become its largest product family",
+      "summaryEn": "Astera Labs reported record third-quarter 2026 revenue of $584.9 million, up 154% year over year. Volume production of the Scorpio X-Series 320-lane fabric switch made Scorpio the company's largest product family by revenue. Its industry-first PCIe 7 signal conditioning portfolio, Aries 7, is expected to begin sampling to select customers in Q4 2026.",
+      "source": "Astera Labs（GlobeNewswire、StockTitan 掲載）",
+      "url": "https://www.stocktitan.net/news/ALAB/astera-labs-reports-third-quarter-2026-financial-kmonddwca7o2.html"
+    },
+    {
+      "id": "penguin-cxl-ddr4-sc26",
+      "date": "2026-10-30",
+      "tag": "event",
+      "title": "SC26 で、古い DDR4 メモリを CXL で再利用するデモ",
+      "summary": "CXL Consortium のブログによると、Penguin Solutions は SC26 で、サーバの入れ替えで余った DDR4 メモリを CXL（PCIe の上で動くメモリ接続の規格）経由で再利用する構成を見せます。SMART の CXL 2.0 拡張カードを PCIe Gen5 x16 で Intel Xeon 6 サーバにつなぎ、64GB の DDR4 を8枚載せると 512GB の容量になります。DDR4 は DDR5 のスロットには直接挿せないため、CXL コントローラが橋渡しをします。",
+      "titleEn": "CXL gives DDR4 a second life: Penguin Solutions demonstrates memory reuse at SC26",
+      "summaryEn": "According to a CXL Consortium blog post, Penguin Solutions will show at SC26 how DDR4 memory left over from server refreshes can be reused as CXL-attached capacity. The demo uses SMART's CXL 2.0 Type 3 add-in card, connected over PCIe Gen5 x16 in an Intel Xeon 6 server; eight 64 GB DDR4 RDIMMs provide 512 GB of capacity. Because DDR4 cannot go into a DDR5 channel, the CXL controller bridges the gap.",
+      "source": "CXL Consortium ブログ",
+      "url": "https://computeexpresslink.org/blog/cxl-gives-ddr4-a-second-life-penguin-solutions-demonstrates-memory-reuse-at-sc26-4883/"
+    },
     {
       "id": "amd-am5-pcie6",
       "date": "2026-10-20",
@@ -20,6 +42,17 @@
       "url": "https://www.storagenewsletter.com/2026/10/15/ocp-global-summit-kioxia-introduces-direct-liquid-cooling-support-for-enterprise-ssds/",
       "titleEn": "Kioxia adds direct liquid cooling models to its CM9 PCIe 5.0 SSDs",
       "summaryEn": "At the OCP Global Summit in San Jose, Kioxia added direct liquid cooling models to its CM9 Series of enterprise SSDs, for cold-plate-enabled server designs. The drives use PCIe 5.0 and NVMe 2.0 in the E3.S form factor, and they also work in air-cooled servers. Capacities reach 30.72 terabytes for read-intensive use and 25.6 terabytes for mixed use, and samples are going to select customers."
+    },
+    {
+      "id": "samsung-cxl-pool-amd-ocp",
+      "date": "2026-10-15",
+      "tag": "industry",
+      "title": "Samsung と AMD、OCP で CXL メモリプールのデモ",
+      "summary": "Samsung は OCP Global Summit 2026 で、AMD のプラットフォームで動作を確かめた CXL メモリプール（複数の処理で共有して必要な分だけ割り当てるメモリ）を使い、AI エージェントの推論を動かすデモを見せました。Samsung によると、メモリを固定で割り当てる場合に比べて最初の応答までの時間が最大38%短くなったとのことです。ただし技術デモで、サーバ構成や CXL スイッチのつなぎ方は公開されていません。",
+      "titleEn": "Samsung and AMD demo CXL memory pooling at OCP Global Summit 2026",
+      "summaryEn": "At OCP Global Summit 2026, Samsung showed a CXL memory pool validated with AMD, running an agentic AI inference workload that allocates pooled memory elastically across LLM instances. Samsung claims up to 38 percent lower time to first token and up to 3.3x higher goodput versus static allocation. It is a technology demonstration, and the server configuration and CXL switch topology have not been published.",
+      "source": "StorageReview",
+      "url": "https://www.storagereview.com/news/samsung-cxl-memory-pooling-amd-ocp-2026-cmm-d-agentic-ai"
     },
     {
       "id": "microchip-gen6-llc",
