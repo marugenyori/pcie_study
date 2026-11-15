@@ -1,6 +1,28 @@
 {
-  "updated": "2026-11-08",
+  "updated": "2026-11-15",
   "items": [
+    {
+      "id": "smi-sc26-gen6",
+      "date": "2026-11-12",
+      "tag": "event",
+      "title": "Silicon Motion、SC26 で PCIe Gen6 の SSD コントローラを展示",
+      "summary": "Silicon Motion は、シカゴで11月16〜19日に開かれる SC26（スーパーコンピューティングの国際会議）で、企業向け SSD コントローラ（SSD の頭脳にあたるチップ）の「MonTitan」シリーズを展示すると発表しました。PCIe Gen6 対応の SM8466 は、連続読み書き最大 28GB/s、ランダムアクセス毎秒700万回（7M IOPS）で、512TB を超える容量の SSD にも対応します。あわせて PCIe Gen5 の SM8366 などや、NVIDIA の DPU（データ処理用のプロセッサ）と組み合わせた起動用 SSD のデモも見せます。",
+      "titleEn": "Silicon Motion showcases PCIe Gen6 enterprise SSD controllers at SC26",
+      "summaryEn": "Silicon Motion announced it will show its MonTitan PCIe Gen5 and Gen6 enterprise SSD controllers at SC26 in Chicago, November 16–19. The PCIe Gen6 SM8466 delivers up to 28 GB/s sequential throughput and 7M random IOPS, and supports enterprise SSDs beyond 512TB. The company will also demonstrate enterprise NVMe boot drives with the NVIDIA DPU platform.",
+      "source": "Silicon Motion（Business Wire）",
+      "url": "https://www.financialcontent.com/article/bizwire-2026-11-12-silicon-motion-showcases-next-generation-enterprise-storage-solutions-to-power-agentic-ai-infrastructure-at-sc26"
+    },
+    {
+      "id": "netlist-cxl-sc26",
+      "date": "2026-11-10",
+      "tag": "event",
+      "title": "Netlist、SC26 の CXL パビリオンで3種類の CXL メモリを試作展示",
+      "summary": "CXL Consortium のブログによると、Netlist は SC26 の CXL パビリオンで、CXL（PCIe の上で動くメモリ接続の規格）を使ったメモリの試作品を3種類見せます。DRAM を NAND フラッシュの高速キャッシュにして大容量にするもの、電源が切れても中身が残る不揮発メモリ（PCIe Gen5 上の CXL Type 3）、余った DDR4 を拡張メモリとして使うものです。",
+      "titleEn": "Netlist to demonstrate three CXL memory proof-of-concept designs at the SC26 CXL Pavilion",
+      "summaryEn": "According to a CXL Consortium blog post, Netlist will demonstrate three CXL memory proof-of-concept designs at the SC26 CXL Pavilion. NVvault-HM uses DRAM as a high-speed cache for NAND-backed capacity, NVvault-PM is persistent memory built on CXL Type 3 over PCIe Gen5, and NVvault-D4 makes existing DDR4 available as expanded host memory.",
+      "source": "CXL Consortium ブログ",
+      "url": "https://computeexpresslink.org/blog/netlist-to-demonstrate-three-cxl-memory-proof-of-concept-designs-at-the-sc26-cxl-pavilion-4906/"
+    },
     {
       "id": "astera-q3-2026",
       "date": "2026-11-03",
@@ -80,6 +102,17 @@
       "summary": "128 GT/s の PCIe 7.0 に対応したプロトコルアナライザ（通信の中身を記録・解析する装置）とエクササイザ（試験用の通信を作る装置）です。LTSSM（リンクを確立する手順）の状態遷移や Flit のやりとりまで見られます。Synopsys は自社の PCIe 7.0 IP とこの装置で 128 GT/s のリンクを確認したとしています。",
       "source": "Electropages",
       "url": "https://www.electropages.com/2026/10/pcie-70-protocol-test-solution-accelerate-ai-infrastructure-validation"
+    },
+    {
+      "id": "marvell-structera-x-gen2",
+      "date": "2026-10-12",
+      "tag": "product",
+      "title": "Marvell、PCIe 6.0 でつなぐ第2世代の CXL 3.2 メモリ拡張チップ",
+      "summary": "Marvell は、CXL 3.2 に対応した第2世代のメモリ拡張チップ（CPU にメモリを追加でつなぐためのチップ）「Structera X 3406 / 3506」を発表しました。メモリのチャネルは前の世代より50%多い6本で、DDR4 なら最大 9TB、DDR5 なら最大 6TB を載せられ、ホストとは PCIe 6.0 x16（最大 256GB/s）でつながって最大4台で共有できます。サンプル出荷は2027年1〜3月期の予定です。",
+      "titleEn": "Marvell unveils second-generation Structera X CXL 3.2 memory expanders with PCIe Gen 6",
+      "summaryEn": "Marvell unveiled the Structera X 3406 and 3506, second-generation CXL 3.2 memory expanders for AI inference with six DDR4/DDR5 channels, 50% more than the prior generation. They support up to 9TB of DDR4 or 6TB of DDR5 per controller, connect over PCIe 6.0 x16 with up to 256GB/s of host bandwidth, and can share memory across up to four hosts. Samples are expected in Q1 2027.",
+      "source": "Marvell",
+      "url": "https://www.marvell.com/company/newsroom/marvell-structera-x-cxl-3-2-memory-expanders-ai-inference.html"
     },
     {
       "id": "astera-aries7",
