@@ -6,7 +6,7 @@
       "date": "2026-11-12",
       "tag": "event",
       "title": "Silicon Motion、SC26 で PCIe Gen6 の SSD コントローラを展示",
-      "summary": "Silicon Motion は、シカゴで11月16〜19日に開かれる SC26（スーパーコンピューティングの国際会議）で、企業向け SSD コントローラ（SSD の頭脳にあたるチップ）の「MonTitan」シリーズを展示すると発表しました。PCIe Gen6 対応の SM8466 は、連続読み書き最大 28GB/s、ランダムアクセス毎秒700万回（7M IOPS）で、512TB を超える容量の SSD にも対応します。あわせて PCIe Gen5 の SM8366 などや、NVIDIA の DPU（データ処理用のプロセッサ）と組み合わせた起動用 SSD のデモも見せます。",
+      "summary": "Silicon Motion は、シカゴで11月16〜19日に開かれる SC26（スーパーコンピューティングの国際会議）で、企業向け SSD コントローラ（SSD の頭脳にあたるチップ）の「MonTitan」シリーズを展示すると発表しました。PCIe Gen6 対応の SM8466 は、連続転送（シーケンシャル）最大 28GB/s、ランダムアクセス毎秒700万回（7M IOPS）で、512TB を超える容量の SSD にも対応します。あわせて PCIe Gen5 の SM8366 などや、NVIDIA の DPU（データ処理用のプロセッサ）と組み合わせた起動用 SSD のデモも見せます。",
       "titleEn": "Silicon Motion showcases PCIe Gen6 enterprise SSD controllers at SC26",
       "summaryEn": "Silicon Motion announced it will show its MonTitan PCIe Gen5 and Gen6 enterprise SSD controllers at SC26 in Chicago, November 16–19. The PCIe Gen6 SM8466 delivers up to 28 GB/s sequential throughput and 7M random IOPS, and supports enterprise SSDs beyond 512TB. The company will also demonstrate enterprise NVMe boot drives with the NVIDIA DPU platform.",
       "source": "Silicon Motion（Business Wire）",
