@@ -1,6 +1,28 @@
 {
-  "updated": "2026-11-15",
+  "updated": "2026-11-22",
   "items": [
+    {
+      "id": "supermicro-gen6-petascale",
+      "date": "2026-11-19",
+      "tag": "product",
+      "title": "Supermicro、初の PCIe Gen6 オールフラッシュサーバの出荷を開始",
+      "summary": "StorageReview の SC26 まとめ記事によると、Supermicro は初の PCIe Gen6 対応オールフラッシュ（SSD だけで構成した）ストレージサーバの出荷を始めました。最初の機種は AMD EPYC 9006 を使う 2U の Petascale システムで、E3.S 形状（データセンター向けの SSD の形）の NVMe SSD を最大32台、122.88TB のドライブなら合計 3.93PB 載せられます。Supermicro は連続読み出しの帯域が PCIe Gen5 より最大2倍と説明していますが、試験条件は示していません。",
+      "titleEn": "Supermicro ships its first PCIe Gen6 all-flash storage servers",
+      "summaryEn": "According to StorageReview's SC26 roundup, Supermicro says its first PCIe Gen6 all-flash storage servers are shipping, starting with a 2U Petascale system on AMD EPYC 9006 processors. It holds up to 32 E3.S NVMe SSDs, which comes to 3.93PB with 122.88TB drives. Supermicro claims up to 100 percent more sequential read bandwidth than PCIe Gen5, but gives no test configuration behind the figure.",
+      "source": "StorageReview",
+      "url": "https://www.storagereview.com/news/sc26-roundup-top500-aic-msi-marvell-compal"
+    },
+    {
+      "id": "phison-sc26-gen6",
+      "date": "2026-11-17",
+      "tag": "event",
+      "title": "Phison、SC26 で PCIe Gen6 の SSD コントローラ「X3」を紹介",
+      "summary": "Phison は SC26 で、企業向けの PCIe Gen6 SSD コントローラ「X3（PS5303）」を紹介しました。PCIe Gen6 x4・NVMe 2.3 で、連続転送最大 28GB/s、毎秒680万回のランダムアクセス（6.8M IOPS）をめざしています。あわせて、同社の PS7161 が PCI-SIG のインテグレーターズリスト（適合試験に合格した製品の一覧）に載った最初の PCIe 6.0 リドライバ（信号を増幅する中継チップ）だと紹介しました。",
+      "titleEn": "Phison unveils its PCIe Gen6 X3 enterprise SSD controller at SC26",
+      "summaryEn": "At SC26, Phison unveiled the X3 (PS5303) enterprise SSD controller, which targets up to 28 GB/s sequential throughput and 6.8 million IOPS on a PCIe Gen6 x4, NVMe 2.3 interface. The company also noted that its PS7161 is the first PCIe 6.0 redriver on the PCI-SIG Integrators List.",
+      "source": "Phison",
+      "url": "https://www.phison.com/sc26-phison-unveils-three-next-generation-storage-innovations-for-the-new-compute-era/"
+    },
     {
       "id": "smi-sc26-gen6",
       "date": "2026-11-12",
